@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { NavState, UserProfile } from '@shared/ipc'
-import { BAN_BANNER_HEIGHT, CHROME_HEIGHT } from '@shared/config'
+import { BAN_BANNER_HEIGHT, CHROME_HEIGHT, SEARCH_PLAY_BANNER_HEIGHT } from '@shared/config'
 import { NavControls } from '../NavControls/NavControls'
 import { UrlPill } from '../UrlPill/UrlPill'
 import { WindowControls } from '../WindowControls/WindowControls'
@@ -8,8 +8,10 @@ import { LiveOnline } from '../LiveOnline/LiveOnline'
 import { TitleBarProfile } from '../TitleBarProfile/TitleBarProfile'
 import { SideMenuPanel, SideMenuToggle } from '../SideMenu/SideMenu'
 import { BanBanner } from '../BanBanner/BanBanner'
+import { SearchBanner } from '../SearchBanner/SearchBanner'
 import { useLiveStats } from '../../hooks/useLiveStats'
 import { useBanStatus } from '../../hooks/useBanStatus'
+import { useSearchStatus } from '../../hooks/useSearchStatus'
 import './ChromeBar.css'
 
 interface Props {
@@ -21,6 +23,7 @@ interface Props {
 export function ChromeBar({ nav, profile, onLogout }: Props) {
   const live = useLiveStats()
   const ban = useBanStatus()
+  const search = useSearchStatus()
   const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
@@ -30,11 +33,13 @@ export function ChromeBar({ nav, profile, onLogout }: Props) {
     }
   }, [menuOpen])
 
-  const chromeH = CHROME_HEIGHT + (ban.visible ? BAN_BANNER_HEIGHT : 0)
+  const bannerVisible = ban.visible || search.visible || search.playVisible
+  const bannerH = ban.visible ? BAN_BANNER_HEIGHT : SEARCH_PLAY_BANNER_HEIGHT
+  const chromeH = CHROME_HEIGHT + (bannerVisible ? bannerH : 0)
   const rootClass = [
     'chrome-root',
     menuOpen && 'chrome-root--menu',
-    ban.visible && 'chrome-root--ban'
+    bannerVisible && 'chrome-root--ban'
   ]
     .filter(Boolean)
     .join(' ')
@@ -72,7 +77,7 @@ export function ChromeBar({ nav, profile, onLogout }: Props) {
             <WindowControls />
           </div>
         </header>
-        <BanBanner ban={ban} />
+        {ban.visible ? <BanBanner ban={ban} /> : <SearchBanner search={search} />}
       </div>
     </div>
   )

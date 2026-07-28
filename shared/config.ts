@@ -15,8 +15,11 @@ export const GAME_START_URL = `${GAME_ORIGIN}/game-search`
 /** Height of the React chrome above the BrowserView (px). */
 export const CHROME_HEIGHT = 68
 
-/** Extra chrome height when search-ban banner is visible. */
+/** Extra chrome height when search-ban / searching banner is visible. */
 export const BAN_BANNER_HEIGHT = 70
+
+/** Extra chrome height for play/search row (modes + Играть / статус в одну линию). */
+export const SEARCH_PLAY_BANNER_HEIGHT = 96
 
 /** Apple-settings-style side menu geometry */
 export const SIDE_MENU_INSET = 12

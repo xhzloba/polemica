@@ -3,6 +3,7 @@ import {
   BAN_BANNER_HEIGHT,
   CHROME_HEIGHT,
   GAME_START_URL,
+  SEARCH_PLAY_BANNER_HEIGHT,
   SIDE_MENU_OFFSET,
   TRAFFIC_LIGHTS
 } from '@shared/config'
@@ -26,6 +27,12 @@ import {
   startBanStatusPolling,
   stopBanStatusPolling
 } from '../ban/banStatusService'
+import {
+  getSearchStatus,
+  onSearchStatusChange,
+  startSearchStatusPolling,
+  stopSearchStatusPolling
+} from '../search/searchStatusService'
 
 let phase: AuthPhase = 'splash'
 let profile: UserProfile | null = null
@@ -67,12 +74,20 @@ export function bindAuthWindow(win: BrowserWindow): void {
     if (phase === 'app') layoutForPhase(hostWindow)
   })
 
+  onSearchStatusChange(() => {
+    if (!hostWindow || hostWindow.isDestroyed()) return
+    if (phase === 'app') layoutForPhase(hostWindow)
+  })
+
   layoutForPhase(win)
   emit()
 }
 
 function chromeHeightForApp(): number {
-  return CHROME_HEIGHT + (getBanStatus().visible ? BAN_BANNER_HEIGHT : 0)
+  const search = getSearchStatus()
+  if (getBanStatus().visible) return CHROME_HEIGHT + BAN_BANNER_HEIGHT
+  if (search.visible || search.playVisible) return CHROME_HEIGHT + SEARCH_PLAY_BANNER_HEIGHT
+  return CHROME_HEIGHT
 }
 
 function layoutForPhase(win: BrowserWindow): void {
@@ -203,6 +218,7 @@ export async function enterApp(): Promise<AuthState> {
   error = null
   startLiveStatsPolling()
   startBanStatusPolling()
+  startSearchStatusPolling()
   if (hostWindow && !hostWindow.isDestroyed()) {
     layoutForPhase(hostWindow)
     setGameViewVisible(true)
@@ -241,6 +257,7 @@ export async function logout(): Promise<AuthState> {
     error = null
     stopLiveStatsPolling()
     stopBanStatusPolling()
+    stopSearchStatusPolling()
     const view = getGameView()
     if (view && !view.webContents.isDestroyed()) {
       await view.webContents.loadURL('about:blank')

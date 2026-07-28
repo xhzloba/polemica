@@ -22,6 +22,13 @@ import {
 } from '../auth/authService'
 import { getLiveStats } from '../live/liveStatsService'
 import { getBanStatus, refreshBanStatus } from '../ban/banStatusService'
+import {
+  cancelGameSearch,
+  getSearchStatus,
+  refreshSearchStatus,
+  startGameSearch,
+  toggleSearchMode
+} from '../search/searchStatusService'
 import { popupProfileMenu } from '../chrome/profileMenu'
 
 type WindowGetter = () => BW | null
@@ -40,6 +47,7 @@ export function registerIpcHandlers(getWindow: WindowGetter): void {
   ipcMain.handle(IpcChannels.LOBBY_TAB, async (_e, tab: string) => {
     const ok = await gameSetLobbyTab(tab === 'watch' ? 'watch' : 'play')
     refreshBanStatus()
+    refreshSearchStatus()
     return ok
   })
   ipcMain.handle(IpcChannels.GET_NAV_STATE, async () => getGameNavState())
@@ -51,6 +59,12 @@ export function registerIpcHandlers(getWindow: WindowGetter): void {
   ipcMain.handle(IpcChannels.AUTH_LOGOUT, async () => logout())
   ipcMain.handle(IpcChannels.LIVE_STATS_GET, async () => getLiveStats())
   ipcMain.handle(IpcChannels.BAN_STATUS_GET, async () => getBanStatus())
+  ipcMain.handle(IpcChannels.SEARCH_STATUS_GET, async () => getSearchStatus())
+  ipcMain.handle(IpcChannels.SEARCH_CANCEL, async () => cancelGameSearch())
+  ipcMain.handle(IpcChannels.SEARCH_START, async () => startGameSearch())
+  ipcMain.handle(IpcChannels.SEARCH_TOGGLE_MODE, async (_e, mode: string) =>
+    toggleSearchMode(String(mode ?? ''))
+  )
   ipcMain.handle(IpcChannels.CHROME_OVERLAY, async (_e, open: boolean) => {
     setChromeOverlay(Boolean(open))
   })

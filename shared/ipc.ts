@@ -23,6 +23,10 @@ export const IpcChannels = {
   AUTH_LOGOUT: 'auth:logout',
   LIVE_STATS_GET: 'live:stats-get',
   BAN_STATUS_GET: 'ban:status-get',
+  SEARCH_STATUS_GET: 'search:status-get',
+  SEARCH_CANCEL: 'search:cancel',
+  SEARCH_START: 'search:start',
+  SEARCH_TOGGLE_MODE: 'search:toggle-mode',
   PROFILE_MENU: 'chrome:profile-menu',
   CHROME_OVERLAY: 'chrome:overlay',
 
@@ -32,7 +36,8 @@ export const IpcChannels = {
   PAGE_TITLE: 'nav:title',
   AUTH_STATE: 'auth:state',
   LIVE_STATS: 'live:stats',
-  BAN_STATUS: 'ban:status'
+  BAN_STATUS: 'ban:status',
+  SEARCH_STATUS: 'search:status'
 } as const
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels]
@@ -87,6 +92,37 @@ export interface BanStatus {
   updatedAt: number
 }
 
+/** Censorship / queue mode from hidden profile panel */
+export interface SearchMode {
+  mode: string
+  title: string
+  count: number
+  countTarget: number
+  available: boolean
+  selected: boolean
+  description: string
+}
+
+/** Scraped from hidden `.p-play__profile` search / play controls */
+export interface SearchStatus {
+  /** Free-search / matchmaking is running on the site */
+  active: boolean
+  /** Show searching chrome banner */
+  visible: boolean
+  /** Show idle «Играть» CTA (game-search play tab, not ban/search) */
+  playVisible: boolean
+  /** Spinner-only connecting state */
+  loading: boolean
+  title: string
+  time: string
+  delay: string
+  canCancel: boolean
+  modes: SearchMode[]
+  /** px — left edge of lobby table inside game view (align chrome controls) */
+  insetLeft: number
+  updatedAt: number
+}
+
 export interface PolemicaApi {
   goBack: () => Promise<void>
   goForward: () => Promise<void>
@@ -114,6 +150,11 @@ export interface PolemicaApi {
   onLiveStats: (cb: (stats: LiveStats) => void) => () => void
   getBanStatus: () => Promise<BanStatus>
   onBanStatus: (cb: (status: BanStatus) => void) => () => void
+  getSearchStatus: () => Promise<SearchStatus>
+  onSearchStatus: (cb: (status: SearchStatus) => void) => () => void
+  cancelGameSearch: () => Promise<boolean>
+  startGameSearch: () => Promise<boolean>
+  toggleSearchMode: (mode: string) => Promise<boolean>
   openProfileMenu: (anchor?: {
     x: number
     y: number

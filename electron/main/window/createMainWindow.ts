@@ -9,6 +9,7 @@ import {
 import { bindAuthWindow, getAuthState, relayoutAuth } from '../auth/authService'
 import { bindLiveStatsWindow } from '../live/liveStatsService'
 import { bindBanStatusWindow } from '../ban/banStatusService'
+import { bindSearchStatusWindow } from '../search/searchStatusService'
 
 const isDev = !app.isPackaged
 
@@ -48,6 +49,7 @@ export function createMainWindow(): BrowserWindow {
   bindAuthWindow(win)
   bindLiveStatsWindow(win)
   bindBanStatusWindow(win)
+  bindSearchStatusWindow(win)
 
   const relayout = (): void => relayoutAuth(win)
   win.on('resize', relayout)

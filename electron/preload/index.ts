@@ -5,7 +5,8 @@ import {
   type BanStatus,
   type LiveStats,
   type NavState,
-  type PolemicaApi
+  type PolemicaApi,
+  type SearchStatus
 } from '@shared/ipc'
 
 function subscribe<T>(channel: string, cb: (payload: T) => void): () => void {
@@ -41,6 +42,11 @@ const api: PolemicaApi = {
   onLiveStats: (cb) => subscribe<LiveStats>(IpcChannels.LIVE_STATS, cb),
   getBanStatus: () => ipcRenderer.invoke(IpcChannels.BAN_STATUS_GET),
   onBanStatus: (cb) => subscribe<BanStatus>(IpcChannels.BAN_STATUS, cb),
+  getSearchStatus: () => ipcRenderer.invoke(IpcChannels.SEARCH_STATUS_GET),
+  onSearchStatus: (cb) => subscribe<SearchStatus>(IpcChannels.SEARCH_STATUS, cb),
+  cancelGameSearch: () => ipcRenderer.invoke(IpcChannels.SEARCH_CANCEL),
+  startGameSearch: () => ipcRenderer.invoke(IpcChannels.SEARCH_START),
+  toggleSearchMode: (mode: string) => ipcRenderer.invoke(IpcChannels.SEARCH_TOGGLE_MODE, mode),
   openProfileMenu: (anchor?: { x: number; y: number; width?: number; height?: number }) =>
     ipcRenderer.invoke(IpcChannels.PROFILE_MENU, anchor),
   setChromeOverlay: (open: boolean) => ipcRenderer.invoke(IpcChannels.CHROME_OVERLAY, open)
