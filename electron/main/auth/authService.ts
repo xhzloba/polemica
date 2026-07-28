@@ -86,7 +86,9 @@ export function bindAuthWindow(win: BrowserWindow): void {
 function chromeHeightForApp(): number {
   const search = getSearchStatus()
   if (getBanStatus().visible) return CHROME_HEIGHT + BAN_BANNER_HEIGHT
-  if (search.visible || search.playVisible) return CHROME_HEIGHT + SEARCH_PLAY_BANNER_HEIGHT
+  if (search.visible || search.playVisible || search.noticeTitle || search.noticeText) {
+    return CHROME_HEIGHT + SEARCH_PLAY_BANNER_HEIGHT
+  }
   return CHROME_HEIGHT
 }
 

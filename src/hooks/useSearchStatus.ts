@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { SearchStatus } from '@shared/ipc'
 
 const empty: SearchStatus = {
+  phase: 'hidden',
   active: false,
   visible: false,
   playVisible: false,
@@ -10,6 +11,10 @@ const empty: SearchStatus = {
   time: '',
   delay: '',
   canCancel: false,
+  acceptAccepted: false,
+  acceptMode: '',
+  noticeTitle: '',
+  noticeText: '',
   modes: [],
   insetLeft: 24,
   updatedAt: 0

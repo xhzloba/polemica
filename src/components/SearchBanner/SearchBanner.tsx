@@ -7,21 +7,24 @@ interface Props {
 }
 
 export function SearchBanner({ search }: Props) {
-  if (!search.visible && !search.playVisible) return null
+  const hasNotice = Boolean(search.noticeTitle || search.noticeText)
+  if (!search.visible && !search.playVisible && !hasNotice) return null
 
-  const searching = search.visible
+  const phase = search.phase
+  const showModes = (phase === 'idle' || phase === 'searching') && search.modes.length > 0
   const canPlay = search.modes.some((m) => m.selected && m.available)
+  const showIdlePlay = phase === 'idle' || (!search.visible && search.playVisible)
 
   return (
     <div
       className="search-banner search-banner--play"
-      role={searching ? 'status' : 'region'}
+      role={search.visible || hasNotice ? 'status' : 'region'}
       aria-label="Поиск игры"
-      aria-live={searching ? 'polite' : undefined}
+      aria-live={search.visible || hasNotice ? 'polite' : undefined}
       style={{ paddingLeft: Math.max(0, search.insetLeft || 24) }}
     >
       <div className="search-banner__card search-banner__card--play">
-        {search.modes.length > 0 ? (
+        {showModes ? (
           <div className="search-banner__modes" role="group" aria-label="Режимы поиска">
             {search.modes.map((mode) => (
               <button
@@ -48,41 +51,88 @@ export function SearchBanner({ search }: Props) {
           </div>
         ) : null}
 
-        {searching ? (
-          <div
-            className={`search-banner__status${search.loading ? ' search-banner__status--loading' : ''}`}
-          >
-            {search.loading ? (
-              <LoaderCircle
-                size={20}
-                strokeWidth={2.2}
-                className="search-banner__spinner"
-                aria-label="Загрузка"
-              />
+        {phase === 'launching' || (phase === 'searching' && search.loading) ? (
+          <div className="search-banner__status search-banner__status--loading">
+            <LoaderCircle
+              size={20}
+              strokeWidth={2.2}
+              className="search-banner__spinner"
+              aria-label="Загрузка"
+            />
+            {phase === 'launching' ? (
+              <div className="search-banner__center">
+                <div className="search-banner__title">{search.title || 'Игра запускается'}</div>
+              </div>
+            ) : null}
+          </div>
+        ) : phase === 'accept' ? (
+          search.acceptAccepted ? (
+            <div className="search-banner__status">
+              {search.time ? <div className="search-banner__time">{search.time}</div> : null}
+              <div className="search-banner__center">
+                <div className="search-banner__title">{search.title}</div>
+                {search.delay || search.acceptMode ? (
+                  <div className="search-banner__delay">{search.delay || search.acceptMode}</div>
+                ) : null}
+              </div>
+              <span className="search-banner__close-spacer" aria-hidden />
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="search-banner__accept"
+              onClick={() => void window.polemica.acceptGameSearch()}
+            >
+              {search.time ? <span className="search-banner__accept-time">{search.time}</span> : null}
+              <span className="search-banner__accept-text">
+                <span className="search-banner__accept-title">{search.title || 'Принять игру'}</span>
+                {search.delay || search.acceptMode ? (
+                  <span className="search-banner__accept-mode">
+                    {search.delay || search.acceptMode}
+                  </span>
+                ) : null}
+              </span>
+            </button>
+          )
+        ) : phase === 'inGame' ? (
+          <div className="search-banner__decide">
+            <button
+              type="button"
+              className="search-banner__play"
+              onClick={() => void window.polemica.returnToGame()}
+            >
+              Продолжить игру
+            </button>
+            <button
+              type="button"
+              className="search-banner__quit"
+              onClick={() => void window.polemica.quitActiveGame()}
+            >
+              Покинуть игру
+            </button>
+          </div>
+        ) : phase === 'searching' ? (
+          <div className="search-banner__status">
+            {search.time ? <div className="search-banner__time">{search.time}</div> : null}
+            <div className="search-banner__center">
+              <div className="search-banner__title">{search.title}</div>
+              {search.delay ? <div className="search-banner__delay">{search.delay}</div> : null}
+            </div>
+            {search.canCancel ? (
+              <button
+                type="button"
+                className="search-banner__close"
+                aria-label="Отменить поиск"
+                title="Отменить поиск"
+                onClick={() => void window.polemica.cancelGameSearch()}
+              >
+                <X size={14} strokeWidth={2.4} aria-hidden />
+              </button>
             ) : (
-              <>
-                {search.time ? <div className="search-banner__time">{search.time}</div> : null}
-                <div className="search-banner__center">
-                  <div className="search-banner__title">{search.title}</div>
-                  {search.delay ? <div className="search-banner__delay">{search.delay}</div> : null}
-                </div>
-                {search.canCancel ? (
-                  <button
-                    type="button"
-                    className="search-banner__close"
-                    aria-label="Отменить поиск"
-                    title="Отменить поиск"
-                    onClick={() => void window.polemica.cancelGameSearch()}
-                  >
-                    <X size={14} strokeWidth={2.4} aria-hidden />
-                  </button>
-                ) : (
-                  <span className="search-banner__close-spacer" aria-hidden />
-                )}
-              </>
+              <span className="search-banner__close-spacer" aria-hidden />
             )}
           </div>
-        ) : (
+        ) : showIdlePlay ? (
           <button
             type="button"
             className="search-banner__play"
@@ -91,7 +141,29 @@ export function SearchBanner({ search }: Props) {
           >
             Играть
           </button>
-        )}
+        ) : null}
+
+        {hasNotice ? (
+          <div className="search-banner__notice" role="alert">
+            <div className="search-banner__notice-body">
+              {search.noticeTitle ? (
+                <div className="search-banner__notice-title">{search.noticeTitle}</div>
+              ) : null}
+              {search.noticeText ? (
+                <div className="search-banner__notice-text">{search.noticeText}</div>
+              ) : null}
+            </div>
+            <button
+              type="button"
+              className="search-banner__notice-close"
+              aria-label="Скрыть уведомление"
+              title="Скрыть"
+              onClick={() => void window.polemica.dismissSearchNotice()}
+            >
+              <X size={14} strokeWidth={2.4} aria-hidden />
+            </button>
+          </div>
+        ) : null}
       </div>
     </div>
   )

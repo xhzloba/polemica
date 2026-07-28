@@ -33,7 +33,8 @@ export function ChromeBar({ nav, profile, onLogout }: Props) {
     }
   }, [menuOpen])
 
-  const bannerVisible = ban.visible || search.visible || search.playVisible
+  const hasNotice = Boolean(search.noticeTitle || search.noticeText)
+  const bannerVisible = ban.visible || search.visible || search.playVisible || hasNotice
   const bannerH = ban.visible ? BAN_BANNER_HEIGHT : SEARCH_PLAY_BANNER_HEIGHT
   const chromeH = CHROME_HEIGHT + (bannerVisible ? bannerH : 0)
   const rootClass = [

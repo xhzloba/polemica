@@ -80,6 +80,21 @@ export const HIDE_SITE_PROFILE_CSS = `
 }
 `
 
+/**
+ * break-search modal is mirrored in chrome SearchBanner — hide the site dialog
+ * (and its overlay) so it doesn't flash / block the lobby.
+ */
+export const HIDE_BREAK_SEARCH_MODAL_CSS = `
+.v--modal-box:has(.modal-break-search__wrapper),
+.v--modal-box:has(.modal-break-search__header),
+body:has(.modal-break-search__wrapper) .v--modal-overlay,
+body:has(.modal-break-search__header) .v--modal-overlay {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+`
+
 /** Nav moved into Electron side menu — hide site header links. */
 export const HIDE_SITE_NAV_CSS = `
 .p-header__menu,
@@ -331,6 +346,10 @@ export const INJECTION_STYLES: InjectionStyle[] = [
   {
     id: 'hide-site-nav',
     css: HIDE_SITE_NAV_CSS
+  },
+  {
+    id: 'hide-break-search-modal',
+    css: HIDE_BREAK_SEARCH_MODAL_CSS
   },
   {
     id: 'expand-center',

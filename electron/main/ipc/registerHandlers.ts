@@ -23,9 +23,13 @@ import {
 import { getLiveStats } from '../live/liveStatsService'
 import { getBanStatus, refreshBanStatus } from '../ban/banStatusService'
 import {
+  acceptGameSearch,
   cancelGameSearch,
+  dismissSearchNotice,
   getSearchStatus,
+  quitActiveGame,
   refreshSearchStatus,
+  returnToGame,
   startGameSearch,
   toggleSearchMode
 } from '../search/searchStatusService'
@@ -65,6 +69,12 @@ export function registerIpcHandlers(getWindow: WindowGetter): void {
   ipcMain.handle(IpcChannels.SEARCH_TOGGLE_MODE, async (_e, mode: string) =>
     toggleSearchMode(String(mode ?? ''))
   )
+  ipcMain.handle(IpcChannels.SEARCH_ACCEPT, async () => acceptGameSearch())
+  ipcMain.handle(IpcChannels.SEARCH_RETURN_GAME, async () => returnToGame())
+  ipcMain.handle(IpcChannels.SEARCH_QUIT_GAME, async () => quitActiveGame())
+  ipcMain.handle(IpcChannels.SEARCH_DISMISS_NOTICE, async () => {
+    dismissSearchNotice()
+  })
   ipcMain.handle(IpcChannels.CHROME_OVERLAY, async (_e, open: boolean) => {
     setChromeOverlay(Boolean(open))
   })

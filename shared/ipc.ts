@@ -27,6 +27,10 @@ export const IpcChannels = {
   SEARCH_CANCEL: 'search:cancel',
   SEARCH_START: 'search:start',
   SEARCH_TOGGLE_MODE: 'search:toggle-mode',
+  SEARCH_ACCEPT: 'search:accept',
+  SEARCH_RETURN_GAME: 'search:return-game',
+  SEARCH_QUIT_GAME: 'search:quit-game',
+  SEARCH_DISMISS_NOTICE: 'search:dismiss-notice',
   PROFILE_MENU: 'chrome:profile-menu',
   CHROME_OVERLAY: 'chrome:overlay',
 
@@ -104,19 +108,28 @@ export interface SearchMode {
 }
 
 /** Scraped from hidden `.p-play__profile` search / play controls */
+export type SearchPhase = 'hidden' | 'idle' | 'searching' | 'accept' | 'launching' | 'inGame'
+
 export interface SearchStatus {
+  phase: SearchPhase
   /** Free-search / matchmaking is running on the site */
   active: boolean
-  /** Show searching chrome banner */
+  /** Show searching / accept / launch / in-game chrome strip */
   visible: boolean
   /** Show idle «Играть» CTA (game-search play tab, not ban/search) */
   playVisible: boolean
-  /** Spinner-only connecting state */
+  /** Spinner-only connecting / launching state */
   loading: boolean
   title: string
   time: string
   delay: string
   canCancel: boolean
+  /** Match found — waiting for accept (or already accepted) */
+  acceptAccepted: boolean
+  acceptMode: string
+  /** From site break-search modal — shown on the right of the play strip */
+  noticeTitle: string
+  noticeText: string
   modes: SearchMode[]
   /** px — left edge of lobby table inside game view (align chrome controls) */
   insetLeft: number
@@ -155,6 +168,10 @@ export interface PolemicaApi {
   cancelGameSearch: () => Promise<boolean>
   startGameSearch: () => Promise<boolean>
   toggleSearchMode: (mode: string) => Promise<boolean>
+  acceptGameSearch: () => Promise<boolean>
+  returnToGame: () => Promise<boolean>
+  quitActiveGame: () => Promise<boolean>
+  dismissSearchNotice: () => Promise<void>
   openProfileMenu: (anchor?: {
     x: number
     y: number

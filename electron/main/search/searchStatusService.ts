@@ -82,7 +82,9 @@ const SCRAPE_SEARCH_JS = `
   };
 
   const ban = document.querySelector('.p-play__profile-game--ban');
-  const search = document.querySelector('.p-play__profile-game--search');
+  const searchEl = document.querySelector('.p-play__profile-game--search');
+  const acceptEl = document.querySelector('.p-play__profile-accept');
+  const decideEl = document.querySelector('.p-play__profile-game--decide');
   const modes = scrapeModes();
 
   const measureInset = () => {
@@ -99,8 +101,36 @@ const SCRAPE_SEARCH_JS = `
 
   const insetLeft = measureInset();
 
-  if (ban || !onPlayTab) {
-    return {
+  const scrapeBreakNotice = () => {
+    const header = document.querySelector('.modal-break-search__header');
+    if (!header) return { noticeTitle: '', noticeText: '' };
+    const noticeTitle = (header.querySelector('span')?.textContent || '')
+      .replace(/\\s+/g, ' ')
+      .trim();
+    const noticeText = (header.querySelector('p')?.textContent || '')
+      .replace(/\\s+/g, ' ')
+      .trim();
+    try {
+      const vueApp = document.querySelector('#app') && document.querySelector('#app').__vue__;
+      const root = vueApp && vueApp.$root;
+      if (root && typeof root.hideModal === 'function') {
+        root.hideModal('break-search');
+      } else {
+        const exit = document.querySelector('.modal-break-search__exit');
+        if (exit) {
+          exit.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+        }
+      }
+    } catch (e) {}
+    return { noticeTitle, noticeText };
+  };
+
+  const notice = scrapeBreakNotice();
+  const wrap = (row) => Object.assign(row, notice);
+
+  const empty = (phase) =>
+    wrap({
+      phase,
       active: false,
       visible: false,
       playVisible: false,
@@ -109,27 +139,140 @@ const SCRAPE_SEARCH_JS = `
       time: '',
       delay: '',
       canCancel: false,
-      modes: [],
+      acceptAccepted: false,
+      acceptMode: '',
+      modes: phase === 'hidden' ? [] : modes,
       insetLeft
-    };
+    });
+
+  if (ban || !onPlayTab) return empty('hidden');
+
+  const app = document.querySelector('#app') && document.querySelector('#app').__vue__;
+  let panel = null;
+  if (app) {
+    walk(app, (vm) => {
+      if (
+        vm &&
+        (typeof vm.acceptGame === 'function' || typeof vm.toggleSearch === 'function') &&
+        (vm.searchState !== undefined || Array.isArray(vm.selectedCensorshipModes))
+      ) {
+        panel = vm;
+        return true;
+      }
+      return false;
+    });
   }
 
-  if (search) {
-    const loading = search.classList.contains('p-play__profile-game-loader-gradient')
-      || search.classList.contains('p-play__profile-game-loader');
+  const stopwatch = String(panel && panel.stopwatch != null ? panel.stopwatch : '').trim();
+  const launching =
+    Boolean(panel && panel.acceptingPhase && panel.acceptingPhase.processing) ||
+    Boolean(
+      document.querySelector('.p-play__profile-game-loader') &&
+        (document.querySelector('.p-play__profile-game-loader')?.textContent || '').includes('запускается')
+    );
+  const group = panel && panel.searchState && panel.searchState.group;
+  const accepted = Boolean(panel && panel.isGameAccepted);
+  const inGame = Boolean(panel && panel.userInGame) || Boolean(decideEl);
+  const searching =
+    Boolean(panel && panel.isActiveSearch) ||
+    Boolean(searchEl && !searchEl.classList.contains('p-play__profile-game-loader'));
 
-    const title = (search.querySelector('.p-play__profile-game-search-title')?.textContent || '')
-      .replace(/\\s+/g, ' ')
-      .trim();
-    const time = (search.querySelector('.p-play__profile-game-search-time')?.textContent || '')
-      .replace(/\\s+/g, ' ')
-      .trim();
-    const delay = (search.querySelector('.p-play__profile-game-search-delay')?.textContent || '')
-      .replace(/\\s+/g, ' ')
-      .trim();
-    const canCancel = Boolean(search.querySelector('.p-play__profile-game-search-close'));
+  // Site render order: ban → userInGame(decide) → processing → group(accept) → search → idle
+  if (inGame) {
+    return wrap({
+      phase: 'inGame',
+      active: false,
+      visible: true,
+      playVisible: false,
+      loading: false,
+      title: 'Вы в игре',
+      time: '',
+      delay: '',
+      canCancel: false,
+      acceptAccepted: false,
+      acceptMode: '',
+      modes: [],
+      insetLeft
+    });
+  }
 
-    return {
+  if (launching) {
+    return wrap({
+      phase: 'launching',
+      active: true,
+      visible: true,
+      playVisible: false,
+      loading: true,
+      title: 'Игра запускается',
+      time: stopwatch,
+      delay: '',
+      canCancel: false,
+      acceptAccepted: accepted,
+      acceptMode: '',
+      modes: [],
+      insetLeft
+    });
+  }
+
+  if (group || acceptEl) {
+    let modeLabel = '';
+    if (panel && typeof panel.getCensorshipTitle === 'function' && group && group.censorship != null) {
+      modeLabel = 'Режим: ' + String(panel.getCensorshipTitle(group.censorship) || '');
+    } else if (acceptEl) {
+      const spans = Array.from(acceptEl.querySelectorAll('span'));
+      const modeSpan = spans.find((s) => (s.textContent || '').includes('Режим'));
+      modeLabel = modeSpan ? (modeSpan.textContent || '').replace(/\\s+/g, ' ').trim() : '';
+    }
+    const readyCount =
+      group && group.accepted != null ? Number(group.accepted) : NaN;
+    const title = accepted
+      ? 'Готовы: ' + (Number.isFinite(readyCount) ? readyCount : '?') + '/10'
+      : 'Принять игру';
+    const time =
+      stopwatch ||
+      (acceptEl?.querySelector('.p-play__profile-accept-timer')?.textContent || '')
+        .replace(/\\s+/g, ' ')
+        .trim();
+
+    return wrap({
+      phase: 'accept',
+      active: true,
+      visible: true,
+      playVisible: false,
+      loading: false,
+      title,
+      time,
+      delay: modeLabel,
+      canCancel: false,
+      acceptAccepted: accepted,
+      acceptMode: modeLabel,
+      modes: [],
+      insetLeft
+    });
+  }
+
+  if (searching || searchEl) {
+    const loading =
+      Boolean(searchEl && (
+        searchEl.classList.contains('p-play__profile-game-loader-gradient') ||
+        searchEl.classList.contains('p-play__profile-game-loader')
+      )) || Boolean(panel && panel.isSearchBtnLoading);
+
+    const title = (searchEl?.querySelector('.p-play__profile-game-search-title')?.textContent || '')
+      .replace(/\\s+/g, ' ')
+      .trim();
+    const time =
+      stopwatch ||
+      (searchEl?.querySelector('.p-play__profile-game-search-time')?.textContent || '')
+        .replace(/\\s+/g, ' ')
+        .trim();
+    const delay = (searchEl?.querySelector('.p-play__profile-game-search-delay')?.textContent || '')
+      .replace(/\\s+/g, ' ')
+      .trim();
+    const canCancel = Boolean(searchEl?.querySelector('.p-play__profile-game-search-close'));
+
+    return wrap({
+      phase: 'searching',
       active: true,
       visible: true,
       playVisible: false,
@@ -138,12 +281,15 @@ const SCRAPE_SEARCH_JS = `
       time,
       delay,
       canCancel,
+      acceptAccepted: false,
+      acceptMode: '',
       modes,
       insetLeft
-    };
+    });
   }
 
-  return {
+  return wrap({
+    phase: 'idle',
     active: false,
     visible: false,
     playVisible: true,
@@ -152,9 +298,11 @@ const SCRAPE_SEARCH_JS = `
     time: '',
     delay: '',
     canCancel: false,
+    acceptAccepted: false,
+    acceptMode: '',
     modes,
     insetLeft
-  };
+  });
 })()
 `
 
@@ -229,6 +377,110 @@ const START_SEARCH_JS = `
 })()
 `
 
+const ACCEPT_GAME_JS = `
+(() => {
+  const walk = (vm, fn) => {
+    if (!vm) return false;
+    if (fn(vm)) return true;
+    const kids = vm.$children || [];
+    for (let i = 0; i < kids.length; i++) {
+      if (walk(kids[i], fn)) return true;
+    }
+    return false;
+  };
+  const app = document.querySelector('#app') && document.querySelector('#app').__vue__;
+  if (app) {
+    let done = false;
+    walk(app, (vm) => {
+      if (typeof vm.acceptGame === 'function') {
+        if (vm.isGameAccepted || (vm.acceptingPhase && vm.acceptingPhase.processing)) {
+          done = true;
+          return true;
+        }
+        vm.acceptGame();
+        done = true;
+        return true;
+      }
+      return false;
+    });
+    if (done) return true;
+  }
+  const el = document.querySelector('.p-play__profile-accept.cursor-pointer');
+  if (el) {
+    el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+    return true;
+  }
+  return false;
+})()
+`
+
+const RETURN_TO_GAME_JS = `
+(() => {
+  const walk = (vm, fn) => {
+    if (!vm) return false;
+    if (fn(vm)) return true;
+    const kids = vm.$children || [];
+    for (let i = 0; i < kids.length; i++) {
+      if (walk(kids[i], fn)) return true;
+    }
+    return false;
+  };
+  const app = document.querySelector('#app') && document.querySelector('#app').__vue__;
+  if (app) {
+    let done = false;
+    walk(app, (vm) => {
+      if (typeof vm.returnToGame === 'function' && vm.userInGame) {
+        vm.returnToGame();
+        done = true;
+        return true;
+      }
+      return false;
+    });
+    if (done) return true;
+  }
+  const btn = document.querySelector('.p-play__profile-agree');
+  if (btn) {
+    btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+    return true;
+  }
+  return false;
+})()
+`
+
+const QUIT_GAME_JS = `
+(() => {
+  const walk = (vm, fn) => {
+    if (!vm) return false;
+    if (fn(vm)) return true;
+    const kids = vm.$children || [];
+    for (let i = 0; i < kids.length; i++) {
+      if (walk(kids[i], fn)) return true;
+    }
+    return false;
+  };
+  const app = document.querySelector('#app') && document.querySelector('#app').__vue__;
+  if (app) {
+    let done = false;
+    walk(app, (vm) => {
+      if (typeof vm.quitGame === 'function' && vm.userInGame) {
+        // true = skip site confirm modal (profile is hidden in chrome)
+        vm.quitGame(true);
+        done = true;
+        return true;
+      }
+      return false;
+    });
+    if (done) return true;
+  }
+  const btn = document.querySelector('.p-play__profile-quit');
+  if (btn) {
+    btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+    return true;
+  }
+  return false;
+})()
+`
+
 function toggleModeJs(mode: string): string {
   return `
 (() => {
@@ -263,6 +515,7 @@ function toggleModeJs(mode: string): string {
 
 function emptySearch(): SearchStatus {
   return {
+    phase: 'hidden',
     active: false,
     visible: false,
     playVisible: false,
@@ -271,17 +524,48 @@ function emptySearch(): SearchStatus {
     time: '',
     delay: '',
     canCancel: false,
+    acceptAccepted: false,
+    acceptMode: '',
+    noticeTitle: '',
+    noticeText: '',
     modes: [],
     insetLeft: 24,
     updatedAt: 0
   }
 }
 
+const NOTICE_TTL_MS = 60_000
+
 let hostWindow: BrowserWindow | null = null
 let timer: ReturnType<typeof setInterval> | null = null
 let last: SearchStatus = emptySearch()
 let running = false
 let onChange: ((status: SearchStatus) => void) | null = null
+let stickyNotice: { title: string; text: string; until: number } | null = null
+
+function clearStickyNotice(): void {
+  stickyNotice = null
+}
+
+function rememberNotice(title: string, text: string): void {
+  const t = title.trim()
+  const b = text.trim()
+  if (!t && !b) return
+  stickyNotice = {
+    title: t,
+    text: b,
+    until: Date.now() + NOTICE_TTL_MS
+  }
+}
+
+function activeNotice(): { title: string; text: string } {
+  if (!stickyNotice) return { title: '', text: '' }
+  if (Date.now() > stickyNotice.until) {
+    stickyNotice = null
+    return { title: '', text: '' }
+  }
+  return { title: stickyNotice.title, text: stickyNotice.text }
+}
 
 function emit(): void {
   if (!hostWindow || hostWindow.isDestroyed()) return
@@ -289,7 +573,7 @@ function emit(): void {
 }
 
 function layoutFlag(s: SearchStatus): boolean {
-  return s.visible || s.playVisible
+  return s.visible || s.playVisible || Boolean(s.noticeTitle || s.noticeText)
 }
 
 function modesKey(modes: SearchMode[]): string {
@@ -300,6 +584,7 @@ function modesKey(modes: SearchMode[]): string {
 
 function sameSearch(a: SearchStatus, b: SearchStatus): boolean {
   return (
+    a.phase === b.phase &&
     a.active === b.active &&
     a.visible === b.visible &&
     a.playVisible === b.playVisible &&
@@ -308,6 +593,10 @@ function sameSearch(a: SearchStatus, b: SearchStatus): boolean {
     a.time === b.time &&
     a.delay === b.delay &&
     a.canCancel === b.canCancel &&
+    a.acceptAccepted === b.acceptAccepted &&
+    a.acceptMode === b.acceptMode &&
+    a.noticeTitle === b.noticeTitle &&
+    a.noticeText === b.noticeText &&
     a.insetLeft === b.insetLeft &&
     modesKey(a.modes) === modesKey(b.modes)
   )
@@ -334,6 +623,7 @@ async function tick(): Promise<void> {
   const wc = view?.webContents
   if (!wc || wc.isDestroyed()) {
     if (layoutFlag(last)) {
+      clearStickyNotice()
       last = emptySearch()
       emit()
       onChange?.(last)
@@ -345,6 +635,7 @@ async function tick(): Promise<void> {
     const url = wc.getURL()
     if (!url.includes('polemicagame.com')) {
       if (layoutFlag(last)) {
+        clearStickyNotice()
         last = emptySearch()
         emit()
         onChange?.(last)
@@ -353,6 +644,7 @@ async function tick(): Promise<void> {
     }
 
     const raw = (await wc.executeJavaScript(SCRAPE_SEARCH_JS, true)) as {
+      phase?: SearchStatus['phase']
       active: boolean
       visible: boolean
       playVisible: boolean
@@ -361,11 +653,29 @@ async function tick(): Promise<void> {
       time: string
       delay: string
       canCancel: boolean
+      acceptAccepted?: boolean
+      acceptMode?: string
+      noticeTitle?: string
+      noticeText?: string
       modes: SearchMode[]
       insetLeft: number
     }
 
+    const phase = (['hidden', 'idle', 'searching', 'accept', 'launching', 'inGame'] as const).includes(
+      raw?.phase as SearchStatus['phase']
+    )
+      ? (raw.phase as SearchStatus['phase'])
+      : raw?.visible
+        ? 'searching'
+        : raw?.playVisible
+          ? 'idle'
+          : 'hidden'
+
+    rememberNotice(String(raw?.noticeTitle || ''), String(raw?.noticeText || ''))
+    const notice = activeNotice()
+
     const next: SearchStatus = {
+      phase,
       active: Boolean(raw?.active),
       visible: Boolean(raw?.visible),
       playVisible: Boolean(raw?.playVisible),
@@ -374,6 +684,10 @@ async function tick(): Promise<void> {
       time: String(raw?.time || ''),
       delay: String(raw?.delay || ''),
       canCancel: Boolean(raw?.canCancel),
+      acceptAccepted: Boolean(raw?.acceptAccepted),
+      acceptMode: String(raw?.acceptMode || ''),
+      noticeTitle: notice.title,
+      noticeText: notice.text,
       modes: normalizeModes(raw?.modes),
       insetLeft: Math.max(0, Math.round(Number(raw?.insetLeft) || 24)),
       updatedAt: Date.now()
@@ -425,6 +739,7 @@ export async function startGameSearch(): Promise<boolean> {
   if (!wc || wc.isDestroyed()) return false
 
   try {
+    clearStickyNotice()
     if (!wc.getURL().includes('/game-search')) {
       await gameSetLobbyTab('play')
     }
@@ -453,6 +768,61 @@ export async function toggleSearchMode(mode: string): Promise<boolean> {
     console.warn('[search] toggle mode failed', err)
     return false
   }
+}
+
+export async function acceptGameSearch(): Promise<boolean> {
+  const wc = getGameView()?.webContents
+  if (!wc || wc.isDestroyed()) return false
+  try {
+    const ok = Boolean(await wc.executeJavaScript(ACCEPT_GAME_JS, true))
+    setTimeout(() => refreshSearchStatus(), 200)
+    setTimeout(() => refreshSearchStatus(), 800)
+    refreshSearchStatus()
+    return ok
+  } catch (err) {
+    console.warn('[search] accept failed', err)
+    return false
+  }
+}
+
+export async function returnToGame(): Promise<boolean> {
+  const wc = getGameView()?.webContents
+  if (!wc || wc.isDestroyed()) return false
+  try {
+    const ok = Boolean(await wc.executeJavaScript(RETURN_TO_GAME_JS, true))
+    refreshSearchStatus()
+    return ok
+  } catch (err) {
+    console.warn('[search] return to game failed', err)
+    return false
+  }
+}
+
+export async function quitActiveGame(): Promise<boolean> {
+  const wc = getGameView()?.webContents
+  if (!wc || wc.isDestroyed()) return false
+  try {
+    const ok = Boolean(await wc.executeJavaScript(QUIT_GAME_JS, true))
+    setTimeout(() => refreshSearchStatus(), 300)
+    setTimeout(() => refreshSearchStatus(), 1200)
+    refreshSearchStatus()
+    return ok
+  } catch (err) {
+    console.warn('[search] quit game failed', err)
+    return false
+  }
+}
+
+export function dismissSearchNotice(): void {
+  clearStickyNotice()
+  if (!running) {
+    last = { ...last, noticeTitle: '', noticeText: '', updatedAt: Date.now() }
+    emit()
+    return
+  }
+  last = { ...last, noticeTitle: '', noticeText: '', updatedAt: Date.now() }
+  emit()
+  onChange?.(last)
 }
 
 function bindNavigationRefresh(): void {
@@ -485,6 +855,7 @@ export function stopSearchStatusPolling(): void {
     clearInterval(timer)
     timer = null
   }
+  clearStickyNotice()
   last = emptySearch()
   emit()
   onChange?.(last)

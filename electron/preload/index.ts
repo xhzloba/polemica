@@ -47,6 +47,10 @@ const api: PolemicaApi = {
   cancelGameSearch: () => ipcRenderer.invoke(IpcChannels.SEARCH_CANCEL),
   startGameSearch: () => ipcRenderer.invoke(IpcChannels.SEARCH_START),
   toggleSearchMode: (mode: string) => ipcRenderer.invoke(IpcChannels.SEARCH_TOGGLE_MODE, mode),
+  acceptGameSearch: () => ipcRenderer.invoke(IpcChannels.SEARCH_ACCEPT),
+  returnToGame: () => ipcRenderer.invoke(IpcChannels.SEARCH_RETURN_GAME),
+  quitActiveGame: () => ipcRenderer.invoke(IpcChannels.SEARCH_QUIT_GAME),
+  dismissSearchNotice: () => ipcRenderer.invoke(IpcChannels.SEARCH_DISMISS_NOTICE),
   openProfileMenu: (anchor?: { x: number; y: number; width?: number; height?: number }) =>
     ipcRenderer.invoke(IpcChannels.PROFILE_MENU, anchor),
   setChromeOverlay: (open: boolean) => ipcRenderer.invoke(IpcChannels.CHROME_OVERLAY, open)
