@@ -1,13 +1,30 @@
+import { useLayoutEffect, useRef, useState } from 'react'
 import { LoaderCircle, X } from 'lucide-react'
 import type { SearchStatus } from '@shared/ipc'
 import './SearchBanner.css'
 
 interface Props {
   search: SearchStatus
+  /** Game WebContentsView X in window coords — keep in sync with menuOpen. */
+  viewX?: number
+  menuOpen?: boolean
 }
 
-export function SearchBanner({ search }: Props) {
+export function SearchBanner({ search, viewX = 0, menuOpen = false }: Props) {
   const hasNotice = Boolean(search.noticeTitle || search.noticeText)
+  const rootRef = useRef<HTMLDivElement>(null)
+  const [padLeft, setPadLeft] = useState(Math.max(0, search.insetLeft || 24))
+
+  // Align banner content to lobby: windowX(lobby) = viewX + insetLeft.
+  // Compensates chrome-stack shift when the side menu grid toggles.
+  useLayoutEffect(() => {
+    const el = rootRef.current
+    if (!el) return
+    const target = Math.max(0, viewX) + Math.max(0, search.insetLeft || 0)
+    const left = el.getBoundingClientRect().left
+    setPadLeft(Math.max(0, Math.round(target - left)))
+  }, [viewX, search.insetLeft, menuOpen, search.phase, search.visible, search.playVisible, hasNotice])
+
   if (!search.visible && !search.playVisible && !hasNotice) return null
 
   const phase = search.phase
@@ -17,11 +34,12 @@ export function SearchBanner({ search }: Props) {
 
   return (
     <div
+      ref={rootRef}
       className="search-banner search-banner--play"
       role={search.visible || hasNotice ? 'status' : 'region'}
       aria-label="Поиск игры"
       aria-live={search.visible || hasNotice ? 'polite' : undefined}
-      style={{ paddingLeft: Math.max(0, search.insetLeft || 24) }}
+      style={{ paddingLeft: padLeft }}
     >
       <div className="search-banner__card search-banner__card--play">
         {showModes ? (

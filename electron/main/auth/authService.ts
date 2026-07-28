@@ -30,6 +30,7 @@ import {
 import {
   getSearchStatus,
   onSearchStatusChange,
+  refreshSearchStatus,
   startSearchStatusPolling,
   stopSearchStatusPolling
 } from '../search/searchStatusService'
@@ -110,14 +111,26 @@ function layoutForPhase(win: BrowserWindow): void {
 }
 
 /** Open left side menu — pushes game, repositions traffic lights into the card. */
-export function setChromeOverlay(open: boolean): void {
+export function setChromeOverlay(open: boolean): { viewX: number } {
   chromeOverlay = open && phase === 'app'
-  if (!hostWindow || hostWindow.isDestroyed()) return
+  if (!hostWindow || hostWindow.isDestroyed()) {
+    return { viewX: 0 }
+  }
 
   if (process.platform === 'darwin') {
     hostWindow.setWindowButtonPosition(chromeOverlay ? TRAFFIC_LIGHTS.menu : TRAFFIC_LIGHTS.default)
   }
   layoutForPhase(hostWindow)
+
+  const viewX = Math.max(0, Math.round(getGameView()?.getBounds().x ?? 0))
+
+  // Lobby inset reflows with the new game width — burst-refresh so chrome doesn't lag a full poll.
+  refreshSearchStatus()
+  for (const ms of [32, 80, 160, 280]) {
+    setTimeout(() => refreshSearchStatus(), ms)
+  }
+
+  return { viewX }
 }
 
 export function relayoutAuth(win: BrowserWindow): void {

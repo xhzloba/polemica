@@ -178,5 +178,5 @@ export interface PolemicaApi {
     width?: number
     height?: number
   }) => Promise<'profile' | 'settings' | 'logout' | null>
-  setChromeOverlay: (open: boolean) => Promise<void>
+  setChromeOverlay: (open: boolean) => Promise<{ viewX: number }>
 }

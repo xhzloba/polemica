@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { NavState, UserProfile } from '@shared/ipc'
 import { BAN_BANNER_HEIGHT, CHROME_HEIGHT, SEARCH_PLAY_BANNER_HEIGHT } from '@shared/config'
 import { NavControls } from '../NavControls/NavControls'
@@ -25,13 +25,29 @@ export function ChromeBar({ nav, profile, onLogout }: Props) {
   const ban = useBanStatus()
   const search = useSearchStatus()
   const [menuOpen, setMenuOpen] = useState(false)
+  /** Game view X — updated in the same tick as menuOpen so search align doesn't jump. */
+  const [viewX, setViewX] = useState(0)
+  const [menuBusy, setMenuBusy] = useState(false)
+
+  const setMenu = useCallback(async (open: boolean) => {
+    if (!window.polemica || menuBusy) return
+    if (open === menuOpen) return
+    setMenuBusy(true)
+    try {
+      // Layout game view first, then flip chrome grid in the same React update as viewX.
+      const res = await window.polemica.setChromeOverlay(open)
+      setViewX(Math.max(0, Math.round(res?.viewX ?? 0)))
+      setMenuOpen(open)
+    } finally {
+      setMenuBusy(false)
+    }
+  }, [menuBusy, menuOpen])
 
   useEffect(() => {
-    void window.polemica.setChromeOverlay(menuOpen)
     return () => {
-      void window.polemica.setChromeOverlay(false)
+      void window.polemica?.setChromeOverlay(false)
     }
-  }, [menuOpen])
+  }, [])
 
   const hasNotice = Boolean(search.noticeTitle || search.noticeText)
   const bannerVisible = ban.visible || search.visible || search.playVisible || hasNotice
@@ -58,13 +74,13 @@ export function ChromeBar({ nav, profile, onLogout }: Props) {
       <SideMenuPanel
         currentUrl={nav.url}
         open={menuOpen}
-        onOpenChange={setMenuOpen}
+        onOpenChange={(open) => void setMenu(open)}
       />
       <div className="chrome-stack">
         <header className="chrome" data-platform={window.polemica ? 'electron' : 'web'}>
           <div className="chrome__drag" />
           <div className="chrome__left">
-            <SideMenuToggle open={menuOpen} onToggle={() => setMenuOpen((v) => !v)} />
+            <SideMenuToggle open={menuOpen} onToggle={() => void setMenu(!menuOpen)} />
             <NavControls
               canGoBack={nav.canGoBack}
               canGoForward={nav.canGoForward}
@@ -78,7 +94,11 @@ export function ChromeBar({ nav, profile, onLogout }: Props) {
             <WindowControls />
           </div>
         </header>
-        {ban.visible ? <BanBanner ban={ban} /> : <SearchBanner search={search} />}
+        {ban.visible ? (
+          <BanBanner ban={ban} />
+        ) : (
+          <SearchBanner search={search} viewX={viewX} menuOpen={menuOpen} />
+        )}
       </div>
     </div>
   )

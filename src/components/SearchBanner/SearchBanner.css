@@ -11,13 +11,16 @@
 }
 
 .search-banner--play {
-  height: 96px;
-  flex: 0 0 96px;
+  height: 136px;
+  flex: 0 0 136px;
   /* padding-left set inline from measured lobby table inset */
-  padding-top: 16px;
+  padding-top: 14px;
   padding-right: 16px;
-  padding-bottom: 10px;
+  padding-bottom: 14px;
   padding-left: 24px;
+  align-items: center;
+  box-sizing: border-box;
+  overflow: visible;
 }
 
 body.platform-mac .search-banner:not(.search-banner--play) {
@@ -37,7 +40,7 @@ body.platform-linux .search-banner:not(.search-banner--play) {
 
 .chrome-root--menu .search-banner--play {
   padding-right: 12px;
-  padding-bottom: 0;
+  padding-bottom: 14px;
 }
 
 .search-banner__card {
@@ -91,7 +94,7 @@ body.platform-linux .search-banner:not(.search-banner--play) {
   align-items: stretch;
   justify-content: flex-start;
   flex-wrap: nowrap;
-  gap: 8px;
+  gap: 10px;
   width: auto;
   max-width: none;
 }
@@ -104,7 +107,7 @@ body.platform-linux .search-banner:not(.search-banner--play) {
   gap: 10px 12px;
   flex: 0 0 auto;
   width: auto;
-  min-height: 40px;
+  min-height: 52px;
   padding: 0;
   box-sizing: border-box;
   border: 0;
@@ -162,13 +165,13 @@ body.platform-linux .search-banner:not(.search-banner--play) {
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  gap: 4px;
-  width: 88px;
-  min-width: 88px;
+  gap: 6px;
+  width: 114px;
+  min-width: 114px;
   margin: 0;
-  padding: 8px 10px;
+  padding: 12px 14px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+  border-radius: 12px;
   background: transparent;
   color: rgba(232, 238, 246, 0.88);
   cursor: pointer;
@@ -197,9 +200,9 @@ body.platform-linux .search-banner:not(.search-banner--play) {
 }
 
 .search-banner__mode-check {
-  width: 12px;
-  height: 12px;
-  border-radius: 3px;
+  width: 15px;
+  height: 15px;
+  border-radius: 4px;
   border: 1.5px solid rgba(255, 255, 255, 0.28);
   background: transparent;
   box-sizing: border-box;
@@ -212,14 +215,14 @@ body.platform-linux .search-banner:not(.search-banner--play) {
 }
 
 .search-banner__mode-name {
-  font-size: 12.5px;
+  font-size: 14.5px;
   font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.15;
 }
 
 .search-banner__mode-count {
-  font-size: 12px;
+  font-size: 13.5px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
   color: rgba(232, 238, 246, 0.5);
@@ -236,12 +239,12 @@ body.platform-linux .search-banner:not(.search-banner--play) {
   justify-content: center;
   align-self: center;
   flex: 0 0 auto;
-  min-width: 112px;
-  height: 40px;
+  min-width: 140px;
+  height: 52px;
   margin: 0;
-  padding: 0 20px;
+  padding: 0 24px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 12px;
   background: #c8f531;
   color: #0b0f14;
   font-family:
@@ -252,7 +255,7 @@ body.platform-linux .search-banner:not(.search-banner--play) {
     Helvetica,
     Arial,
     sans-serif;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 650;
   letter-spacing: -0.02em;
   cursor: pointer;
@@ -284,8 +287,8 @@ body.platform-linux .search-banner:not(.search-banner--play) {
   gap: 12px;
   align-self: center;
   flex: 0 0 auto;
-  min-width: 168px;
-  min-height: 40px;
+  min-width: 180px;
+  min-height: 52px;
   margin: 0;
   padding: 8px 16px;
   border: 0;
@@ -361,12 +364,12 @@ body.platform-linux .search-banner:not(.search-banner--play) {
   justify-content: center;
   align-self: center;
   flex: 0 0 auto;
-  min-width: 112px;
-  height: 40px;
+  min-width: 140px;
+  height: 52px;
   margin: 0;
-  padding: 0 16px;
+  padding: 0 20px;
   border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 10px;
+  border-radius: 12px;
   background: transparent;
   color: rgba(232, 238, 246, 0.88);
   font-family:
@@ -377,7 +380,7 @@ body.platform-linux .search-banner:not(.search-banner--play) {
     Helvetica,
     Arial,
     sans-serif;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   letter-spacing: -0.02em;
   cursor: pointer;
