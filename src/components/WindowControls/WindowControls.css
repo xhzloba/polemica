@@ -1,0 +1,37 @@
+.win-controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  -webkit-app-region: no-drag;
+}
+
+.win-controls--mac {
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.win-controls__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 30px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--chrome-muted, #8b97a8);
+  cursor: pointer;
+}
+
+.win-controls__btn:hover {
+  background: var(--chrome-hover, rgba(255, 255, 255, 0.08));
+  color: var(--chrome-fg, #e8eef6);
+}
+
+.win-controls__btn--close:hover {
+  background: #e81123;
+  color: #fff;
+}

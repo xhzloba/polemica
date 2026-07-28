@@ -1,0 +1,296 @@
+/**
+ * Preload for the embedded Polemica WebContentsView (isolated world).
+ * Runs before page scripts — closest thing to Tampermonkey @run-at document-start.
+ */
+
+const CLIENT_CSS = `
+:root {
+  --polemica-client-bg: #0b0f14;
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: #0b0f14 !important;
+  background-color: #0b0f14 !important;
+  background-image: none !important;
+}
+
+html body,
+html body #__nuxt,
+html body #__nuxt > div,
+html body #app,
+html body .p-page,
+html body .p-main,
+html body .layout,
+html body .page,
+html body [class*="page"],
+html body [class*="layout"],
+html body [class*="wrapper"],
+html body [class*="container"] {
+  background-color: #0b0f14 !important;
+  background-image: none !important;
+}
+
+footer.p-footer,
+.p-footer,
+.p-play__right-banners,
+.p-play__banners-slider,
+.p-play-new-banners,
+.p-play-new-banners__iframe,
+.p-play__right-pagination,
+.p-header__userCont-desktop,
+.p-header__userCont,
+.p-header__menu,
+.p-header__menu-button,
+.p-header__logo,
+.p-header__logo-image {
+  display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
+  max-height: 0 !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  pointer-events: none !important;
+  flex: 0 0 0 !important;
+}
+
+html,
+body,
+#__nuxt,
+#app {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+}
+
+.p-play__profile-container,
+.p-play__profile {
+  display: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
+.p-play,
+.p-play.p-play--cultural {
+  display: grid !important;
+  grid-template: "center" / minmax(0, 1fr) !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-areas: "center" !important;
+  gap: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding-left: 1.5rem !important;
+  padding-right: 1.5rem !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+}
+
+.p-play__center {
+  grid-area: center !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+}
+
+.p-play__lobby,
+.p-play__lobby-table {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.p-play__lobby,
+.p-play__lobby-table,
+.p-play__lobby-table-row,
+.p-play__lobby-table-header-row,
+.p-play__lobby-table-cell,
+.p-play__lobby-table-delimiter,
+.p-play__lobby .pages,
+.p-play__lobby .pagination__container {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+.p-play__lobby {
+  border-color: transparent !important;
+}
+
+.p-play__lobby-search {
+  display: flex !important;
+  align-items: center !important;
+  gap: 1rem !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.p-play__lobby-search-label {
+  flex: 1 1 0% !important;
+  width: auto !important;
+  max-width: none !important;
+  min-width: 0 !important;
+}
+
+.p-play__lobby-search-input {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.p-play__lobby-search,
+.p-play__lobby-search-label,
+.p-play__lobby-search-input,
+.p-play__lobby-search-button {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.p-play__lobby-search-button ~ .p-play__lobby-search-button {
+  display: none !important;
+}
+
+.p-play__lobby-table-row,
+.p-play__lobby-table-header-row {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.85fr) minmax(0, 1.7fr) minmax(0, 1.65fr) minmax(0, 1fr) !important;
+  overflow: visible !important;
+}
+
+.p-play__lobby-table-cell,
+.p-search-lobby-name,
+.p-search-lobby-type,
+.p-search-lobby-status {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.p-search-lobby-players,
+.p-play__lobby-table-cell-players,
+.p-play__participants {
+  overflow: visible !important;
+  max-width: none !important;
+  text-overflow: unset !important;
+}
+
+.p-play__participants {
+  z-index: 50 !important;
+}
+
+.p-play__tabs,
+.p-play__tab {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  height: 0 !important;
+  max-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+`
+
+const HIDE_SELECTORS = [
+  'footer.p-footer',
+  '.p-footer',
+  '.p-play__right-banners',
+  '.p-play__banners-slider',
+  '.p-play-new-banners',
+  '.p-play__profile-container',
+  '.p-play__profile'
+].join(', ')
+
+function ensureStyle(): void {
+  const root = document.head || document.documentElement
+  if (!root) return
+
+  let el = document.getElementById('polemica-client-css') as HTMLStyleElement | null
+  if (!el) {
+    el = document.createElement('style')
+    el.id = 'polemica-client-css'
+    root.appendChild(el)
+  }
+  if (el.textContent !== CLIENT_CSS) {
+    el.textContent = CLIENT_CSS
+  }
+
+  document.documentElement.style.setProperty('background-color', '#0b0f14', 'important')
+  if (document.body) {
+    document.body.style.setProperty('background-color', '#0b0f14', 'important')
+    document.body.style.setProperty('background-image', 'none', 'important')
+  }
+}
+
+function shouldHide(node: Node): boolean {
+  if (!(node instanceof HTMLElement)) return false
+  return (
+    node.matches(HIDE_SELECTORS) ||
+    !!node.querySelector?.(HIDE_SELECTORS)
+  )
+}
+
+function hideChromeNoise(): void {
+  ensureStyle()
+  document.querySelectorAll(HIDE_SELECTORS).forEach((node) => {
+    if (!(node instanceof HTMLElement)) return
+    if (node.getAttribute('data-polemica-hidden')) return
+    node.style.setProperty('display', 'none', 'important')
+    node.setAttribute('hidden', '')
+    node.setAttribute('data-polemica-hidden', '1')
+  })
+}
+
+function start(): void {
+  hideChromeNoise()
+
+  new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      for (const node of Array.from(mutation.addedNodes)) {
+        if (node instanceof HTMLElement && (node.id === 'polemica-client-css' || node.tagName === 'STYLE')) {
+          continue
+        }
+        if (shouldHide(node)) {
+          hideChromeNoise()
+          return
+        }
+        if (node instanceof HTMLElement) ensureStyle()
+      }
+    }
+  }).observe(document.documentElement, { childList: true, subtree: true })
+}
+
+if (document.documentElement) {
+  start()
+} else {
+  window.addEventListener('DOMContentLoaded', start, { once: true })
+}
