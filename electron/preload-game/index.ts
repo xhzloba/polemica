@@ -3,6 +3,9 @@
  * Runs before page scripts — closest thing to Tampermonkey @run-at document-start.
  */
 
+import { GAME_ROOM_CSS } from '@shared/gameRoomCss'
+import { LOBBY_UI_CSS } from '@shared/lobbyUiCss'
+
 const CLIENT_CSS = `
 :root {
   --polemica-client-bg: #0b0f14;
@@ -118,9 +121,6 @@ body,
 
 .p-play__lobby,
 .p-play__lobby-table,
-.p-play__lobby-table-row,
-.p-play__lobby-table-header-row,
-.p-play__lobby-table-cell,
 .p-play__lobby-table-delimiter,
 .p-play__lobby .pages,
 .p-play__lobby .pagination__container {
@@ -218,7 +218,7 @@ body,
   padding: 0 !important;
   overflow: hidden !important;
 }
-`
+` + LOBBY_UI_CSS + GAME_ROOM_CSS
 
 const HIDE_SELECTORS = [
   'footer.p-footer',

@@ -135,6 +135,14 @@ async function checkLoggedInHeader(wc: WebContents): Promise<void> {
   if (!wc.getURL().includes('polemicagame.com')) return
 
   try {
+    const { pathname } = new URL(wc.getURL())
+    const path = pathname.replace(/\/$/, '') || '/'
+    // In-room `/game` (and similar) drop the lobby header profile — not a logout.
+    // Only probe pages that always render `.p-header__userCont` when signed in.
+    const canProbeHeader =
+      path === '/game-search' || path === '/' || path.startsWith('/game-search/')
+    if (!canProbeHeader) return
+
     const loggedIn = (await wc.executeJavaScript(
       `Boolean(document.querySelector('.p-header__userCont-user-username')?.textContent?.trim())`,
       true

@@ -1,4 +1,6 @@
 import { APP_BG } from '@shared/config'
+import { GAME_ROOM_CSS } from '@shared/gameRoomCss'
+import { LOBBY_UI_CSS } from '@shared/lobbyUiCss'
 
 export interface InjectionStyle {
   id: string
@@ -167,9 +169,6 @@ body,
 
 .p-play__lobby,
 .p-play__lobby-table,
-.p-play__lobby-table-row,
-.p-play__lobby-table-header-row,
-.p-play__lobby-table-cell,
 .p-play__lobby-table-delimiter,
 .p-play__lobby .pages,
 .p-play__lobby .pagination__container {
@@ -271,6 +270,8 @@ body,
   padding: 0 !important;
   overflow: hidden !important;
 }
+
+${LOBBY_UI_CSS}
 `
 
 /** Match Electron chrome background so the site doesn't flash a different color. */
@@ -309,6 +310,11 @@ export const INJECTION_STYLES: InjectionStyle[] = [
   {
     id: 'app-theme-bg',
     css: APP_THEME_CSS
+  },
+  {
+    id: 'game-room-bg',
+    match: ['/game'],
+    css: GAME_ROOM_CSS
   },
   {
     id: 'hide-footer',
