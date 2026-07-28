@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { BookOpen, Crown, Menu, Plus, Radio, Search, Swords, Trophy, X } from 'lucide-react'
+import { BookOpen, Crown, LoaderCircle, Menu, Plus, Radio, Search, Swords, Trophy, X } from 'lucide-react'
 import { GAME_ORIGIN } from '@shared/config'
 import { useLiveStats } from '../../hooks/useLiveStats'
 import './SideMenu.css'
@@ -61,10 +61,10 @@ export function SideMenuPanel({ currentUrl, open, onOpenChange }: Props) {
   const live = useLiveStats()
   const [query, setQuery] = useState('')
   const [lobbyTab, setLobbyTab] = useState<'play' | 'watch'>('play')
+  const [tabBusy, setTabBusy] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const activePath = pathFromUrl(currentUrl)
-  const onGameSearch =
-    activePath === '/game-search' || activePath === '/' || activePath.startsWith('/game')
+  const onGameSearch = activePath === '/game-search' || activePath === '/'
 
   useEffect(() => {
     if (!onGameSearch) setLobbyTab('play')
@@ -93,6 +93,14 @@ export function SideMenuPanel({ currentUrl, open, onOpenChange }: Props) {
     }, 160)
   }
 
+  const switchLobbyTab = (next: 'play' | 'watch'): void => {
+    if (tabBusy) return
+    if (onGameSearch && lobbyTab === next) return
+    setLobbyTab(next)
+    setTabBusy(true)
+    void window.polemica.setLobbyTab(next).finally(() => setTabBusy(false))
+  }
+
   if (!open) return null
 
   const onItem = (item: MenuItem): void => {
@@ -101,13 +109,11 @@ export function SideMenuPanel({ currentUrl, open, onOpenChange }: Props) {
       return
     }
     if (item.action === 'play') {
-      setLobbyTab('play')
-      void window.polemica.setLobbyTab('play')
+      switchLobbyTab('play')
       return
     }
     if (item.action === 'streams') {
-      setLobbyTab('watch')
-      void window.polemica.setLobbyTab('watch')
+      switchLobbyTab('watch')
       return
     }
     if (item.path) void window.polemica.goto(`${GAME_ORIGIN}${item.path}`)
@@ -146,6 +152,10 @@ export function SideMenuPanel({ currentUrl, open, onOpenChange }: Props) {
           }
 
           const showLive = Boolean(item.liveDot && live.streams > 0)
+          const itemBusy =
+            tabBusy &&
+            ((item.action === 'play' && lobbyTab === 'play') ||
+              (item.action === 'streams' && lobbyTab === 'watch'))
 
           return (
             <button
@@ -155,11 +165,13 @@ export function SideMenuPanel({ currentUrl, open, onOpenChange }: Props) {
                 'side-menu__item',
                 active && 'side-menu__item--active',
                 item.pro && 'side-menu__item--pro',
-                item.accent && 'side-menu__item--accent'
+                item.accent && 'side-menu__item--accent',
+                itemBusy && 'side-menu__item--busy'
               ]
                 .filter(Boolean)
                 .join(' ')}
               onClick={() => onItem(item)}
+              disabled={tabBusy && (item.action === 'play' || item.action === 'streams')}
               title={
                 item.action === 'streams' && live.streams > 0
                   ? `${live.streams} трансляц.`
@@ -167,8 +179,14 @@ export function SideMenuPanel({ currentUrl, open, onOpenChange }: Props) {
               }
             >
               <span className="side-menu__icon" aria-hidden>
-                {showLive ? <span className="side-menu__live-dot" /> : null}
-                <Icon size={18} strokeWidth={2} />
+                {itemBusy ? (
+                  <LoaderCircle size={18} strokeWidth={2.2} className="side-menu__spinner" />
+                ) : (
+                  <>
+                    {showLive ? <span className="side-menu__live-dot" /> : null}
+                    <Icon size={18} strokeWidth={2} />
+                  </>
+                )}
               </span>
               <span className="side-menu__label">{item.label}</span>
             </button>

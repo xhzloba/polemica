@@ -548,44 +548,183 @@ export async function gameSetLobbySearch(query: string): Promise<boolean> {
   return false
 }
 
-/** Switch site lobby tabs: Играть | Смотреть (streams). */
+/**
+ * Switch site lobby tabs: Играть (lobby) | Смотреть (stream).
+ * Site disables tabs while subscribeLobbyList runs — button.click() is a no-op then.
+ * Parent GameSearch.lobbyTab is the source of truth (?tab=stream on cold load).
+ * Shows a solid APP_BG spinner overlay until the tab is active and list fetch finishes.
+ */
 export async function gameSetLobbyTab(tab: 'play' | 'watch'): Promise<boolean> {
   const wc = gameView?.webContents
   if (!wc || wc.isDestroyed()) return false
 
   const needle = tab === 'watch' ? 'Смотреть' : 'Играть'
+  const tabValue = tab === 'watch' ? 'stream' : 'lobby'
+  const targetUrl = `${GAME_START_URL}?tab=${tabValue}`
 
-  if (!wc.getURL().includes('/game-search')) {
-    await wc.loadURL(GAME_START_URL)
+  const showLoader = async (): Promise<void> => {
     try {
-      await waitForGameLoad(15_000)
-    } catch {
-      /* still try click */
-    }
-  }
-
-  for (let i = 0; i < 16; i++) {
-    try {
-      const ok = Boolean(
-        await wc.executeJavaScript(
-          `(() => {
-            const tabs = Array.from(document.querySelectorAll('.p-play__tab'));
-            const target = tabs.find((el) => (el.textContent || '').includes(${JSON.stringify(needle)}));
-            if (!target) return false;
-            if (target.classList.contains('p-play__tab--active')) return true;
-            target.click();
-            return true;
-          })()`,
-          true
-        )
+      await wc.executeJavaScript(
+        `(() => {
+          if (document.getElementById('polemica-tab-loader')) return;
+          const style = document.createElement('style');
+          style.id = 'polemica-tab-loader-style';
+          style.textContent = \`
+            #polemica-tab-loader {
+              position: fixed;
+              inset: 0;
+              z-index: 2147483646;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              background: ${APP_BG};
+              pointer-events: all;
+            }
+            #polemica-tab-loader__spin {
+              width: 36px;
+              height: 36px;
+              border-radius: 50%;
+              border: 2.5px solid rgba(255, 255, 255, 0.12);
+              border-top-color: #c8f531;
+              animation: polemica-tab-spin 0.7s linear infinite;
+            }
+            @keyframes polemica-tab-spin {
+              to { transform: rotate(360deg); }
+            }
+          \`;
+          const el = document.createElement('div');
+          el.id = 'polemica-tab-loader';
+          el.setAttribute('aria-busy', 'true');
+          el.innerHTML = '<div id="polemica-tab-loader__spin" aria-hidden="true"></div>';
+          const root = document.documentElement;
+          if (!document.getElementById('polemica-tab-loader-style')) root.appendChild(style);
+          (document.body || root).appendChild(el);
+        })()`,
+        true
       )
-      if (ok) return true
     } catch {
-      /* retry */
+      /* ignore */
     }
-    await new Promise((r) => setTimeout(r, 250))
   }
-  return false
+
+  const hideLoader = async (): Promise<void> => {
+    try {
+      await wc.executeJavaScript(
+        `(() => {
+          document.getElementById('polemica-tab-loader')?.remove();
+          document.getElementById('polemica-tab-loader-style')?.remove();
+        })()`,
+        true
+      )
+    } catch {
+      /* ignore */
+    }
+  }
+
+  await showLoader()
+
+  try {
+    if (!wc.getURL().includes('/game-search')) {
+      await wc.loadURL(targetUrl)
+      try {
+        await waitForGameLoad(15_000)
+      } catch {
+        /* still try activate */
+      }
+      await showLoader()
+    }
+
+    for (let i = 0; i < 40; i++) {
+      try {
+        const status = String(
+          await wc.executeJavaScript(
+            `(() => {
+              const needle = ${JSON.stringify(needle)};
+              const value = ${JSON.stringify(tabValue)};
+
+              const walk = (vm, fn) => {
+                if (!vm) return false;
+                if (fn(vm)) return true;
+                const kids = vm.$children || [];
+                for (let i = 0; i < kids.length; i++) {
+                  if (walk(kids[i], fn)) return true;
+                }
+                return false;
+              };
+
+              const app = document.querySelector('#app') && document.querySelector('#app').__vue__;
+
+              const activeTab = () => {
+                const tabs = Array.from(document.querySelectorAll('.p-play__tab'));
+                const el = tabs.find((t) => (t.textContent || '').includes(needle));
+                return Boolean(el && el.classList.contains('p-play__tab--active'));
+              };
+
+              const listBusy = () => {
+                let busy = false;
+                if (!app) return false;
+                walk(app, (vm) => {
+                  if (
+                    vm.$data &&
+                    Object.prototype.hasOwnProperty.call(vm.$data, 'tabsDisabled') &&
+                    Array.isArray(vm.tabs)
+                  ) {
+                    busy = Boolean(vm.tabsDisabled);
+                    return true;
+                  }
+                  return false;
+                });
+                return busy;
+              };
+
+              if (activeTab() && !listBusy()) return 'ok';
+
+              let touched = false;
+              if (app) {
+                walk(app, (vm) => {
+                  if (vm.$data && Object.prototype.hasOwnProperty.call(vm.$data, 'lobbyTab')) {
+                    if (vm.lobbyTab !== value) vm.lobbyTab = value;
+                    touched = true;
+                    return true;
+                  }
+                  return false;
+                });
+                if (!touched) {
+                  walk(app, (vm) => {
+                    if (typeof vm.setTab === 'function' && Array.isArray(vm.tabs)) {
+                      vm.setTab(value);
+                      touched = true;
+                      return true;
+                    }
+                    return false;
+                  });
+                }
+              }
+
+              if (activeTab() && !listBusy()) return 'ok';
+              if (listBusy()) return 'busy';
+              if (touched || activeTab()) return 'pending';
+
+              const tabs = Array.from(document.querySelectorAll('.p-play__tab'));
+              const target = tabs.find((el) => (el.textContent || '').includes(needle));
+              if (!target) return 'missing';
+              if (target.disabled || target.classList.contains('p-play__tab--disabled')) return 'busy';
+              target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+              return 'clicked';
+            })()`,
+            true
+          )
+        )
+        if (status === 'ok') return true
+      } catch {
+        /* retry */
+      }
+      await new Promise((r) => setTimeout(r, 200))
+    }
+    return false
+  } finally {
+    await hideLoader()
+  }
 }
 
 export function gameStop(): void {

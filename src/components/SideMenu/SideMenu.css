@@ -111,6 +111,26 @@
   background: rgba(255, 255, 255, 0.06);
 }
 
+.side-menu__item:disabled {
+  opacity: 0.72;
+  cursor: default;
+}
+
+.side-menu__item--busy {
+  pointer-events: none;
+}
+
+.side-menu__spinner {
+  color: #c8f531;
+  animation: side-menu-spin 0.7s linear infinite;
+}
+
+@keyframes side-menu-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .side-menu__item--active {
   background: rgba(200, 245, 49, 0.16);
   color: #c8f531;
