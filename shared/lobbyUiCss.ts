@@ -27,7 +27,7 @@ export const LOBBY_UI_CSS = `
   margin: 0;
   border-radius: 0;
   background: #121820;
-  border: 1px solid rgba(22, 119, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-top: 0;
   color: rgba(255, 255, 255, 0.55);
   font-size: 14px;
@@ -54,11 +54,11 @@ export const LOBBY_UI_CSS = `
   gap: 0 !important;
   padding: 0 !important;
   margin: 0 !important;
-  border: 1px solid rgba(22, 119, 255, 0.28) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: 8px !important;
   overflow: hidden !important;
   background: #121820 !important;
-  box-shadow: 0 0 0 1px rgba(22, 119, 255, 0.06) !important;
+  box-shadow: none !important;
 }
 
 .p-play__lobby-table-delimiter {
@@ -69,19 +69,19 @@ export const LOBBY_UI_CSS = `
   border: 0 !important;
 }
 
-/* —— header (antd Table thead) —— */
+/* —— header —— */
 .p-play__lobby-table-header-row {
   display: grid !important;
   grid-template-columns: minmax(0, 1.85fr) minmax(0, 1.7fr) minmax(0, 1.65fr) minmax(0, 1fr) !important;
   align-items: center !important;
   gap: 0 !important;
   width: 100% !important;
-  min-height: 46px !important;
+  min-height: 40px !important;
   margin: 0 !important;
   padding: 0 16px !important;
-  background: #152033 !important;
+  background: transparent !important;
   border: 0 !important;
-  border-bottom: 1px solid rgba(22, 119, 255, 0.28) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: 0 !important;
   box-shadow: none !important;
 }
@@ -89,20 +89,20 @@ export const LOBBY_UI_CSS = `
 .p-play__lobby-table-header-row .p-play__lobby-table-cell {
   display: flex !important;
   align-items: center !important;
-  padding: 12px 8px 12px 0 !important;
+  padding: 10px 8px 10px 0 !important;
   border: 0 !important;
   background: transparent !important;
-  color: #91caff !important;
-  font-size: 13px !important;
-  font-weight: 600 !important;
-  letter-spacing: 0 !important;
+  color: rgba(255, 255, 255, 0.45) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.02em !important;
   text-transform: none !important;
   line-height: 1.2 !important;
 }
 
 .p-play__lobby-table-cell-twitch {
   gap: 5px !important;
-  color: #91caff !important;
+  color: rgba(255, 255, 255, 0.45) !important;
 }
 
 .p-play__lobby-table-cell-twitch img {
@@ -124,7 +124,7 @@ export const LOBBY_UI_CSS = `
   box-sizing: border-box !important;
   background: #121820 !important;
   border: 0 !important;
-  border-bottom: 1px solid rgba(22, 119, 255, 0.12) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
   border-radius: 0 !important;
   box-shadow: none !important;
   cursor: pointer !important;
@@ -137,7 +137,7 @@ export const LOBBY_UI_CSS = `
 }
 
 .p-play__lobby-table-row:hover {
-  background: rgba(22, 119, 255, 0.2) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
 }
 
 /* live Twitch in room — same purple as expand player --live */
@@ -221,8 +221,8 @@ export const LOBBY_UI_CSS = `
 }
 
 .p-search-lobby-type {
-  color: #69b1ff !important;
-  font-weight: 600 !important;
+  color: rgba(255, 255, 255, 0.62) !important;
+  font-weight: 500 !important;
   font-size: 13px !important;
 }
 
@@ -356,8 +356,9 @@ export const LOBBY_UI_CSS = `
 .polemica-lobby-expand__list {
   display: grid !important;
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  gap: 6px !important;
-  padding: 0 12px 10px !important;
+  column-gap: 20px !important;
+  row-gap: 0 !important;
+  padding: 2px 14px 8px !important;
   max-height: min(42vh, 380px) !important;
   overflow: auto !important;
 }
@@ -365,55 +366,69 @@ export const LOBBY_UI_CSS = `
 .polemica-lobby-expand__player {
   display: flex !important;
   align-items: center !important;
-  gap: 8px !important;
+  gap: 10px !important;
   margin: 0 !important;
-  padding: 7px 8px !important;
+  padding: 7px 2px !important;
   min-width: 0 !important;
-  border-radius: 9px !important;
-  border: 1px solid rgba(255, 255, 255, 0.06) !important;
-  background: rgba(255, 255, 255, 0.03) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  background: transparent !important;
   box-sizing: border-box !important;
-  color: #f5f7f2 !important;
+  color: rgba(255, 255, 255, 0.88) !important;
   text-decoration: none !important;
-  transition: background 0.12s ease, border-color 0.12s ease !important;
+  transition: color 0.12s ease, opacity 0.12s ease !important;
 }
 
 .polemica-lobby-expand__player:hover {
-  background: rgba(22, 119, 255, 0.1) !important;
-  border-color: rgba(22, 119, 255, 0.35) !important;
+  background: transparent !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
   text-decoration: none !important;
-  color: #f5f7f2 !important;
+  color: #69b1ff !important;
+}
+
+.polemica-lobby-expand__player:hover .polemica-lobby-expand__name {
+  color: #69b1ff !important;
 }
 
 .polemica-lobby-expand__player--quit {
-  opacity: 0.45 !important;
+  opacity: 0.4 !important;
   background: transparent !important;
-  border-color: transparent !important;
+  border-color: rgba(255, 255, 255, 0.04) !important;
 }
 
 .polemica-lobby-expand__player--live {
-  background: rgba(145, 70, 255, 0.1) !important;
-  border-color: rgba(145, 70, 255, 0.32) !important;
+  background: transparent !important;
+  border-bottom-color: rgba(145, 70, 255, 0.22) !important;
 }
 
 .polemica-lobby-expand__player--live:hover {
-  background: rgba(145, 70, 255, 0.16) !important;
-  border-color: rgba(145, 70, 255, 0.45) !important;
+  background: transparent !important;
+  border-bottom-color: rgba(145, 70, 255, 0.35) !important;
+  color: #c4a0ff !important;
+}
+
+.polemica-lobby-expand__player--live:hover .polemica-lobby-expand__name {
+  color: #c4a0ff !important;
 }
 
 .polemica-lobby-expand__player--live .polemica-lobby-expand__avatar {
-  border-color: rgba(145, 70, 255, 0.55) !important;
-  box-shadow: 0 0 0 1.5px rgba(145, 70, 255, 0.18) !important;
+  border-color: rgba(145, 70, 255, 0.65) !important;
+  box-shadow: 0 0 0 1px rgba(145, 70, 255, 0.25) !important;
+}
+
+.polemica-lobby-expand__player--live .polemica-lobby-expand__name {
+  color: #d4b8ff !important;
 }
 
 .polemica-lobby-expand__avatar {
-  width: 28px !important;
-  height: 28px !important;
-  flex: 0 0 28px !important;
+  width: 26px !important;
+  height: 26px !important;
+  flex: 0 0 26px !important;
   border-radius: 50% !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
   object-fit: cover !important;
-  background: #1a2028 !important;
+  background: transparent !important;
 }
 
 .polemica-lobby-expand__avatar--empty {
@@ -439,11 +454,12 @@ export const LOBBY_UI_CSS = `
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   white-space: nowrap !important;
-  font-size: 12.5px !important;
-  font-weight: 650 !important;
-  letter-spacing: -0.015em !important;
-  line-height: 1.2 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.01em !important;
+  line-height: 1.25 !important;
   min-width: 0 !important;
+  color: inherit !important;
 }
 
 .polemica-lobby-expand__mark {
@@ -537,14 +553,14 @@ export const LOBBY_UI_CSS = `
 
 .polemica-lobby-expand__section {
   grid-column: 1 / -1 !important;
-  margin: 4px 0 0 !important;
-  padding: 6px 2px 2px !important;
-  color: rgba(232, 238, 246, 0.38) !important;
-  font-size: 10.5px !important;
-  font-weight: 650 !important;
-  letter-spacing: 0.05em !important;
-  text-transform: uppercase !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+  margin: 8px 0 0 !important;
+  padding: 8px 2px 4px !important;
+  color: rgba(255, 255, 255, 0.4) !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.02em !important;
+  text-transform: none !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
 
 .polemica-lobby-expand__empty {
