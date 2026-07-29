@@ -24,7 +24,7 @@ export const LOBBY_UI_CSS = `
 .p-play__lobby-table {
   display: flex !important;
   flex-direction: column !important;
-  gap: 6px !important;
+  gap: 10px !important;
   padding: 0 !important;
   margin: 0 !important;
 }
@@ -44,9 +44,9 @@ export const LOBBY_UI_CSS = `
   align-items: center !important;
   gap: 0 !important;
   width: 100% !important;
-  min-height: 28px !important;
-  margin: 0 0 2px !important;
-  padding: 0 14px !important;
+  min-height: 32px !important;
+  margin: 0 0 4px !important;
+  padding: 0 16px !important;
   background: transparent !important;
   border: 0 !important;
   border-radius: 0 !important;
@@ -60,7 +60,7 @@ export const LOBBY_UI_CSS = `
   border: 0 !important;
   background: transparent !important;
   color: rgba(232, 238, 246, 0.4) !important;
-  font-size: 11px !important;
+  font-size: 14.5px !important;
   font-weight: 560 !important;
   letter-spacing: 0.04em !important;
   text-transform: uppercase !important;
@@ -85,13 +85,13 @@ export const LOBBY_UI_CSS = `
   align-items: center !important;
   gap: 0 !important;
   width: 100% !important;
-  min-height: 52px !important;
-  margin: 0 !important;
-  padding: 0 14px !important;
+  min-height: 72px !important;
+  margin: 0 0 8px !important;
+  padding: 0 16px !important;
   box-sizing: border-box !important;
   background: #101418 !important;
   border: 1px solid rgba(255, 255, 255, 0.09) !important;
-  border-radius: 12px !important;
+  border-radius: 14px !important;
   box-shadow: none !important;
   cursor: pointer !important;
   transition:
@@ -134,12 +134,12 @@ export const LOBBY_UI_CSS = `
   display: flex !important;
   align-items: center !important;
   min-width: 0 !important;
-  padding: 12px 8px 12px 0 !important;
+  padding: 14px 10px 14px 0 !important;
   border: 0 !important;
   border-bottom: 0 !important;
   background: transparent !important;
   color: rgba(245, 247, 250, 0.92) !important;
-  font-size: 13.5px !important;
+  font-size: 18px !important;
   font-weight: 400 !important;
   line-height: 1.25 !important;
 }
@@ -184,12 +184,12 @@ export const LOBBY_UI_CSS = `
 }
 
 .p-play__lobby-table-avatars img {
-  width: 22px !important;
-  height: 22px !important;
+  width: 38px !important;
+  height: 38px !important;
   border-radius: 50% !important;
-  border: 1.5px solid #0b0f14 !important;
+  border: 2px solid #0b0f14 !important;
   object-fit: cover !important;
-  margin-left: -6px !important;
+  margin-left: -10px !important;
   background: #1a2028 !important;
 }
 
@@ -204,7 +204,7 @@ export const LOBBY_UI_CSS = `
 .p-search-lobby-status {
   gap: 6px !important;
   color: rgba(232, 238, 246, 0.72) !important;
-  font-size: 12.5px !important;
+  font-size: 15.5px !important;
   font-weight: 500 !important;
 }
 
@@ -273,14 +273,14 @@ export const LOBBY_UI_CSS = `
 }
 
 .pagination__page {
-  min-width: 32px !important;
-  height: 32px !important;
-  padding: 0 10px !important;
-  border-radius: 9px !important;
+  min-width: 36px !important;
+  height: 36px !important;
+  padding: 0 12px !important;
+  border-radius: 10px !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   background: #101418 !important;
   color: rgba(232, 238, 246, 0.72) !important;
-  font-size: 13px !important;
+  font-size: 16px !important;
   font-weight: 500 !important;
   cursor: pointer !important;
   display: inline-flex !important;
