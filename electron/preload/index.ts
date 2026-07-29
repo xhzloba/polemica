@@ -51,6 +51,7 @@ const api: PolemicaApi = {
   toggleSearchMode: (mode: string) => ipcRenderer.invoke(IpcChannels.SEARCH_TOGGLE_MODE, mode),
   acceptGameSearch: () => ipcRenderer.invoke(IpcChannels.SEARCH_ACCEPT),
   playAcceptReminderSound: () => ipcRenderer.invoke(IpcChannels.SEARCH_PLAY_ACCEPT_SOUND),
+  focusWindow: () => ipcRenderer.invoke(IpcChannels.WINDOW_FOCUS),
   returnToGame: () => ipcRenderer.invoke(IpcChannels.SEARCH_RETURN_GAME),
   quitActiveGame: () => ipcRenderer.invoke(IpcChannels.SEARCH_QUIT_GAME),
   dismissSearchNotice: () => ipcRenderer.invoke(IpcChannels.SEARCH_DISMISS_NOTICE),

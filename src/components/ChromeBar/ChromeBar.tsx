@@ -36,7 +36,7 @@ export function ChromeBar({ nav, profile, onLogout }: Props) {
   const live = useLiveStats()
   const ban = useBanStatus()
   const search = useSearchStatus()
-  const [overlay, setOverlay] = useState<OverlayMode>(null)
+  const [overlay, setOverlay] = useState<OverlayMode>('menu')
   const [busy, setBusy] = useState(false)
   const [lobbyInset, setLobbyInset] = useState(24)
 
@@ -48,6 +48,11 @@ export function ChromeBar({ nav, profile, onLogout }: Props) {
     void import('../../lib/clientPrefsCache').then(({ loadClientPrefs }) => {
       void loadClientPrefs()
     })
+  }, [])
+
+  // Default: side menu open — sync Electron game inset once chrome is ready.
+  useEffect(() => {
+    window.polemica?.setChromeOverlay(true)
   }, [])
 
   const applyOverlay = useCallback((next: OverlayMode) => {

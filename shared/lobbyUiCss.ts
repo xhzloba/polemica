@@ -332,7 +332,8 @@ export const LOBBY_UI_CSS = `
   display: flex !important;
   flex-direction: column !important;
   gap: 2px !important;
-  max-height: 280px !important;
+  /* ~10 seats + quit block; was 280px — cramped on click-expand */
+  max-height: min(56vh, 560px) !important;
   overflow: auto !important;
 }
 

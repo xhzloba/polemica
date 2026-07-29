@@ -33,6 +33,7 @@ export const IpcChannels = {
   SEARCH_QUIT_GAME: 'search:quit-game',
   SEARCH_DISMISS_NOTICE: 'search:dismiss-notice',
   SEARCH_PLAY_ACCEPT_SOUND: 'search:play-accept-sound',
+  WINDOW_FOCUS: 'window:focus',
   PROFILE_MENU: 'chrome:profile-menu',
   CHROME_OVERLAY: 'chrome:overlay',
   LIVE_PLAYERS_MENU: 'chrome:live-players-menu',
@@ -200,6 +201,7 @@ export interface PolemicaApi {
   toggleSearchMode: (mode: string) => Promise<boolean>
   acceptGameSearch: () => Promise<boolean>
   playAcceptReminderSound: () => Promise<boolean>
+  focusWindow: () => Promise<void>
   returnToGame: () => Promise<boolean>
   quitActiveGame: () => Promise<boolean>
   dismissSearchNotice: () => Promise<void>

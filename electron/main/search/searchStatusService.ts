@@ -1,6 +1,7 @@
-import { net, type BrowserWindow, type WebContents } from 'electron'
+import { app, net, type BrowserWindow, type WebContents } from 'electron'
 import { IpcChannels, type SearchMode, type SearchStatus } from '@shared/ipc'
 import { getBanStatus } from '../ban/banStatusService'
+import { getClientPrefs } from '../prefs/clientPrefs'
 import { getGameView, gameSetLobbyTab } from '../views/GameBrowserView'
 
 /** Timer / queue counts update often. */
@@ -356,7 +357,8 @@ const SCRAPE_SEARCH_JS = `
     const delay = (searchEl?.querySelector('.p-play__profile-game-search-delay')?.textContent || '')
       .replace(/\\s+/g, ' ')
       .trim();
-    const canCancel = Boolean(searchEl?.querySelector('.p-play__profile-game-search-close'));
+    // Site profile (with close btn) is hidden by client CSS — cancel via Vue toggleSearch.
+    const canCancel = true
 
     return wrap({
       phase: 'searching',
@@ -716,6 +718,9 @@ let onChange: ((status: SearchStatus) => void) | null = null
 let stickyNotice: { title: string; text: string; until: number } | null = null
 /** Last modes scraped from the play panel — reused off-page when Vue panel is unmounted. */
 let stickyModes: SearchMode[] = DEFAULT_SEARCH_MODES
+let acceptRemindTimer: ReturnType<typeof setInterval> | null = null
+let acceptRemindMatchKey = ''
+const ACCEPT_REMIND_EVERY_MS = 5_000
 
 type ActiveSearchPhase = 'searching' | 'accept' | 'launching' | 'inGame'
 
@@ -852,7 +857,52 @@ function activeNotice(): { title: string; text: string } {
   return { title: stickyNotice.title, text: stickyNotice.text }
 }
 
+function acceptRemindKey(status: SearchStatus): string {
+  return `${status.title}|${status.acceptMode}|${status.delay}`
+}
+
+function stopAcceptRemindLoop(): void {
+  if (acceptRemindTimer) {
+    clearInterval(acceptRemindTimer)
+    acceptRemindTimer = null
+  }
+}
+
+/** Focus on match found; if manual accept — replay site signal every 5s (main process, works minimized). */
+function syncAcceptRemindLoop(status: SearchStatus): void {
+  const waiting = status.phase === 'accept' && !status.acceptAccepted
+  if (!waiting) {
+    stopAcceptRemindLoop()
+    acceptRemindMatchKey = ''
+    return
+  }
+
+  const key = acceptRemindKey(status)
+  if (acceptRemindMatchKey !== key) {
+    acceptRemindMatchKey = key
+    stopAcceptRemindLoop()
+    focusSearchHostWindow()
+  }
+
+  if (getClientPrefs().autoAccept) {
+    stopAcceptRemindLoop()
+    return
+  }
+
+  if (acceptRemindTimer) return
+
+  void playAcceptReminderSound()
+  acceptRemindTimer = setInterval(() => {
+    if (getClientPrefs().autoAccept || last.phase !== 'accept' || last.acceptAccepted) {
+      stopAcceptRemindLoop()
+      return
+    }
+    void playAcceptReminderSound()
+  }, ACCEPT_REMIND_EVERY_MS)
+}
+
 function emit(): void {
+  syncAcceptRemindLoop(last)
   if (!hostWindow || hostWindow.isDestroyed()) return
   hostWindow.webContents.send(IpcChannels.SEARCH_STATUS, last)
 }
@@ -1342,8 +1392,25 @@ export async function acceptGameSearch(): Promise<boolean> {
   }
 }
 
-/** Replay site match-found signal (manual accept, near timer end). */
+/** Bring app front when match found / accept reminder (works while minimized). */
+export function focusSearchHostWindow(): void {
+  const win = hostWindow
+  if (!win || win.isDestroyed()) return
+  if (process.platform === 'darwin') {
+    try {
+      app.focus({ steal: true })
+    } catch {
+      /* ignore */
+    }
+  }
+  if (win.isMinimized()) win.restore()
+  win.show()
+  win.focus()
+}
+
+/** Replay site match-found signal; focuses host so sound is audible while minimized. */
 export async function playAcceptReminderSound(): Promise<boolean> {
+  focusSearchHostWindow()
   const wc = getGameView()?.webContents
   if (!wc || wc.isDestroyed()) return false
   try {
@@ -1352,6 +1419,11 @@ export async function playAcceptReminderSound(): Promise<boolean> {
     console.warn('[search] accept reminder sound failed', err)
     return false
   }
+}
+
+/** Re-evaluate remind loop after prefs (e.g. autoAccept) change. */
+export function resyncAcceptRemindLoop(): void {
+  syncAcceptRemindLoop(last)
 }
 
 export async function returnToGame(): Promise<boolean> {

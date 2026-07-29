@@ -1,4 +1,4 @@
-import { ipcMain, BrowserWindow, type BrowserWindow as BW } from 'electron'
+import { app, ipcMain, BrowserWindow, type BrowserWindow as BW } from 'electron'
 import { IpcChannels } from '@shared/ipc'
 import {
   gameClickCreateLobby,
@@ -27,9 +27,11 @@ import {
   cancelGameSearch,
   dismissSearchNotice,
   getSearchStatus,
+  focusSearchHostWindow,
   playAcceptReminderSound,
   quitActiveGame,
   refreshSearchStatus,
+  resyncAcceptRemindLoop,
   returnToGame,
   startGameSearch,
   toggleSearchMode
@@ -77,6 +79,15 @@ export function registerIpcHandlers(getWindow: WindowGetter): void {
   )
   ipcMain.handle(IpcChannels.SEARCH_ACCEPT, async () => acceptGameSearch())
   ipcMain.handle(IpcChannels.SEARCH_PLAY_ACCEPT_SOUND, async () => playAcceptReminderSound())
+  ipcMain.handle(IpcChannels.WINDOW_FOCUS, async () => {
+    focusSearchHostWindow()
+    const win = getWindow()
+    if (!win || win.isDestroyed()) return
+    if (process.platform === 'darwin') app.focus({ steal: true })
+    if (win.isMinimized()) win.restore()
+    win.show()
+    win.focus()
+  })
   ipcMain.handle(IpcChannels.SEARCH_RETURN_GAME, async () => returnToGame())
   ipcMain.handle(IpcChannels.SEARCH_QUIT_GAME, async () => quitActiveGame())
   ipcMain.handle(IpcChannels.SEARCH_DISMISS_NOTICE, async () => {
@@ -135,9 +146,11 @@ export function registerIpcHandlers(getWindow: WindowGetter): void {
   )
 
   ipcMain.handle(IpcChannels.PREFS_GET, async () => getClientPrefs())
-  ipcMain.handle(IpcChannels.PREFS_SET, async (_e, patch: Partial<ClientPrefs>) =>
-    setClientPrefs(patch && typeof patch === 'object' ? patch : {})
-  )
+  ipcMain.handle(IpcChannels.PREFS_SET, async (_e, patch: Partial<ClientPrefs>) => {
+    const prefs = setClientPrefs(patch && typeof patch === 'object' ? patch : {})
+    resyncAcceptRemindLoop()
+    return prefs
+  })
 
   ipcMain.handle(IpcChannels.WINDOW_MINIMIZE, async () => {
     getWindow()?.minimize()

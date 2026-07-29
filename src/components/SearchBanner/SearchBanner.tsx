@@ -8,17 +8,6 @@ import {
 } from '../../lib/clientPrefsCache'
 import './SearchBanner.css'
 
-/** Replay match-found sound once when accept timer drops to this many seconds. */
-const ACCEPT_REMIND_AT_SEC = 5
-
-function parseAcceptClockSeconds(value: string): number | null {
-  const m = String(value || '')
-    .trim()
-    .match(/^(\d+):(\d{2})$/)
-  if (!m) return null
-  return Number(m[1]) * 60 + Number(m[2])
-}
-
 interface Props {
   search: SearchStatus
 }
@@ -27,7 +16,6 @@ export function SearchBanner({ search }: Props) {
   const hasNotice = Boolean(search.noticeTitle || search.noticeText)
   const splitRef = useRef<HTMLDivElement>(null)
   const autoFiredKey = useRef<string>('')
-  const remindFiredKey = useRef<string>('')
   const [autoAccept, setAutoAccept] = useState(() => Boolean(getCachedPrefs()?.autoAccept))
   const [menuOpenLocal, setMenuOpenLocal] = useState(false)
 
@@ -60,28 +48,8 @@ export function SearchBanner({ search }: Props) {
   useEffect(() => {
     if (search.phase !== 'accept') {
       autoFiredKey.current = ''
-      remindFiredKey.current = ''
     }
   }, [search.phase])
-
-  useEffect(() => {
-    if (autoAccept) return
-    if (search.phase !== 'accept' || search.acceptAccepted) return
-    const secs = parseAcceptClockSeconds(search.time)
-    if (secs == null || secs > ACCEPT_REMIND_AT_SEC) return
-    const foundKey = `${search.title}|${search.acceptMode}|${search.delay}`
-    if (remindFiredKey.current === foundKey) return
-    remindFiredKey.current = foundKey
-    void window.polemica?.playAcceptReminderSound()
-  }, [
-    autoAccept,
-    search.phase,
-    search.acceptAccepted,
-    search.time,
-    search.title,
-    search.acceptMode,
-    search.delay
-  ])
 
   if (!search.visible && !search.playVisible && !hasNotice) return null
 
@@ -185,7 +153,7 @@ export function SearchBanner({ search }: Props) {
           </div>
         ) : null}
 
-        {phase === 'launching' || (phase === 'searching' && search.loading) ? (
+        {phase === 'launching' ? (
           <div className="search-banner__status search-banner__status--loading">
             <LoaderCircle
               size={18}
@@ -193,11 +161,9 @@ export function SearchBanner({ search }: Props) {
               className="search-banner__spinner"
               aria-label="Загрузка"
             />
-            {phase === 'launching' ? (
-              <div className="search-banner__center">
-                <div className="search-banner__title">{search.title || 'Игра запускается'}</div>
-              </div>
-            ) : null}
+            <div className="search-banner__center">
+              <div className="search-banner__title">{search.title || 'Игра запускается'}</div>
+            </div>
           </div>
         ) : phase === 'accept' ? (
           search.acceptAccepted ? (
@@ -261,28 +227,37 @@ export function SearchBanner({ search }: Props) {
             </button>
           </div>
         ) : phase === 'searching' ? (
-          <div className="search-banner__status">
-            {search.time ? <div className="search-banner__time">{search.time}</div> : null}
+          <div
+            className={`search-banner__status${search.loading ? ' search-banner__status--loading' : ''}`}
+          >
+            {search.loading ? (
+              <LoaderCircle
+                size={18}
+                strokeWidth={2.2}
+                className="search-banner__spinner"
+                aria-label="Загрузка"
+              />
+            ) : search.time ? (
+              <div className="search-banner__time">{search.time}</div>
+            ) : (
+              <span className="search-banner__close-spacer" aria-hidden />
+            )}
             <div className="search-banner__center">
               <div className="search-banner__title">
-                {search.title}
+                {search.title || (search.loading ? 'Подключение…' : 'Идёт поиск игры')}
                 {autoAccept ? <span className="search-banner__auto-inline"> · авто</span> : null}
               </div>
               {search.delay ? <div className="search-banner__delay">{search.delay}</div> : null}
             </div>
-            {search.canCancel ? (
-              <button
-                type="button"
-                className="search-banner__close"
-                aria-label="Отменить поиск"
-                title="Отменить поиск"
-                onClick={() => void window.polemica.cancelGameSearch()}
-              >
-                <X size={14} strokeWidth={2.4} aria-hidden />
-              </button>
-            ) : (
-              <span className="search-banner__close-spacer" aria-hidden />
-            )}
+            <button
+              type="button"
+              className="search-banner__close"
+              aria-label="Отменить поиск"
+              title="Отменить поиск"
+              onClick={() => void window.polemica.cancelGameSearch()}
+            >
+              <X size={14} strokeWidth={2.4} aria-hidden />
+            </button>
           </div>
         ) : showIdleControls ? (
           canPlay ? (
