@@ -1,7 +1,26 @@
-import { useLayoutEffect, useRef, useState } from 'react'
-import { LoaderCircle, X } from 'lucide-react'
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
+import { Check, ChevronDown, LoaderCircle, X } from 'lucide-react'
 import type { SearchStatus } from '@shared/ipc'
 import './SearchBanner.css'
+
+const AUTO_ACCEPT_KEY = 'polemica.autoAccept'
+
+function readAutoAccept(): boolean {
+  try {
+    return localStorage.getItem(AUTO_ACCEPT_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+function writeAutoAccept(on: boolean): void {
+  try {
+    localStorage.setItem(AUTO_ACCEPT_KEY, on ? '1' : '0')
+  } catch {
+    /* ignore */
+  }
+}
 
 interface Props {
   search: SearchStatus
@@ -13,10 +32,16 @@ interface Props {
 export function SearchBanner({ search, viewX = 0, menuOpen = false }: Props) {
   const hasNotice = Boolean(search.noticeTitle || search.noticeText)
   const rootRef = useRef<HTMLDivElement>(null)
+  const splitRef = useRef<HTMLDivElement>(null)
+  const autoFiredKey = useRef<string>('')
   const [padLeft, setPadLeft] = useState(Math.max(0, search.insetLeft || 24))
+  const [autoAccept, setAutoAccept] = useState(readAutoAccept)
+  const [menuOpenLocal, setMenuOpenLocal] = useState(false)
+  const [menuPos, setMenuPos] = useState<{ left: number; bottom: number; minWidth: number } | null>(
+    null
+  )
 
   // Align banner content to lobby: windowX(lobby) = viewX + insetLeft.
-  // Compensates chrome-stack shift when the side menu grid toggles.
   useLayoutEffect(() => {
     const el = rootRef.current
     if (!el) return
@@ -25,12 +50,145 @@ export function SearchBanner({ search, viewX = 0, menuOpen = false }: Props) {
     setPadLeft(Math.max(0, Math.round(target - left)))
   }, [viewX, search.insetLeft, menuOpen, search.phase, search.visible, search.playVisible, hasNotice])
 
+  useLayoutEffect(() => {
+    if (!menuOpenLocal) {
+      setMenuPos(null)
+      return
+    }
+    const el = splitRef.current
+    if (!el) return
+    const place = (): void => {
+      const r = el.getBoundingClientRect()
+      setMenuPos({
+        left: Math.round(r.left),
+        bottom: Math.round(window.innerHeight - r.top + 6),
+        minWidth: Math.round(Math.max(r.width, 168))
+      })
+    }
+    place()
+    window.addEventListener('resize', place)
+    return () => window.removeEventListener('resize', place)
+  }, [menuOpenLocal])
+
+  useEffect(() => {
+    if (!menuOpenLocal) return
+    const onDoc = (e: MouseEvent): void => {
+      const t = e.target as Node
+      if (splitRef.current?.contains(t)) return
+      if ((t as Element).closest?.('.search-banner__play-menu')) return
+      setMenuOpenLocal(false)
+    }
+    const onKey = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') setMenuOpenLocal(false)
+    }
+    document.addEventListener('mousedown', onDoc)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDoc)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [menuOpenLocal])
+
+  // Auto-accept when match appears
+  useEffect(() => {
+    if (!autoAccept) return
+    if (search.phase !== 'accept' || search.acceptAccepted || search.loading) return
+    const matchKey = `${search.title}|${search.acceptMode}|${search.delay}`
+    if (autoFiredKey.current === matchKey) return
+    autoFiredKey.current = matchKey
+    void window.polemica.acceptGameSearch()
+  }, [
+    autoAccept,
+    search.phase,
+    search.acceptAccepted,
+    search.loading,
+    search.title,
+    search.acceptMode,
+    search.delay
+  ])
+
+  useEffect(() => {
+    if (search.phase !== 'accept') autoFiredKey.current = ''
+  }, [search.phase])
+
   if (!search.visible && !search.playVisible && !hasNotice) return null
 
   const phase = search.phase
   const showModes = (phase === 'idle' || phase === 'searching') && search.modes.length > 0
   const canPlay = search.modes.some((m) => m.selected && m.available)
   const showIdlePlay = phase === 'idle' || (!search.visible && search.playVisible)
+
+  const toggleAutoAccept = (): void => {
+    setAutoAccept((prev) => {
+      const next = !prev
+      writeAutoAccept(next)
+      return next
+    })
+    setMenuOpenLocal(false)
+  }
+
+  const playSplit = (opts: { disabled?: boolean; onPlay: () => void }): ReactNode => (
+    <div
+      ref={splitRef}
+      className={`search-banner__play-split${opts.disabled ? ' search-banner__play-split--disabled' : ''}${
+        autoAccept ? ' search-banner__play-split--auto' : ''
+      }`}
+    >
+      <button
+        type="button"
+        className="search-banner__play search-banner__play--main"
+        disabled={opts.disabled}
+        onClick={opts.onPlay}
+      >
+        Играть
+        {autoAccept ? <span className="search-banner__play-auto-tag">авто</span> : null}
+      </button>
+      <button
+        type="button"
+        className="search-banner__play search-banner__play--caret"
+        disabled={opts.disabled}
+        aria-label="Настройки поиска"
+        aria-haspopup="menu"
+        aria-expanded={menuOpenLocal}
+        onClick={(e) => {
+          e.stopPropagation()
+          setMenuOpenLocal((v) => !v)
+        }}
+      >
+        <ChevronDown size={18} strokeWidth={2.4} aria-hidden />
+      </button>
+      {menuOpenLocal && menuPos
+        ? createPortal(
+            <div
+              className="search-banner__play-menu"
+              role="menu"
+              style={{
+                left: menuPos.left,
+                bottom: menuPos.bottom,
+                minWidth: menuPos.minWidth
+              }}
+            >
+              <button
+                type="button"
+                role="menuitemcheckbox"
+                aria-checked={autoAccept}
+                className={`search-banner__play-menu-item${autoAccept ? ' search-banner__play-menu-item--on' : ''}`}
+                onClick={toggleAutoAccept}
+              >
+                <span className="search-banner__play-menu-check" aria-hidden>
+                  {autoAccept ? <Check size={12} strokeWidth={2.8} /> : null}
+                </span>
+                <span className="search-banner__play-menu-text">
+                  <span className="search-banner__play-menu-title">Автопринятие</span>
+                  <span className="search-banner__play-menu-hint">Принимать матч сразу</span>
+                </span>
+              </button>
+            </div>,
+            document.body
+          )
+        : null}
+    </div>
+  )
 
   return (
     <div
@@ -95,6 +253,21 @@ export function SearchBanner({ search, viewX = 0, menuOpen = false }: Props) {
               </div>
               <span className="search-banner__close-spacer" aria-hidden />
             </div>
+          ) : autoAccept ? (
+            <div className="search-banner__status search-banner__status--loading">
+              <LoaderCircle
+                size={20}
+                strokeWidth={2.2}
+                className="search-banner__spinner"
+                aria-label="Автопринятие"
+              />
+              <div className="search-banner__center">
+                <div className="search-banner__title">Автопринятие…</div>
+                {search.delay || search.acceptMode ? (
+                  <div className="search-banner__delay">{search.delay || search.acceptMode}</div>
+                ) : null}
+              </div>
+            </div>
           ) : (
             <button
               type="button"
@@ -133,7 +306,10 @@ export function SearchBanner({ search, viewX = 0, menuOpen = false }: Props) {
           <div className="search-banner__status">
             {search.time ? <div className="search-banner__time">{search.time}</div> : null}
             <div className="search-banner__center">
-              <div className="search-banner__title">{search.title}</div>
+              <div className="search-banner__title">
+                {search.title}
+                {autoAccept ? <span className="search-banner__auto-inline"> · авто</span> : null}
+              </div>
               {search.delay ? <div className="search-banner__delay">{search.delay}</div> : null}
             </div>
             {search.canCancel ? (
@@ -151,14 +327,10 @@ export function SearchBanner({ search, viewX = 0, menuOpen = false }: Props) {
             )}
           </div>
         ) : showIdlePlay ? (
-          <button
-            type="button"
-            className="search-banner__play"
-            disabled={!canPlay}
-            onClick={() => void window.polemica.startGameSearch()}
-          >
-            Играть
-          </button>
+          playSplit({
+            disabled: !canPlay,
+            onPlay: () => void window.polemica.startGameSearch()
+          })
         ) : null}
 
         {hasNotice ? (
