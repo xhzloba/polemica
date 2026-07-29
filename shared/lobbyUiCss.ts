@@ -187,6 +187,26 @@ export const LOBBY_UI_CSS = `
   border-color: rgba(200, 245, 49, 0.28) !important;
 }
 
+/* live Twitch in room — same purple as expand player --live */
+.p-play__lobby-table-row.polemica-lobby-row--live {
+  background: rgba(145, 70, 255, 0.1) !important;
+  border-color: rgba(145, 70, 255, 0.32) !important;
+}
+
+.p-play__lobby-table-row.polemica-lobby-row--live:hover {
+  background: rgba(145, 70, 255, 0.16) !important;
+  border-color: rgba(145, 70, 255, 0.45) !important;
+}
+
+.p-play__lobby-table-row.polemica-lobby-row--live.polemica-lobby-row--open {
+  border-color: rgba(145, 70, 255, 0.42) !important;
+  background: rgba(145, 70, 255, 0.08) !important;
+}
+
+.p-play__lobby-table-row.polemica-lobby-row--live .p-play__lobby-table-avatars img {
+  border-color: rgba(145, 70, 255, 0.35) !important;
+}
+
 .p-play__lobby-table-row:active {
   transform: scale(0.997) !important;
 }

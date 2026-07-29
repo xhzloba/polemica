@@ -4,11 +4,12 @@ import { PRIME_ICON, SUBSCRIPTION_ICON } from './siteMarks'
 
 export const LOBBY_ACCORDION_JS = `
 (() => {
-  const VER = 5;
+  const VER = 7;
   if (window.__polemicaLobbyAccordion === VER) return;
   window.__polemicaLobbyAccordion = VER;
 
   const OPEN = 'polemica-lobby-row--open';
+  const LIVE = 'polemica-lobby-row--live';
   const PANEL = 'polemica-lobby-expand';
   const PRIME_ICON = ${JSON.stringify(PRIME_ICON)};
   const SUB_ICON = ${JSON.stringify(SUBSCRIPTION_ICON)};
@@ -23,6 +24,24 @@ export const LOBBY_ACCORDION_JS = `
       cur = cur.$parent;
     }
     return row && row.__vue__;
+  };
+
+  const lobbyHasLiveStream = (vm) => {
+    if (!vm) return false;
+    // Only active Twitch — lobbyInMediaRoom alone marks too many rooms.
+    const twitch = vm.lobbyTwitchUrl && vm.lobbyTwitchUrl.stream;
+    if (twitch && twitch.active && twitch.link) return true;
+    const players = Array.isArray(vm.lobby && vm.lobby.players) ? vm.lobby.players : [];
+    return players.some(
+      (p) => p && !p.quit && p.stream && p.stream.active && p.stream.link
+    );
+  };
+
+  const syncLiveRows = () => {
+    document.querySelectorAll('.p-play__lobby-table-row').forEach((row) => {
+      const live = lobbyHasLiveStream(resolveVm(row));
+      row.classList.toggle(LIVE, live);
+    });
   };
 
   const avatarUrl = (vm, player) => {
@@ -260,6 +279,7 @@ export const LOBBY_ACCORDION_JS = `
     const existing = row.querySelector('.' + PANEL);
     if (existing) existing.remove();
     row.appendChild(renderPanel(row, vm));
+    syncLiveRows();
   };
 
   document.addEventListener(
@@ -287,5 +307,17 @@ export const LOBBY_ACCORDION_JS = `
     },
     true
   );
+
+  syncLiveRows();
+  setInterval(syncLiveRows, 2000);
+  const root =
+    document.querySelector('.p-play__lobby') ||
+    document.querySelector('.p-play__center') ||
+    document.body;
+  if (root && !root.__polemicaLobbyLiveObs) {
+    const obs = new MutationObserver(() => syncLiveRows());
+    obs.observe(root, { childList: true, subtree: true });
+    root.__polemicaLobbyLiveObs = obs;
+  }
 })();
 `

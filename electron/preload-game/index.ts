@@ -354,7 +354,7 @@ function hideChromeNoise(): void {
 }
 
 function injectLobbyAccordion(): void {
-  const VER = '5'
+  const VER = '7'
   if (document.documentElement.getAttribute('data-polemica-lobby-accordion') === VER) return
   document.documentElement.setAttribute('data-polemica-lobby-accordion', VER)
   const prev = document.getElementById('polemica-lobby-accordion')
