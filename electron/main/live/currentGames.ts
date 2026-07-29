@@ -122,7 +122,8 @@ export async function fetchLiveStats(): Promise<LiveStats> {
     headers: {
       Accept: 'application/json',
       'X-Requested-With': 'XMLHttpRequest'
-    }
+    },
+    signal: AbortSignal.timeout(4_000)
   })
 
   if (!res.ok) {

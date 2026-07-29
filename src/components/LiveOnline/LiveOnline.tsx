@@ -61,7 +61,6 @@ export function LiveOnline({ stats }: Props) {
   const playersFlash = useFlashDirection(stats.players)
   const lobbiesFlash = useFlashDirection(stats.lobbies)
   const [open, setOpen] = useState(false)
-  const [busy, setBusy] = useState(false)
   const triggerRef = useRef<HTMLButtonElement>(null)
 
   if (!stats.updatedAt) {
@@ -96,23 +95,19 @@ export function LiveOnline({ stats }: Props) {
     .filter(Boolean)
     .join(' ')
 
-  const openMenu = async (): Promise<void> => {
-    if (!window.polemica || busy) return
+  const openMenu = (): void => {
+    if (!window.polemica) return
     const rect = triggerRef.current?.getBoundingClientRect()
     if (!rect) return
-    setBusy(true)
     setOpen(true)
-    try {
-      await window.polemica.openLivePlayersMenu({
+    void window.polemica
+      .openLivePlayersMenu({
         x: rect.x,
         y: rect.y,
         right: rect.right,
         bottom: rect.bottom
       })
-    } finally {
-      setBusy(false)
-      setOpen(false)
-    }
+      .finally(() => setOpen(false))
   }
 
   return (
@@ -123,8 +118,7 @@ export function LiveOnline({ stats }: Props) {
         className="live-online__people"
         aria-haspopup="menu"
         aria-expanded={open}
-        disabled={busy}
-        onClick={() => void openMenu()}
+        onClick={openMenu}
       >
         <span className="live-online__dot" aria-hidden>
           <span className="live-online__dot-core" />

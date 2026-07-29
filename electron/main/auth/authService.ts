@@ -40,7 +40,7 @@ import {
   stopSearchStatusPolling,
   unbindSearchStatusWindow
 } from '../search/searchStatusService'
-import { closeLivePlayersMenu } from '../chrome/livePlayersPopup'
+import { closeLivePlayersMenu, destroyLivePlayersMenu, prewarmLivePlayersMenu } from '../chrome/livePlayersPopup'
 
 let phase: AuthPhase = 'splash'
 let profile: UserProfile | null = null
@@ -105,6 +105,7 @@ export function disposeAuthWindow(win: BrowserWindow): void {
   stopBanStatusPolling()
   stopSearchStatusPolling()
   closeLivePlayersMenu()
+  destroyLivePlayersMenu()
   unbindLiveStatsWindow(win)
   unbindBanStatusWindow(win)
   unbindSearchStatusWindow(win)
@@ -264,6 +265,7 @@ export async function enterApp(): Promise<AuthState> {
   if (hostWindow && !hostWindow.isDestroyed()) {
     layoutForPhase(hostWindow)
     setGameViewVisible(true)
+    prewarmLivePlayersMenu(hostWindow)
     const view = getGameView()
     if (view && !view.webContents.isDestroyed()) {
       const url = view.webContents.getURL()
