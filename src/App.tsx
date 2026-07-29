@@ -14,9 +14,10 @@ export function App() {
         <Splash
           busy={auth.busy}
           error={auth.error}
-          cachedProfile={auth.profile}
+          accounts={auth.accounts}
           onLoginChrome={() => void auth.loginWithChrome()}
-          onResume={() => void auth.resumeSession()}
+          onResume={(id) => void auth.resumeSession(id)}
+          onRemoveAccount={(id) => void auth.removeAccount(id)}
         />
       </div>
     )

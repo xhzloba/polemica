@@ -4,15 +4,17 @@ import type { AuthState } from '@shared/ipc'
 const idle: AuthState = {
   phase: 'splash',
   profile: null,
+  accounts: [],
   error: null,
   busy: false
 }
 
 export function useAuthState(): AuthState & {
   loginWithChrome: () => Promise<void>
-  resumeSession: () => Promise<void>
+  resumeSession: (accountId?: string) => Promise<void>
   enterApp: () => Promise<void>
   logout: () => Promise<void>
+  removeAccount: (accountId: string) => Promise<void>
 } {
   const [state, setState] = useState<AuthState>(idle)
 
@@ -29,14 +31,17 @@ export function useAuthState(): AuthState & {
     loginWithChrome: async () => {
       setState(await window.polemica.loginWithChrome())
     },
-    resumeSession: async () => {
-      setState(await window.polemica.resumeSession())
+    resumeSession: async (accountId?: string) => {
+      setState(await window.polemica.resumeSession(accountId))
     },
     enterApp: async () => {
       setState(await window.polemica.enterApp())
     },
     logout: async () => {
       setState(await window.polemica.logout())
+    },
+    removeAccount: async (accountId: string) => {
+      setState(await window.polemica.removeAccount(accountId))
     }
   }
 }

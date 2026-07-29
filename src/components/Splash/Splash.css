@@ -154,6 +154,115 @@
   color: var(--splash-muted);
 }
 
+.splash__accounts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 320px;
+  margin: 0 0 16px;
+}
+
+.splash__account {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  width: 100%;
+}
+
+.splash__account-main {
+  appearance: none;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--splash-text);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.splash__account-main:hover:not(:disabled) {
+  background: rgba(200, 245, 49, 0.08);
+  border-color: rgba(200, 245, 49, 0.35);
+  transform: translateY(-1px);
+}
+
+.splash__account-main:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.splash__account-avatar {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #1a222c;
+}
+
+.splash__account-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.splash__account-name {
+  font-size: 0.95rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.splash__account-hint {
+  font-size: 0.72rem;
+  color: rgba(245, 247, 242, 0.45);
+  letter-spacing: -0.01em;
+}
+
+.splash__account-remove {
+  appearance: none;
+  flex: 0 0 36px;
+  width: 36px;
+  margin: 0;
+  padding: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(245, 247, 242, 0.45);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.splash__account-remove:hover:not(:disabled) {
+  color: #ff8e8e;
+  border-color: rgba(255, 120, 120, 0.35);
+  background: rgba(255, 80, 80, 0.08);
+}
+
+.splash__account-remove:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .splash__lead--center {
   margin-left: auto;
   margin-right: auto;

@@ -11,6 +11,8 @@ export const IpcChannels = {
   CREATE_LOBBY: 'nav:create-lobby',
   LOBBY_SEARCH: 'nav:lobby-search',
   LOBBY_TAB: 'nav:lobby-tab',
+  LOBBY_FILTER_SET: 'lobby:filter-set',
+  LOBBY_FILTER_GET: 'lobby:filter-get',
   WINDOW_MINIMIZE: 'window:minimize',
   WINDOW_MAXIMIZE: 'window:maximize',
   WINDOW_CLOSE: 'window:close',
@@ -21,6 +23,7 @@ export const IpcChannels = {
   AUTH_RESUME: 'auth:resume',
   AUTH_ENTER_APP: 'auth:enter-app',
   AUTH_LOGOUT: 'auth:logout',
+  AUTH_REMOVE_ACCOUNT: 'auth:remove-account',
   LIVE_STATS_GET: 'live:stats-get',
   LIVE_STATS_REFRESH: 'live:stats-refresh',
   BAN_STATUS_GET: 'ban:status-get',
@@ -70,11 +73,25 @@ export interface UserProfile {
   syncedAt: number
 }
 
+/** Saved local account (cookies stay in SQLite, not sent to renderer). */
+export interface SavedAccount {
+  id: string
+  username: string
+  avatarUrl: string
+  profileUrl?: string
+  syncedAt: number
+  lastUsedAt: number
+  /** True if we have a stored access-token for this account */
+  hasToken: boolean
+}
+
 export type AuthPhase = 'splash' | 'greeting' | 'app'
 
 export interface AuthState {
   phase: AuthPhase
   profile: UserProfile | null
+  /** Locally remembered accounts for splash picker */
+  accounts: SavedAccount[]
   error: string | null
   busy: boolean
 }
@@ -176,6 +193,8 @@ export interface PolemicaApi {
   createLobby: () => Promise<boolean>
   setLobbySearch: (query: string) => Promise<boolean>
   setLobbyTab: (tab: 'play' | 'watch') => Promise<boolean>
+  setLobbyFilter: (id: string) => Promise<string>
+  getLobbyFilter: () => Promise<string>
   minimize: () => Promise<void>
   maximize: () => Promise<void>
   close: () => Promise<void>
@@ -185,9 +204,10 @@ export interface PolemicaApi {
   onTitle: (cb: (title: string) => void) => () => void
   getAuthState: () => Promise<AuthState>
   loginWithChrome: () => Promise<AuthState>
-  resumeSession: () => Promise<AuthState>
+  resumeSession: (accountId?: string) => Promise<AuthState>
   enterApp: () => Promise<AuthState>
   logout: () => Promise<AuthState>
+  removeAccount: (accountId: string) => Promise<AuthState>
   onAuthState: (cb: (state: AuthState) => void) => () => void
   getLiveStats: () => Promise<LiveStats>
   refreshLiveStats: () => Promise<LiveStats>

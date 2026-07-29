@@ -21,6 +21,13 @@ export const BAN_BANNER_HEIGHT = 56
 /** Same slot as ban — compact play/search action bar. */
 export const SEARCH_PLAY_BANNER_HEIGHT = 56
 
+/** Lobby filter tabs under play/search controls (pinned in chrome). */
+export const LOBBY_FILTERS_ROW_HEIGHT = 44
+
+/** Play/search banner + pinned lobby filters. */
+export const SEARCH_PLAY_BANNER_WITH_FILTERS =
+  SEARCH_PLAY_BANNER_HEIGHT + LOBBY_FILTERS_ROW_HEIGHT
+
 /** Apple-settings-style side menu geometry */
 export const SIDE_MENU_INSET = 12
 export const SIDE_MENU_GAP = 10

@@ -1,8 +1,9 @@
-import { BrowserWindow, session } from 'electron'
+import { BrowserWindow } from 'electron'
 import {
   BAN_BANNER_HEIGHT,
   CHROME_HEIGHT,
   GAME_START_URL,
+  LOBBY_FILTERS_ROW_HEIGHT,
   SEARCH_PLAY_BANNER_HEIGHT,
   SIDE_MENU_OFFSET,
   TRAFFIC_LIGHTS
@@ -10,7 +11,25 @@ import {
 import type { AuthPhase, AuthState, UserProfile } from '@shared/ipc'
 import { IpcChannels } from '@shared/ipc'
 import { importPolemicaCookiesFromChrome } from './chromeCookies'
-import { clearCachedProfile, hasElectronAccessToken, loadCachedProfile, scrapeProfileFromPage } from './profile'
+import {
+  accountToUserProfile,
+  clearPartitionCookies,
+  getAccount,
+  getActiveAccountId,
+  listAccounts,
+  migrateLegacyProfile,
+  persistCurrentSession,
+  removeAccount as removeAccountRow,
+  restorePartitionCookies,
+  touchAccount
+} from './accounts'
+import {
+  clearCachedProfile,
+  hasElectronAccessToken,
+  loadCachedProfile,
+  saveCachedProfile,
+  scrapeProfileFromPage
+} from './profile'
 import {
   getGameView,
   layoutGameView,
@@ -50,6 +69,7 @@ let error: string | null = null
 let busy = false
 let hostWindow: BrowserWindow | null = null
 let chromeOverlay = false
+let migrated = false
 
 function emit(): void {
   if (!hostWindow || hostWindow.isDestroyed()) return
@@ -57,7 +77,26 @@ function emit(): void {
 }
 
 export function getAuthState(): AuthState {
-  return { phase, profile, error, busy }
+  return {
+    phase,
+    profile,
+    accounts: listAccounts(),
+    error,
+    busy
+  }
+}
+
+async function ensureMigrated(): Promise<void> {
+  if (migrated) return
+  migrated = true
+  const cached = loadCachedProfile()
+  await migrateLegacyProfile(cached)
+  if (!profile) {
+    const activeId = getActiveAccountId()
+    const active = activeId ? getAccount(activeId) : null
+    if (active) profile = accountToUserProfile(active)
+    else if (cached) profile = cached
+  }
 }
 
 export function bindAuthWindow(win: BrowserWindow): void {
@@ -67,6 +106,7 @@ export function bindAuthWindow(win: BrowserWindow): void {
   error = null
   busy = false
   chromeOverlay = false
+  migrated = false
 
   if (process.platform === 'darwin') {
     win.setWindowButtonPosition(TRAFFIC_LIGHTS.default)
@@ -90,6 +130,7 @@ export function bindAuthWindow(win: BrowserWindow): void {
   })
 
   layoutForPhase(win)
+  void ensureMigrated().then(() => emit())
   emit()
 }
 
@@ -119,9 +160,13 @@ export function disposeAuthWindow(win: BrowserWindow): void {
 function chromeHeightForApp(): number {
   const search = getSearchStatus()
   let h = CHROME_HEIGHT
-  if (getBanStatus().visible) h += BAN_BANNER_HEIGHT
-  else if (search.visible || search.playVisible || search.noticeTitle || search.noticeText) {
-    h += SEARCH_PLAY_BANNER_HEIGHT
+  if (getBanStatus().visible) {
+    h += BAN_BANNER_HEIGHT
+  } else {
+    if (search.visible || search.playVisible || search.noticeTitle || search.noticeText) {
+      h += SEARCH_PLAY_BANNER_HEIGHT
+    }
+    h += LOBBY_FILTERS_ROW_HEIGHT
   }
   return h
 }
@@ -157,7 +202,6 @@ export function setChromeOverlay(open: boolean): { viewX: number } {
 
   const viewX = Math.max(0, Math.round(getGameView()?.getBounds().x ?? 0))
 
-  // One deferred scrape after lobby reflows to the new width — avoid burst inset jumps.
   refreshSearchStatus()
   setTimeout(() => refreshSearchStatus(), 220)
 
@@ -173,7 +217,6 @@ async function applySessionAndScrape(): Promise<UserProfile> {
   if (!view) throw new Error('Game view не готов')
   if (!hostWindow || hostWindow.isDestroyed()) throw new Error('Окно не готово')
 
-  // Avoid 0-height / off-screen WebContentsView while splash is up (ERR_TIMED_OUT / dead scrape)
   prepareGameViewUnderChrome(hostWindow)
 
   await loadGameUrlReliable(GAME_START_URL, 4)
@@ -183,11 +226,14 @@ async function applySessionAndScrape(): Promise<UserProfile> {
     console.warn('[auth] waitForGameLoad soft-fail', err)
   }
 
-  // Nuxt header hydrates after paint; avatar may lag behind username
   let lastError: Error | null = null
   for (let i = 0; i < 20; i++) {
     try {
-      return await scrapeProfileFromPage((code) => view.webContents.executeJavaScript(code, true))
+      const scraped = await scrapeProfileFromPage((code) =>
+        view.webContents.executeJavaScript(code, true)
+      )
+      await persistCurrentSession(scraped)
+      return scraped
     } catch (err) {
       lastError = err instanceof Error ? err : new Error(String(err))
       await new Promise((r) => setTimeout(r, 350))
@@ -207,16 +253,19 @@ export async function loginWithChrome(): Promise<AuthState> {
   emit()
 
   try {
+    await ensureMigrated()
     await importPolemicaCookiesFromChrome()
     profile = await applySessionAndScrape()
     phase = 'greeting'
   } catch (err) {
     error = err instanceof Error ? err.message : String(err)
+    if (listAccounts().length > 0) {
+      error = `${error} Можно выбрать сохранённый аккаунт ниже.`
+    }
     phase = 'splash'
     console.error('[auth] loginWithChrome failed', err)
   } finally {
     busy = false
-    // Hide game BEFORE React switches splash → greeting
     if (hostWindow && !hostWindow.isDestroyed()) layoutForPhase(hostWindow)
     emit()
   }
@@ -224,42 +273,73 @@ export async function loginWithChrome(): Promise<AuthState> {
   return getAuthState()
 }
 
-export async function resumeSession(): Promise<AuthState> {
+export async function resumeSession(accountId?: string): Promise<AuthState> {
   if (busy) {
     error = 'Уже выполняется вход…'
     emit()
     return getAuthState()
   }
-  // Prefer fresh DB read in case memory was cleared
+
+  await ensureMigrated()
+
+  const id = String(accountId || getActiveAccountId() || '').trim()
+  const row = id ? getAccount(id) : null
+  const accounts = listAccounts()
+
+  if (row) {
+    profile = accountToUserProfile(row)
+    saveCachedProfile(profile)
+    touchAccount(row.id)
+
+    const ok = await restorePartitionCookies(row.cookies)
+    if (!ok) {
+      error = `Нет сохранённого access-token для ${row.username}. Залогинься этим аккаунтом в Chrome и нажми «Добавить через Chrome».`
+      phase = 'splash'
+      emit()
+      return getAuthState()
+    }
+
+    error = null
+    busy = false
+    phase = 'greeting'
+    if (hostWindow && !hostWindow.isDestroyed()) layoutForPhase(hostWindow)
+    emit()
+    void warmSessionInBackground(false)
+    return getAuthState()
+  }
+
   profile = profile ?? loadCachedProfile()
+  if (!profile && accounts[0]) {
+    return resumeSession(accounts[0].id)
+  }
   if (!profile) {
-    error = 'Нет сохранённого профиля'
+    error = 'Нет сохранённого аккаунта'
     emit()
     return getAuthState()
   }
 
-  // Instant: trust SQLite profile — no Chrome/scrape on the hot path
   error = null
   busy = false
   phase = 'greeting'
   if (hostWindow && !hostWindow.isDestroyed()) layoutForPhase(hostWindow)
   emit()
-
-  // Warm Electron session + page in background for «Продолжить» → app
-  void warmSessionInBackground()
-
+  void warmSessionInBackground(true)
   return getAuthState()
 }
 
-/** Cookies + hidden game load — never blocks splash/greeting UI. */
-async function warmSessionInBackground(): Promise<void> {
+async function warmSessionInBackground(allowChromeImport: boolean): Promise<void> {
   try {
     if (!(await hasElectronAccessToken())) {
+      if (!allowChromeImport) return
       await importPolemicaCookiesFromChrome()
+      if (profile) await persistCurrentSession(profile)
     }
     if (!hostWindow || hostWindow.isDestroyed()) return
     prepareGameViewUnderChrome(hostWindow)
     await loadGameUrlReliable(GAME_START_URL, 3)
+    if (profile && (await hasElectronAccessToken())) {
+      await persistCurrentSession(profile)
+    }
   } catch (err) {
     console.warn('[auth] background session warm failed', err)
   }
@@ -274,6 +354,13 @@ export async function enterApp(): Promise<AuthState> {
 
   phase = 'app'
   error = null
+  if (await hasElectronAccessToken()) {
+    try {
+      await persistCurrentSession(profile)
+    } catch (err) {
+      console.warn('[auth] persist on enterApp failed', err)
+    }
+  }
   startLiveStatsPolling()
   startBanStatusPolling()
   startSearchStatusPolling()
@@ -285,7 +372,15 @@ export async function enterApp(): Promise<AuthState> {
     if (view && !view.webContents.isDestroyed()) {
       const url = view.webContents.getURL()
       if (!url.includes('polemicagame.com')) {
-        await loadGameUrl(GAME_START_URL)
+        try {
+          await loadGameUrl(GAME_START_URL)
+        } catch (err) {
+          console.warn('[auth] enterApp load failed', err)
+          // Don't block chrome — retry quietly in background
+          void loadGameUrlReliable(GAME_START_URL, 3).catch((e) =>
+            console.warn('[auth] enterApp retry load failed', e)
+          )
+        }
       }
     }
   }
@@ -300,16 +395,14 @@ export async function logout(): Promise<AuthState> {
   busy = true
   emit()
   try {
-    const ses = session.fromPartition('persist:polemica-game')
-    const cookies = await ses.cookies.get({})
-    await Promise.all(
-      cookies
-        .filter((c) => (c.domain || '').includes('polemicagame.com'))
-        .map((c) => {
-          const host = (c.domain || 'polemicagame.com').replace(/^\./, '')
-          return ses.cookies.remove(`https://${host}${c.path || '/'}`, c.name)
-        })
-    )
+    if (profile) {
+      try {
+        await persistCurrentSession(profile)
+      } catch (err) {
+        console.warn('[auth] persist on logout failed', err)
+      }
+    }
+    await clearPartitionCookies()
     clearCachedProfile()
     profile = null
     phase = 'splash'
@@ -326,5 +419,22 @@ export async function logout(): Promise<AuthState> {
     if (hostWindow && !hostWindow.isDestroyed()) layoutForPhase(hostWindow)
     emit()
   }
+  return getAuthState()
+}
+
+export async function removeAccount(accountId: string): Promise<AuthState> {
+  const id = String(accountId || '').trim()
+  if (!id) return getAuthState()
+  removeAccountRow(id)
+  if (profile) {
+    const still = listAccounts().find(
+      (a) => a.username.toLowerCase() === profile!.username.toLowerCase()
+    )
+    if (!still && phase !== 'app') {
+      profile = null
+      clearCachedProfile()
+    }
+  }
+  emit()
   return getAuthState()
 }

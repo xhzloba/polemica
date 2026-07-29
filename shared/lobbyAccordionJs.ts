@@ -4,7 +4,7 @@ import { PRIME_ICON, SUBSCRIPTION_ICON } from './siteMarks'
 
 export const LOBBY_ACCORDION_JS = `
 (() => {
-  const VER = 7;
+  const VER = 8;
   if (window.__polemicaLobbyAccordion === VER) return;
   window.__polemicaLobbyAccordion = VER;
 
@@ -26,11 +26,10 @@ export const LOBBY_ACCORDION_JS = `
     return row && row.__vue__;
   };
 
+  // Same rule as /current-games stats + watch tab — seated player with active Twitch.
+  // Do NOT use lobbyTwitchUrl alone (stale media-room flag → false purple on play).
   const lobbyHasLiveStream = (vm) => {
     if (!vm) return false;
-    // Only active Twitch — lobbyInMediaRoom alone marks too many rooms.
-    const twitch = vm.lobbyTwitchUrl && vm.lobbyTwitchUrl.stream;
-    if (twitch && twitch.active && twitch.link) return true;
     const players = Array.isArray(vm.lobby && vm.lobby.players) ? vm.lobby.players : [];
     return players.some(
       (p) => p && !p.quit && p.stream && p.stream.active && p.stream.link

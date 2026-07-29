@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 import { flushSync } from 'react-dom'
 import type { NavState, UserProfile } from '@shared/ipc'
-import { BAN_BANNER_HEIGHT, CHROME_HEIGHT, SEARCH_PLAY_BANNER_HEIGHT } from '@shared/config'
+import {
+  BAN_BANNER_HEIGHT,
+  CHROME_HEIGHT,
+  LOBBY_FILTERS_ROW_HEIGHT,
+  SEARCH_PLAY_BANNER_HEIGHT
+} from '@shared/config'
 import { NavControls } from '../NavControls/NavControls'
 import { UrlPill } from '../UrlPill/UrlPill'
 import { WindowControls } from '../WindowControls/WindowControls'
@@ -11,6 +16,7 @@ import { SideMenuPanel, SideMenuToggle } from '../SideMenu/SideMenu'
 import { SettingsPanel } from '../SettingsPanel/SettingsPanel'
 import { BanBanner } from '../BanBanner/BanBanner'
 import { SearchBanner } from '../SearchBanner/SearchBanner'
+import { LobbyFiltersBar } from '../LobbyFiltersBar/LobbyFiltersBar'
 import { useLiveStats } from '../../hooks/useLiveStats'
 import { useBanStatus } from '../../hooks/useBanStatus'
 import { useSearchStatus } from '../../hooks/useSearchStatus'
@@ -74,8 +80,13 @@ export function ChromeBar({ nav, profile, onLogout }: Props) {
   }, [])
 
   const hasNotice = Boolean(search.noticeTitle || search.noticeText)
-  const bannerVisible = ban.visible || search.visible || search.playVisible || hasNotice
-  const bannerH = ban.visible ? BAN_BANNER_HEIGHT : SEARCH_PLAY_BANNER_HEIGHT
+  const showPlayBanner = !ban.visible && (search.visible || search.playVisible || hasNotice)
+  const showLobbyFilters = !ban.visible
+  const bannerH =
+    (ban.visible ? BAN_BANNER_HEIGHT : 0) +
+    (showPlayBanner ? SEARCH_PLAY_BANNER_HEIGHT : 0) +
+    (showLobbyFilters ? LOBBY_FILTERS_ROW_HEIGHT : 0)
+  const bannerVisible = ban.visible || showPlayBanner || showLobbyFilters
   const chromeH = CHROME_HEIGHT + (bannerVisible ? bannerH : 0)
   const overlayOpen = overlay !== null
   const rootClass = [
@@ -133,6 +144,7 @@ export function ChromeBar({ nav, profile, onLogout }: Props) {
           </div>
         </header>
         {ban.visible ? <BanBanner ban={ban} /> : <SearchBanner search={search} />}
+        {showLobbyFilters ? <LobbyFiltersBar /> : null}
       </div>
     </div>
   )

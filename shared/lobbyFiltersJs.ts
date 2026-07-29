@@ -1,28 +1,22 @@
 /** Lobby table filters + fill-descending sort (injected into page world). */
 export const LOBBY_FILTERS_JS = `
 (() => {
-  const VER = 3;
+  const VER = 5;
   if (window.__polemicaLobbyFilters === VER) return;
   window.__polemicaLobbyFilters = VER;
 
-  const BAR = 'polemica-lobby-filters';
-  const BTN = 'polemica-lobby-filters__btn';
-  const ON = 'polemica-lobby-filters__btn--on';
   const HIDDEN = 'polemica-lobby-row--filtered';
   const STORAGE_KEY = 'polemica.lobbyFilter';
-
-  const FILTERS = [
-    { id: 'all', label: 'Все' },
-    { id: 'lobby', label: 'Обычные' },
-    { id: 'league', label: 'Рейтинг' },
-    { id: 'prime', label: 'Прайм+' }
-  ];
+  const FILTER_IDS = ['all', 'lobby', 'league', 'prime', 'live'];
 
   let filterId = 'all';
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (FILTERS.some((f) => f.id === saved)) filterId = saved;
+    if (FILTER_IDS.includes(saved)) filterId = saved;
   } catch (e) {}
+
+  // Remove legacy in-page filter bar (filters live in Electron chrome now)
+  document.querySelectorAll('.polemica-lobby-filters').forEach((el) => el.remove());
 
   const resolveVm = (row) => {
     let cur = row && row.__vue__;
@@ -39,10 +33,9 @@ export const LOBBY_FILTERS_JS = `
     return Boolean(watch && watch.classList.contains('p-play__tab--active'));
   };
 
+  // Match watch-tab / live.streams: only seated players with active Twitch link.
   const rowHasActiveTwitch = (vm) => {
     if (!vm) return false;
-    const twitch = vm.lobbyTwitchUrl && vm.lobbyTwitchUrl.stream;
-    if (twitch && twitch.active && twitch.link) return true;
     const players = Array.isArray(vm.lobby && vm.lobby.players) ? vm.lobby.players : [];
     return players.some(
       (p) => p && !p.quit && p.stream && p.stream.active && p.stream.link
@@ -129,73 +122,13 @@ export const LOBBY_FILTERS_JS = `
     return { mode, ...seats, started, live };
   };
 
-  const ensureBar = (table) => {
-    let bar = document.querySelector('.' + BAR);
-    if (bar && bar.isConnected) return bar;
-
-    bar = document.createElement('div');
-    bar.className = BAR;
-    bar.setAttribute('role', 'tablist');
-    bar.setAttribute('aria-label', 'Фильтр лобби');
-    bar.innerHTML = FILTERS.map(
-      (f) =>
-        '<button type="button" class="' +
-        BTN +
-        (f.id === filterId ? ' ' + ON : '') +
-        '" data-filter="' +
-        f.id +
-        '" role="tab" aria-selected="' +
-        (f.id === filterId ? 'true' : 'false') +
-        '">' +
-        f.label +
-        '</button>'
-    ).join('');
-
-    bar.addEventListener('click', (e) => {
-      const btn = e.target instanceof Element ? e.target.closest('.' + BTN) : null;
-      if (!btn) return;
-      e.preventDefault();
-      e.stopPropagation();
-      const next = btn.getAttribute('data-filter') || 'all';
-      if (next === filterId) return;
-      filterId = next;
-      try {
-        localStorage.setItem(STORAGE_KEY, filterId);
-      } catch (err) {}
-      bar.querySelectorAll('.' + BTN).forEach((el) => {
-        const on = el.getAttribute('data-filter') === filterId;
-        el.classList.toggle(ON, on);
-        el.setAttribute('aria-selected', on ? 'true' : 'false');
-      });
-      apply();
-    });
-
-    const lobby =
-      table.closest('.p-play__lobby') ||
-      document.querySelector('.p-play__lobby') ||
-      table.parentElement;
-    const header = table.querySelector('.p-play__lobby-table-header-row');
-    if (header && header.parentElement === table) {
-      table.insertBefore(bar, header);
-    } else if (lobby) {
-      lobby.insertBefore(bar, table);
-    } else {
-      table.prepend(bar);
-    }
-    return bar;
-  };
-
   const apply = () => {
     const table = document.querySelector('.p-play__lobby-table');
     if (!table) return;
 
-    const watch = isWatchTab();
-    const bar = ensureBar(table);
-    if (bar) {
-      bar.style.display = watch ? 'none' : '';
-      bar.style.order = '-3';
-    }
+    document.querySelectorAll('.polemica-lobby-filters').forEach((el) => el.remove());
 
+    const watch = isWatchTab();
     const header = table.querySelector('.p-play__lobby-table-header-row');
     if (header) {
       const headerUnit = rowUnit(header);
@@ -206,13 +139,17 @@ export const LOBBY_FILTERS_JS = `
     const scored = rows.map((row, idx) => {
       const meta = rowMeta(row);
       const unit = rowUnit(row);
-      const match = watch
-        ? meta.live
-        : filterId === 'all' || meta.mode === filterId;
+      let match = true;
+      if (watch) {
+        match = meta.live;
+      } else if (filterId === 'live') {
+        match = meta.live;
+      } else if (filterId !== 'all') {
+        match = meta.mode === filterId;
+      }
       return { row, unit, meta, idx, match };
     });
 
-    // Fullest first (10/10 → fewer seats left). Recruiting before started as soft tiebreak.
     scored.sort((a, b) => {
       if (a.meta.remaining !== b.meta.remaining) {
         return a.meta.remaining - b.meta.remaining;
@@ -228,6 +165,18 @@ export const LOBBY_FILTERS_JS = `
       item.unit.style.display = item.match ? '' : 'none';
     });
   };
+
+  window.__polemicaSetLobbyFilter = (id) => {
+    const next = FILTER_IDS.includes(id) ? id : 'all';
+    filterId = next;
+    try {
+      localStorage.setItem(STORAGE_KEY, filterId);
+    } catch (e) {}
+    apply();
+    return filterId;
+  };
+
+  window.__polemicaGetLobbyFilter = () => filterId;
 
   let scheduled = 0;
   const schedule = () => {

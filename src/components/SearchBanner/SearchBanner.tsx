@@ -123,7 +123,11 @@ export function SearchBanner({ search }: Props) {
       aria-label="Поиск игры"
       aria-live={search.visible || hasNotice ? 'polite' : undefined}
     >
-      <div className="search-banner__card search-banner__card--play">
+      <div
+        className={`search-banner__card search-banner__card--play${
+          showModes ? ' search-banner__card--modes' : ''
+        }`}
+      >
         {showModes ? (
           <div className="search-banner__modes-block">
             <div className="search-banner__modes" role="group" aria-label="Режимы поиска">

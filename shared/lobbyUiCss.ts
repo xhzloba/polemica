@@ -35,66 +35,11 @@ export const LOBBY_UI_CSS = `
 }
 
 .p-play__lobby {
-  padding: 16px 4px 10px !important;
+  padding: 28px 4px 14px !important;
 }
 
 .polemica-lobby-filters {
-  display: flex !important;
-  flex-wrap: wrap !important;
-  align-items: center !important;
-  gap: 6px !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
-  margin: 0 0 10px !important;
-  padding: 0 2px !important;
-  order: -3 !important;
-}
-
-.polemica-lobby-filters__btn {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  height: 28px !important;
-  margin: 0 !important;
-  padding: 0 11px !important;
-  border-radius: 8px !important;
-  border: 1px solid rgba(255, 255, 255, 0.09) !important;
-  background: #101418 !important;
-  color: rgba(232, 238, 246, 0.62) !important;
-  font-family:
-    -apple-system,
-    BlinkMacSystemFont,
-    'SF Pro Text',
-    'Helvetica Neue',
-    Helvetica,
-    Arial,
-    sans-serif !important;
-  font-size: 12px !important;
-  font-weight: 650 !important;
-  letter-spacing: -0.01em !important;
-  cursor: pointer !important;
-  transition:
-    background 0.12s ease,
-    border-color 0.12s ease,
-    color 0.12s ease !important;
-}
-
-.polemica-lobby-filters__btn:hover {
-  color: #f5f7f2 !important;
-  border-color: rgba(255, 255, 255, 0.16) !important;
-  background: rgba(255, 255, 255, 0.04) !important;
-}
-
-.polemica-lobby-filters__btn--on {
-  background: rgba(200, 245, 49, 0.14) !important;
-  border-color: rgba(200, 245, 49, 0.38) !important;
-  color: #c8f531 !important;
-}
-
-.polemica-lobby-filters__btn--on:hover {
-  background: rgba(200, 245, 49, 0.18) !important;
-  border-color: rgba(200, 245, 49, 0.45) !important;
-  color: #d4f85c !important;
+  display: none !important;
 }
 
 .p-play__lobby-table-row.polemica-lobby-row--filtered,

@@ -35,7 +35,7 @@
   flex-wrap: nowrap;
   align-items: center;
   justify-content: flex-start;
-  gap: 10px;
+  gap: 14px;
   width: 100%;
   max-width: none;
   min-height: 0;
@@ -60,8 +60,16 @@
 
 .search-banner__card--play {
   align-items: center;
-  gap: 10px;
+  gap: 14px;
   justify-content: flex-start;
+}
+
+.search-banner__card--modes {
+  align-items: center;
+}
+
+.search-banner__section-title {
+  display: none;
 }
 
 .search-banner__spinner {
@@ -81,7 +89,7 @@
   align-items: center;
   justify-content: flex-start;
   flex-wrap: nowrap;
-  gap: 6px;
+  gap: 8px;
   height: var(--play-h);
   width: auto;
   max-width: none;

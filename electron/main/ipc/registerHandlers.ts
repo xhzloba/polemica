@@ -10,13 +10,15 @@ import {
   gameSetLobbySearch,
   gameSetLobbyTab,
   gameStop,
-  getGameNavState
+  getGameNavState,
+  getGameView
 } from '../views/GameBrowserView'
 import {
   enterApp,
   getAuthState,
   loginWithChrome,
   logout,
+  removeAccount,
   resumeSession,
   setChromeOverlay
 } from '../auth/authService'
@@ -61,13 +63,48 @@ export function registerIpcHandlers(getWindow: WindowGetter): void {
     refreshSearchStatus()
     return ok
   })
+  ipcMain.handle(IpcChannels.LOBBY_FILTER_SET, async (_e, id: string) => {
+    const wc = getGameView()?.webContents
+    if (!wc || wc.isDestroyed()) return String(id || 'all')
+    try {
+      return String(
+        await wc.executeJavaScript(
+          `typeof window.__polemicaSetLobbyFilter === 'function'
+            ? window.__polemicaSetLobbyFilter(${JSON.stringify(String(id ?? 'all'))})
+            : ${JSON.stringify(String(id ?? 'all'))}`,
+          true
+        )
+      )
+    } catch {
+      return String(id || 'all')
+    }
+  })
+  ipcMain.handle(IpcChannels.LOBBY_FILTER_GET, async () => {
+    const wc = getGameView()?.webContents
+    if (!wc || wc.isDestroyed()) return 'all'
+    try {
+      return String(
+        await wc.executeJavaScript(
+          `typeof window.__polemicaGetLobbyFilter === 'function' ? window.__polemicaGetLobbyFilter() : 'all'`,
+          true
+        )
+      )
+    } catch {
+      return 'all'
+    }
+  })
   ipcMain.handle(IpcChannels.GET_NAV_STATE, async () => getGameNavState())
 
   ipcMain.handle(IpcChannels.AUTH_GET_STATE, async () => getAuthState())
   ipcMain.handle(IpcChannels.AUTH_LOGIN_CHROME, async () => loginWithChrome())
-  ipcMain.handle(IpcChannels.AUTH_RESUME, async () => resumeSession())
+  ipcMain.handle(IpcChannels.AUTH_RESUME, async (_e, accountId?: string) =>
+    resumeSession(accountId ? String(accountId) : undefined)
+  )
   ipcMain.handle(IpcChannels.AUTH_ENTER_APP, async () => enterApp())
   ipcMain.handle(IpcChannels.AUTH_LOGOUT, async () => logout())
+  ipcMain.handle(IpcChannels.AUTH_REMOVE_ACCOUNT, async (_e, accountId: string) =>
+    removeAccount(String(accountId ?? ''))
+  )
   ipcMain.handle(IpcChannels.LIVE_STATS_GET, async () => getLiveStats())
   ipcMain.handle(IpcChannels.LIVE_STATS_REFRESH, async () => refreshLiveStats())
   ipcMain.handle(IpcChannels.BAN_STATUS_GET, async () => getBanStatus())

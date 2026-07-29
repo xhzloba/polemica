@@ -354,7 +354,7 @@ function hideChromeNoise(): void {
 }
 
 function injectLobbyAccordion(): void {
-  const VER = '7'
+  const VER = '8'
   if (document.documentElement.getAttribute('data-polemica-lobby-accordion') === VER) return
   document.documentElement.setAttribute('data-polemica-lobby-accordion', VER)
   const prev = document.getElementById('polemica-lobby-accordion')
@@ -367,7 +367,7 @@ function injectLobbyAccordion(): void {
 }
 
 function injectLobbyFilters(): void {
-  const VER = '3'
+  const VER = '5'
   if (document.documentElement.getAttribute('data-polemica-lobby-filters') === VER) return
   document.documentElement.setAttribute('data-polemica-lobby-filters', VER)
   const prev = document.getElementById('polemica-lobby-filters')
