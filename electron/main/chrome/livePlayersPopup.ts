@@ -7,6 +7,8 @@ import { gameGoto } from '../views/GameBrowserView'
 const POPUP_WIDTH = 320
 const POPUP_MAX_HEIGHT = 420
 const FALLBACK_AVATAR = `${GAME_ORIGIN}/image/user-avatar?size=100x`
+const PRIME_ICON = `${GAME_ORIGIN}/images/prime-black.svg`
+const SUBSCRIPTION_ICON = `${GAME_ORIGIN}/images/subscription-star.svg`
 
 let popup: BrowserWindow | null = null
 let shellReady: Promise<void> | null = null
@@ -174,6 +176,12 @@ const SHELL_HTML = `<!doctype html>
     min-width: 0;
     flex: 1 1 auto;
   }
+  .name-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+  }
   .name {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -182,25 +190,21 @@ const SHELL_HTML = `<!doctype html>
     font-weight: 600;
     letter-spacing: -0.015em;
     line-height: 1.15;
+    min-width: 0;
   }
-  .badges { display: inline-flex; gap: 4px; min-width: 0; }
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    height: 16px;
-    padding: 0 6px;
-    border-radius: 999px;
-    background: rgba(255,255,255,0.08);
-    color: rgba(232,238,246,0.72);
-    font-size: 10px;
-    font-weight: 650;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    line-height: 1;
+  .mark {
+    flex: 0 0 auto;
+    display: block;
+    object-fit: contain;
   }
-  .badge--prime {
-    background: rgba(200,245,49,0.14);
-    color: #c8f531;
+  .mark--sub {
+    width: 13px;
+    height: 14px;
+  }
+  .mark--prime {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
   }
   .mmr {
     flex: 0 0 auto;
@@ -208,6 +212,14 @@ const SHELL_HTML = `<!doctype html>
     font-size: 12px;
     font-variant-numeric: tabular-nums;
   }
+  .section {
+    padding: 8px 8px 4px;
+    color: rgba(232,238,246,0.42);
+    font-size: 11px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+  }
+  .section:first-child { padding-top: 4px; }
 </style>
 </head>
 <body>
@@ -240,6 +252,8 @@ const SHELL_HTML = `<!doctype html>
   </div>
   <script>
     const FALLBACK = ${JSON.stringify(FALLBACK_AVATAR)};
+    const PRIME_ICON = ${JSON.stringify(PRIME_ICON)};
+    const SUB_ICON = ${JSON.stringify(SUBSCRIPTION_ICON)};
     let roster = [];
     let fallbackCount = 0;
     let filterMode = 'alpha';
@@ -249,65 +263,87 @@ const SHELL_HTML = `<!doctype html>
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;');
     const byName = (a, b) => String(a.username || '').localeCompare(String(b.username || ''), 'ru', { sensitivity: 'base' });
-    const sortActiveThenName = (list) => list.sort((a, b) => {
-      if (a.quit !== b.quit) return a.quit ? 1 : -1;
+    const byRating = (a, b) => {
+      const am = a.mmr == null ? -Infinity : Number(a.mmr);
+      const bm = b.mmr == null ? -Infinity : Number(b.mmr);
+      if (bm !== am) return bm - am;
       return byName(a, b);
-    });
+    };
+    const sortBucket = (list) => filterMode === 'rating' ? list.sort(byRating) : list.sort(byName);
     const arrange = (rows) => {
-      const list = rows.slice();
+      let list = rows.slice();
       if (filterMode === 'quit') {
-        return list.filter((p) => p.quit).sort(byName);
+        list = list.filter((p) => p.quit);
+      } else if (filterMode === 'prime') {
+        list = list.filter((p) => p.primeMember);
       }
-      if (filterMode === 'prime') {
-        return sortActiveThenName(list.filter((p) => p.primeMember));
-      }
-      if (filterMode === 'rating') {
-        return list.sort((a, b) => {
-          const am = a.mmr == null ? -Infinity : Number(a.mmr);
-          const bm = b.mmr == null ? -Infinity : Number(b.mmr);
-          if (bm !== am) return bm - am;
-          if (a.quit !== b.quit) return a.quit ? 1 : -1;
-          return byName(a, b);
-        });
-      }
-      return sortActiveThenName(list);
+      const active = sortBucket(list.filter((p) => !p.quit));
+      const quit = sortBucket(list.filter((p) => p.quit));
+      return { active, quit };
     };
     const emptyForFilter = () => {
       if (filterMode === 'quit') return 'Нет выбывших';
       if (filterMode === 'prime') return 'Нет Prime';
       return 'Никого в лобби';
     };
+    const filterTitle = () => {
+      if (filterMode === 'rating') return 'Рейтинг';
+      if (filterMode === 'quit') return 'Выбывшие';
+      if (filterMode === 'prime') return 'Prime';
+      return 'А–Я';
+    };
+    const rowHtml = (p) => {
+      const sub = p.subscription && !p.primeMember
+        ? '<img class="mark mark--sub" src="' + esc(SUB_ICON) +
+          '" alt="" title="' + esc(p.subscription) + '" draggable="false" />'
+        : '';
+      const prime = p.primeMember
+        ? '<img class="mark mark--prime" src="' + esc(PRIME_ICON) +
+          '" alt="" title="Prime" draggable="false" />'
+        : '';
+      const mmr = p.mmr != null ? '<span class="mmr">' + esc(String(p.mmr)) + '</span>' : '';
+      return '<a class="item' + (p.quit ? ' item--quit' : '') +
+        '" href="polemica-profile:' + encodeURIComponent(p.profileUrl || '') +
+        '" tabindex="-1">' +
+        '<img class="avatar" src="' + esc(p.avatarUrl || FALLBACK) + '" alt="" draggable="false" />' +
+        '<span class="meta"><span class="name-row">' +
+        '<span class="name">' + esc(p.username) + '</span>' +
+        sub + prime +
+        '</span></span>' + mmr + '</a>';
+    };
     const paint = () => {
       const list = document.getElementById('list');
       const count = document.getElementById('count');
-      const rows = arrange(roster);
+      const { active, quit } = arrange(roster);
+      const shown = active.length + quit.length;
       const total = roster.length || fallbackCount || 0;
       const filtered = filterMode === 'quit' || filterMode === 'prime';
-      count.textContent = filtered ? (rows.length + '/' + total) : String(total);
+      count.textContent = filtered ? (shown + '/' + total) : String(total);
       if (!roster.length) {
         list.innerHTML = '<div class="empty">' +
           ((fallbackCount > 0) ? 'Загрузка списка…' : 'Никого в лобби') +
           '</div>';
         return;
       }
-      if (!rows.length) {
-        list.innerHTML = '<div class="empty">' + emptyForFilter() + '</div>';
+      if (!shown) {
+        list.innerHTML =
+          '<div class="section">' + filterTitle() + '</div>' +
+          '<div class="empty">' + emptyForFilter() + '</div>';
         return;
       }
-      list.innerHTML = rows.map((p) => {
-        const badges = [
-          p.subscription ? '<span class="badge">' + esc(p.subscription) + '</span>' : '',
-          p.primeMember ? '<span class="badge badge--prime">prime</span>' : ''
-        ].join('');
-        const mmr = p.mmr != null ? '<span class="mmr">' + esc(String(p.mmr)) + '</span>' : '';
-        return '<a class="item' + (p.quit ? ' item--quit' : '') +
-          '" href="polemica-profile:' + encodeURIComponent(p.profileUrl || '') +
-          '" tabindex="-1">' +
-          '<img class="avatar" src="' + esc(p.avatarUrl || FALLBACK) + '" alt="" draggable="false" />' +
-          '<span class="meta"><span class="name">' + esc(p.username) + '</span>' +
-          (badges ? '<span class="badges">' + badges + '</span>' : '') +
-          '</span>' + mmr + '</a>';
-      }).join('');
+      const parts = [];
+      if (filterMode === 'quit') {
+        parts.push('<div class="section">Выбывшие</div>');
+        parts.push(quit.map(rowHtml).join(''));
+      } else {
+        parts.push('<div class="section">' + filterTitle() + '</div>');
+        if (active.length) parts.push(active.map(rowHtml).join(''));
+        if (quit.length) {
+          parts.push('<div class="section">Выбывшие</div>');
+          parts.push(quit.map(rowHtml).join(''));
+        }
+      }
+      list.innerHTML = parts.join('');
       list.querySelectorAll('img.avatar').forEach((img) => {
         img.addEventListener('error', () => {
           if (img.getAttribute('src') !== FALLBACK) img.setAttribute('src', FALLBACK);
