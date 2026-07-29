@@ -2,6 +2,7 @@ import { APP_BG } from '@shared/config'
 import { GAME_ROOM_CSS } from '@shared/gameRoomCss'
 import { LOBBY_UI_CSS } from '@shared/lobbyUiCss'
 import { LOBBY_ACCORDION_JS } from '@shared/lobbyAccordionJs'
+import { LOBBY_EMPTY_STATE_JS } from '@shared/lobbyEmptyStateJs'
 
 export interface InjectionStyle {
   id: string
@@ -365,6 +366,12 @@ export const INJECTION_SCRIPTS: InjectionScript[] = [
     match: ['/game-search', '/'],
     runAt: 'document-end',
     code: LOBBY_ACCORDION_JS
+  },
+  {
+    id: 'lobby-empty-state',
+    match: ['/game-search', '/'],
+    runAt: 'document-end',
+    code: LOBBY_EMPTY_STATE_JS
   }
 ]
 

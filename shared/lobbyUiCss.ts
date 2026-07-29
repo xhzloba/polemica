@@ -17,6 +17,23 @@ export const LOBBY_UI_CSS = `
   letter-spacing: -0.015em !important;
 }
 
+.polemica-lobby-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+  padding: 18px 16px;
+  margin: 0 16px 8px;
+  border-radius: 14px;
+  background: #101418;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  color: rgba(232, 238, 246, 0.72);
+  font-size: 16px;
+  font-weight: 560;
+  box-sizing: border-box;
+}
+
 .p-play__lobby {
   padding: 4px 4px 12px !important;
 }

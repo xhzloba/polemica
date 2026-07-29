@@ -116,7 +116,8 @@ export function SearchBanner({ search, viewX = 0, menuOpen = false }: Props) {
   const phase = search.phase
   const showModes = (phase === 'idle' || phase === 'searching') && search.modes.length > 0
   const canPlay = search.modes.some((m) => m.selected && m.available)
-  const showIdlePlay = phase === 'idle' || (!search.visible && search.playVisible)
+  const showIdleControls = phase === 'idle'
+  const showChooseModeTitle = showModes
 
   const toggleAutoAccept = (): void => {
     setAutoAccept((prev) => {
@@ -201,29 +202,32 @@ export function SearchBanner({ search, viewX = 0, menuOpen = false }: Props) {
     >
       <div className="search-banner__card search-banner__card--play">
         {showModes ? (
-          <div className="search-banner__modes" role="group" aria-label="Режимы поиска">
-            {search.modes.map((mode) => (
-              <button
-                key={mode.mode}
-                type="button"
-                className={[
-                  'search-banner__mode',
-                  mode.selected && 'search-banner__mode--on',
-                  !mode.available && 'search-banner__mode--off'
-                ]
-                  .filter(Boolean)
-                  .join(' ')}
-                disabled={!mode.available}
-                title={mode.description || mode.title}
-                onClick={() => void window.polemica.toggleSearchMode(mode.mode)}
-              >
-                <span className="search-banner__mode-check" aria-hidden />
-                <span className="search-banner__mode-name">{mode.title}</span>
-                <span className="search-banner__mode-count">
-                  {mode.count}/{mode.countTarget}
-                </span>
-              </button>
-            ))}
+          <div className="search-banner__modes-block">
+            {showChooseModeTitle ? <div className="search-banner__modes-title">Выберите режим</div> : null}
+            <div className="search-banner__modes" role="group" aria-label="Режимы поиска">
+              {search.modes.map((mode) => (
+                <button
+                  key={mode.mode}
+                  type="button"
+                  className={[
+                    'search-banner__mode',
+                    mode.selected && 'search-banner__mode--on',
+                    !mode.available && 'search-banner__mode--off'
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                  disabled={!mode.available}
+                  title={mode.description || mode.title}
+                  onClick={() => void window.polemica.toggleSearchMode(mode.mode)}
+                >
+                  <span className="search-banner__mode-check" aria-hidden />
+                  <span className="search-banner__mode-name">{mode.title}</span>
+                  <span className="search-banner__mode-count">
+                    {mode.count}/{mode.countTarget}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
         ) : null}
 
@@ -326,11 +330,12 @@ export function SearchBanner({ search, viewX = 0, menuOpen = false }: Props) {
               <span className="search-banner__close-spacer" aria-hidden />
             )}
           </div>
-        ) : showIdlePlay ? (
-          playSplit({
-            disabled: !canPlay,
-            onPlay: () => void window.polemica.startGameSearch()
-          })
+        ) : showIdleControls ? (
+          canPlay ? (
+            playSplit({
+              onPlay: () => void window.polemica.startGameSearch()
+            })
+          ) : null
         ) : null}
 
         {hasNotice ? (
