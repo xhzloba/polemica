@@ -3,6 +3,8 @@ import { GAME_ROOM_CSS } from '@shared/gameRoomCss'
 import { LOBBY_UI_CSS } from '@shared/lobbyUiCss'
 import { LOBBY_ACCORDION_JS } from '@shared/lobbyAccordionJs'
 import { LOBBY_EMPTY_STATE_JS } from '@shared/lobbyEmptyStateJs'
+import { LOBBY_FILTERS_JS } from '@shared/lobbyFiltersJs'
+import { LOBBY_UNPAGINATE_JS } from '@shared/lobbyUnpaginateJs'
 import { GAME_AV_GATE_JS } from '@shared/avGateModalJs'
 import { CAMERA_OFF_ON_LOBBY_JS } from '@shared/cameraOffOnLobbyJs'
 
@@ -441,6 +443,18 @@ button.polemica-av-btn:hover {
 
 /** Prefer game preload for observers — executeJavaScript can deadlock with MutationObserver. */
 export const INJECTION_SCRIPTS: InjectionScript[] = [
+  {
+    id: 'lobby-unpaginate',
+    match: ['/game-search', '/'],
+    runAt: 'document-end',
+    code: LOBBY_UNPAGINATE_JS
+  },
+  {
+    id: 'lobby-filters',
+    match: ['/game-search', '/'],
+    runAt: 'document-end',
+    code: LOBBY_FILTERS_JS
+  },
   {
     id: 'lobby-accordion',
     match: ['/game-search', '/'],

@@ -4,7 +4,7 @@ import { PRIME_ICON, SUBSCRIPTION_ICON } from './siteMarks'
 
 export const LOBBY_ACCORDION_JS = `
 (() => {
-  const VER = 4;
+  const VER = 5;
   if (window.__polemicaLobbyAccordion === VER) return;
   window.__polemicaLobbyAccordion = VER;
 
@@ -194,18 +194,20 @@ export const LOBBY_ACCORDION_JS = `
     const panel = document.createElement('div');
     panel.className = PANEL;
     panel.innerHTML =
-      '<div class="polemica-lobby-expand__head">' +
+      '<div class="polemica-lobby-expand__toolbar">' +
       '<div class="polemica-lobby-expand__title">Игроки · ' +
       titleCount +
       '</div>' +
+      '</div>' +
+      '<div class="polemica-lobby-expand__list">' +
+      list +
+      '</div>' +
+      '<div class="polemica-lobby-expand__foot">' +
       '<button type="button" class="polemica-lobby-expand__join"' +
       (joinDisabled ? ' disabled' : '') +
       '>' +
       joinLabel +
       '</button>' +
-      '</div>' +
-      '<div class="polemica-lobby-expand__list">' +
-      list +
       '</div>';
 
     panel.querySelectorAll('a.polemica-lobby-expand__player').forEach((a) => {

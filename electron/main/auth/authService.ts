@@ -10,7 +10,7 @@ import {
 import type { AuthPhase, AuthState, UserProfile } from '@shared/ipc'
 import { IpcChannels } from '@shared/ipc'
 import { importPolemicaCookiesFromChrome } from './chromeCookies'
-import { clearCachedProfile, loadCachedProfile, scrapeProfileFromPage } from './profile'
+import { clearCachedProfile, hasElectronAccessToken, loadCachedProfile, scrapeProfileFromPage } from './profile'
 import {
   getGameView,
   layoutGameView,
@@ -18,7 +18,8 @@ import {
   loadGameUrlReliable,
   prepareGameViewUnderChrome,
   setGameViewVisible,
-  setSessionWatch
+  setSessionWatch,
+  waitForGameLoad
 } from '../views/GameBrowserView'
 import {
   startLiveStatsPolling,
@@ -172,26 +173,35 @@ async function applySessionAndScrape(): Promise<UserProfile> {
   if (!view) throw new Error('Game view не готов')
   if (!hostWindow || hostWindow.isDestroyed()) throw new Error('Окно не готово')
 
-  // Avoid 0-height WebContentsView while splash is up (can cause ERR_TIMED_OUT)
+  // Avoid 0-height / off-screen WebContentsView while splash is up (ERR_TIMED_OUT / dead scrape)
   prepareGameViewUnderChrome(hostWindow)
 
-  await loadGameUrlReliable(GAME_START_URL, 3)
+  await loadGameUrlReliable(GAME_START_URL, 4)
+  try {
+    await waitForGameLoad(25_000)
+  } catch (err) {
+    console.warn('[auth] waitForGameLoad soft-fail', err)
+  }
 
-  // Nuxt may hydrate header after first paint
+  // Nuxt header hydrates after paint; avatar may lag behind username
   let lastError: Error | null = null
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 20; i++) {
     try {
       return await scrapeProfileFromPage((code) => view.webContents.executeJavaScript(code, true))
     } catch (err) {
       lastError = err instanceof Error ? err : new Error(String(err))
-      await new Promise((r) => setTimeout(r, 400))
+      await new Promise((r) => setTimeout(r, 350))
     }
   }
   throw lastError ?? new Error('Не удалось прочитать профиль')
 }
 
 export async function loginWithChrome(): Promise<AuthState> {
-  if (busy) return getAuthState()
+  if (busy) {
+    error = 'Уже выполняется вход…'
+    emit()
+    return getAuthState()
+  }
   busy = true
   error = null
   emit()
@@ -215,41 +225,44 @@ export async function loginWithChrome(): Promise<AuthState> {
 }
 
 export async function resumeSession(): Promise<AuthState> {
-  if (busy) return getAuthState()
+  if (busy) {
+    error = 'Уже выполняется вход…'
+    emit()
+    return getAuthState()
+  }
+  // Prefer fresh DB read in case memory was cleared
+  profile = profile ?? loadCachedProfile()
   if (!profile) {
     error = 'Нет сохранённого профиля'
     emit()
     return getAuthState()
   }
 
-  busy = true
+  // Instant: trust SQLite profile — no Chrome/scrape on the hot path
   error = null
+  busy = false
+  phase = 'greeting'
+  if (hostWindow && !hostWindow.isDestroyed()) layoutForPhase(hostWindow)
   emit()
 
-  try {
-    try {
-      profile = await applySessionAndScrape()
-    } catch (firstErr) {
-      console.warn('[auth] resume with stored cookies failed, re-sync Chrome', firstErr)
-      // Stale Electron session / timed-out load → pull fresh cookies from Chrome
-      await importPolemicaCookiesFromChrome()
-      profile = await applySessionAndScrape()
-    }
-    phase = 'greeting'
-  } catch (err) {
-    error =
-      err instanceof Error
-        ? `${err.message} Попробуй «Войти через Chrome».`
-        : String(err)
-    phase = 'splash'
-    console.error('[auth] resumeSession failed', err)
-  } finally {
-    busy = false
-    if (hostWindow && !hostWindow.isDestroyed()) layoutForPhase(hostWindow)
-    emit()
-  }
+  // Warm Electron session + page in background for «Продолжить» → app
+  void warmSessionInBackground()
 
   return getAuthState()
+}
+
+/** Cookies + hidden game load — never blocks splash/greeting UI. */
+async function warmSessionInBackground(): Promise<void> {
+  try {
+    if (!(await hasElectronAccessToken())) {
+      await importPolemicaCookiesFromChrome()
+    }
+    if (!hostWindow || hostWindow.isDestroyed()) return
+    prepareGameViewUnderChrome(hostWindow)
+    await loadGameUrlReliable(GAME_START_URL, 3)
+  } catch (err) {
+    console.warn('[auth] background session warm failed', err)
+  }
 }
 
 export async function enterApp(): Promise<AuthState> {

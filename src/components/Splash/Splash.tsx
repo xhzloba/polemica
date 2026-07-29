@@ -40,7 +40,7 @@ export function Splash({
         </div>
 
         <p className="splash__lead">
-          Войди через Chrome — подтянем ник и аватар с сайта.
+          Войди через Chrome один раз — ник и аватар сохраним локально.
         </p>
 
         <div className="splash__actions">

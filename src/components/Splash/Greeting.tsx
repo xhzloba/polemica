@@ -22,7 +22,7 @@ export function Greeting({ username, avatarUrl, onContinue }: GreetingProps) {
           Привет, <span className="greet__name">{username}</span>
         </h1>
 
-        <p className="greet__lead">Профиль подтянут. Можно начинать.</p>
+        <p className="greet__lead">Можно начинать — профиль уже сохранён.</p>
 
         <button type="button" className="greet__cta" onClick={onContinue}>
           Продолжить

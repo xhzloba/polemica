@@ -23,25 +23,89 @@ export const LOBBY_UI_CSS = `
   justify-content: center;
   text-align: center;
   width: 100%;
-  padding: 18px 16px;
-  margin: 0 16px 8px;
-  border-radius: 14px;
+  padding: 14px 14px;
+  margin: 0 12px 6px;
+  border-radius: 10px;
   background: #101418;
   border: 1px solid rgba(255, 255, 255, 0.09);
   color: rgba(232, 238, 246, 0.72);
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 560;
   box-sizing: border-box;
 }
 
 .p-play__lobby {
-  padding: 28px 4px 12px !important;
+  padding: 16px 4px 10px !important;
+}
+
+.polemica-lobby-filters {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 6px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  margin: 0 0 10px !important;
+  padding: 0 2px !important;
+  order: -3 !important;
+}
+
+.polemica-lobby-filters__btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 28px !important;
+  margin: 0 !important;
+  padding: 0 11px !important;
+  border-radius: 8px !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  background: #101418 !important;
+  color: rgba(232, 238, 246, 0.62) !important;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Text',
+    'Helvetica Neue',
+    Helvetica,
+    Arial,
+    sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.01em !important;
+  cursor: pointer !important;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease !important;
+}
+
+.polemica-lobby-filters__btn:hover {
+  color: #f5f7f2 !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+.polemica-lobby-filters__btn--on {
+  background: rgba(200, 245, 49, 0.14) !important;
+  border-color: rgba(200, 245, 49, 0.38) !important;
+  color: #c8f531 !important;
+}
+
+.polemica-lobby-filters__btn--on:hover {
+  background: rgba(200, 245, 49, 0.18) !important;
+  border-color: rgba(200, 245, 49, 0.45) !important;
+  color: #d4f85c !important;
+}
+
+.p-play__lobby-table-row.polemica-lobby-row--filtered,
+.polemica-lobby-row--filtered {
+  display: none !important;
 }
 
 .p-play__lobby-table {
   display: flex !important;
   flex-direction: column !important;
-  gap: 10px !important;
+  gap: 6px !important;
   padding: 0 !important;
   margin: 0 !important;
 }
@@ -61,9 +125,9 @@ export const LOBBY_UI_CSS = `
   align-items: center !important;
   gap: 0 !important;
   width: 100% !important;
-  min-height: 32px !important;
+  min-height: 24px !important;
   margin: 0 !important;
-  padding: 0 16px !important;
+  padding: 0 12px !important;
   background: transparent !important;
   border: 0 !important;
   border-radius: 0 !important;
@@ -73,42 +137,42 @@ export const LOBBY_UI_CSS = `
 .p-play__lobby-table-header-row .p-play__lobby-table-cell {
   display: flex !important;
   align-items: center !important;
-  padding: 6px 0 !important;
+  padding: 4px 0 !important;
   border: 0 !important;
   background: transparent !important;
-  color: rgba(232, 238, 246, 0.4) !important;
-  font-size: 14.5px !important;
-  font-weight: 560 !important;
-  letter-spacing: 0.04em !important;
+  color: rgba(232, 238, 246, 0.38) !important;
+  font-size: 11px !important;
+  font-weight: 650 !important;
+  letter-spacing: 0.05em !important;
   text-transform: uppercase !important;
   line-height: 1.2 !important;
 }
 
 .p-play__lobby-table-cell-twitch {
-  gap: 6px !important;
-  color: rgba(232, 238, 246, 0.4) !important;
+  gap: 5px !important;
+  color: rgba(232, 238, 246, 0.38) !important;
 }
 
 .p-play__lobby-table-cell-twitch img {
   opacity: 0.45 !important;
-  width: 11px !important;
-  height: 11px !important;
+  width: 10px !important;
+  height: 10px !important;
 }
 
-/* —— rows —— */
+/* —— rows (compact) —— */
 .p-play__lobby-table-row {
   display: grid !important;
   grid-template-columns: minmax(0, 1.85fr) minmax(0, 1.7fr) minmax(0, 1.65fr) minmax(0, 1fr) !important;
   align-items: center !important;
   gap: 0 !important;
   width: 100% !important;
-  min-height: 72px !important;
+  min-height: 48px !important;
   margin: 0 !important;
-  padding: 0 16px !important;
+  padding: 0 12px !important;
   box-sizing: border-box !important;
   background: #101418 !important;
-  border: 1px solid rgba(255, 255, 255, 0.09) !important;
-  border-radius: 14px !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 10px !important;
   box-shadow: none !important;
   cursor: pointer !important;
   transition:
@@ -134,7 +198,7 @@ export const LOBBY_UI_CSS = `
 }
 
 .p-play__lobby-table-row-started .p-search-lobby-status {
-  color: rgba(232, 238, 246, 0.55) !important;
+  color: rgba(232, 238, 246, 0.5) !important;
 }
 
 .p-play__lobby-table-row-started:hover {
@@ -143,7 +207,6 @@ export const LOBBY_UI_CSS = `
   transform: none !important;
 }
 
-/* site hover chevron — drop, we use card chrome instead */
 .p-play__lobby-table-row::after,
 .p-play__lobby-table-row:hover::after,
 .p-play__lobby-table-row:active::after {
@@ -156,14 +219,14 @@ export const LOBBY_UI_CSS = `
   display: flex !important;
   align-items: center !important;
   min-width: 0 !important;
-  padding: 14px 10px 14px 0 !important;
+  padding: 8px 8px 8px 0 !important;
   border: 0 !important;
   border-bottom: 0 !important;
   background: transparent !important;
-  color: rgba(245, 247, 250, 0.92) !important;
-  font-size: 18px !important;
+  color: rgba(245, 247, 250, 0.9) !important;
+  font-size: 13.5px !important;
   font-weight: 400 !important;
-  line-height: 1.25 !important;
+  line-height: 1.2 !important;
 }
 
 .p-play__lobby-table-row .p-play__lobby-table-cell:last-of-type {
@@ -171,20 +234,21 @@ export const LOBBY_UI_CSS = `
 }
 
 .p-search-lobby-name {
-  gap: 8px !important;
+  gap: 6px !important;
 }
 
 .p-search-lobby-name span {
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   white-space: nowrap !important;
-  font-weight: 560 !important;
+  font-weight: 600 !important;
+  font-size: 13.5px !important;
   color: #f5f7f2 !important;
 }
 
 .p-play__lobby-table-cell-lock {
-  width: 12px !important;
-  height: 12px !important;
+  width: 11px !important;
+  height: 11px !important;
   opacity: 0.55 !important;
   flex: 0 0 auto !important;
 }
@@ -192,12 +256,13 @@ export const LOBBY_UI_CSS = `
 .p-search-lobby-type {
   color: rgba(200, 245, 49, 0.88) !important;
   font-weight: 500 !important;
+  font-size: 13px !important;
 }
 
 .p-search-lobby-players .p-play__lobby-table-cell-players {
   display: flex !important;
   align-items: center !important;
-  gap: 10px !important;
+  gap: 8px !important;
 }
 
 .p-play__lobby-table-avatars {
@@ -206,12 +271,12 @@ export const LOBBY_UI_CSS = `
 }
 
 .p-play__lobby-table-avatars img {
-  width: 38px !important;
-  height: 38px !important;
+  width: 26px !important;
+  height: 26px !important;
   border-radius: 50% !important;
-  border: 2px solid #0b0f14 !important;
+  border: 1.5px solid #0b0f14 !important;
   object-fit: cover !important;
-  margin-left: -10px !important;
+  margin-left: -7px !important;
   background: #1a2028 !important;
 }
 
@@ -220,13 +285,14 @@ export const LOBBY_UI_CSS = `
 }
 
 .p-play__lobby-table--color {
-  color: rgba(232, 238, 246, 0.38) !important;
+  color: rgba(232, 238, 246, 0.36) !important;
+  font-size: 12.5px !important;
 }
 
 .p-search-lobby-status {
-  gap: 6px !important;
-  color: rgba(232, 238, 246, 0.72) !important;
-  font-size: 15.5px !important;
+  gap: 5px !important;
+  color: rgba(232, 238, 246, 0.68) !important;
+  font-size: 12.5px !important;
   font-weight: 500 !important;
 }
 
@@ -234,17 +300,14 @@ export const LOBBY_UI_CSS = `
   display: none !important;
 }
 
-/* status accents via text match — soft pills */
 .p-search-lobby-status {
   position: relative !important;
 }
 
-/* keep join button hidden (site default) but harmless if shown */
 .p-play__lobby-join {
   display: none !important;
 }
 
-/* —— hide site hover popover; accordion is injected instead —— */
 .p-play__participants {
   display: none !important;
   visibility: hidden !important;
@@ -252,25 +315,27 @@ export const LOBBY_UI_CSS = `
   opacity: 0 !important;
 }
 
+/* —— open row —— */
 .p-play__lobby-table-row.polemica-lobby-row--open {
   grid-template-rows: auto auto !important;
   align-items: stretch !important;
-  padding-bottom: 12px !important;
-  border-color: rgba(200, 245, 49, 0.28) !important;
-  background: #101418 !important;
+  padding-bottom: 0 !important;
+  border-color: rgba(200, 245, 49, 0.32) !important;
+  background: #0e1217 !important;
+  overflow: hidden !important;
 }
 
 .polemica-lobby-expand {
   grid-column: 1 / -1 !important;
   display: flex !important;
   flex-direction: column !important;
-  gap: 10px !important;
-  margin: 4px 0 0 !important;
-  padding: 4px 0 0 !important;
-  border-radius: 0 !important;
+  gap: 0 !important;
+  margin: 0 -12px 0 !important;
+  padding: 0 !important;
+  border-radius: 0 0 10px 10px !important;
   border: 0 !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
-  background: transparent !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.07) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, transparent 28%) !important;
   box-shadow: none !important;
   box-sizing: border-box !important;
   font-family:
@@ -282,83 +347,72 @@ export const LOBBY_UI_CSS = `
     Arial,
     sans-serif !important;
   -webkit-font-smoothing: antialiased !important;
+  animation: polemica-lobby-expand-in 0.18s ease-out !important;
 }
 
-.polemica-lobby-expand__head {
+@keyframes polemica-lobby-expand-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.polemica-lobby-expand__toolbar {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  gap: 12px !important;
+  gap: 10px !important;
+  padding: 10px 12px 8px !important;
 }
 
 .polemica-lobby-expand__title {
-  color: rgba(232, 238, 246, 0.45) !important;
-  font-size: 12px !important;
+  color: rgba(232, 238, 246, 0.42) !important;
+  font-size: 11px !important;
   font-weight: 650 !important;
-  letter-spacing: 0.04em !important;
+  letter-spacing: 0.05em !important;
   text-transform: uppercase !important;
 }
 
-.polemica-lobby-expand__join {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  height: 36px !important;
-  margin: 0 !important;
-  padding: 0 16px !important;
-  border: 0 !important;
-  border-radius: 10px !important;
-  background: #c8f531 !important;
-  color: #0b0f14 !important;
-  font-size: 13.5px !important;
-  font-weight: 650 !important;
-  letter-spacing: -0.02em !important;
-  cursor: pointer !important;
-  white-space: nowrap !important;
-  transition: filter 0.12s ease, opacity 0.12s ease !important;
-}
-
-.polemica-lobby-expand__join:hover:not(:disabled) {
-  filter: brightness(1.06) !important;
-}
-
-.polemica-lobby-expand__join:disabled {
-  opacity: 0.4 !important;
-  cursor: default !important;
-  filter: none !important;
-}
-
 .polemica-lobby-expand__list {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 2px !important;
-  /* ~10 seats + quit block; was 280px — cramped on click-expand */
-  max-height: min(56vh, 560px) !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 6px !important;
+  padding: 0 12px 10px !important;
+  max-height: min(42vh, 380px) !important;
   overflow: auto !important;
 }
 
 .polemica-lobby-expand__player {
   display: flex !important;
   align-items: center !important;
-  gap: 10px !important;
+  gap: 8px !important;
   margin: 0 !important;
-  padding: 8px 8px !important;
-  border-radius: 10px !important;
-  border: 1px solid transparent !important;
+  padding: 7px 8px !important;
+  min-width: 0 !important;
+  border-radius: 9px !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
   box-sizing: border-box !important;
   color: #f5f7f2 !important;
   text-decoration: none !important;
-  transition: background 0.12s ease, opacity 0.12s ease, border-color 0.12s ease !important;
+  transition: background 0.12s ease, border-color 0.12s ease !important;
 }
 
 .polemica-lobby-expand__player:hover {
   background: rgba(200, 245, 49, 0.08) !important;
+  border-color: rgba(200, 245, 49, 0.22) !important;
   text-decoration: none !important;
   color: #f5f7f2 !important;
 }
 
 .polemica-lobby-expand__player--quit {
-  opacity: 0.48 !important;
+  opacity: 0.45 !important;
+  background: transparent !important;
+  border-color: transparent !important;
 }
 
 .polemica-lobby-expand__player--live {
@@ -373,15 +427,15 @@ export const LOBBY_UI_CSS = `
 
 .polemica-lobby-expand__player--live .polemica-lobby-expand__avatar {
   border-color: rgba(145, 70, 255, 0.55) !important;
-  box-shadow: 0 0 0 2px rgba(145, 70, 255, 0.18) !important;
+  box-shadow: 0 0 0 1.5px rgba(145, 70, 255, 0.18) !important;
 }
 
 .polemica-lobby-expand__avatar {
-  width: 34px !important;
-  height: 34px !important;
-  flex: 0 0 34px !important;
+  width: 28px !important;
+  height: 28px !important;
+  flex: 0 0 28px !important;
   border-radius: 50% !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.12) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.1) !important;
   object-fit: cover !important;
   background: #1a2028 !important;
 }
@@ -393,7 +447,7 @@ export const LOBBY_UI_CSS = `
 .polemica-lobby-expand__meta {
   display: flex !important;
   flex-direction: column !important;
-  gap: 2px !important;
+  gap: 1px !important;
   min-width: 0 !important;
   flex: 1 1 auto !important;
 }
@@ -401,7 +455,7 @@ export const LOBBY_UI_CSS = `
 .polemica-lobby-expand__name-row {
   display: flex !important;
   align-items: center !important;
-  gap: 5px !important;
+  gap: 4px !important;
   min-width: 0 !important;
 }
 
@@ -409,7 +463,7 @@ export const LOBBY_UI_CSS = `
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   white-space: nowrap !important;
-  font-size: 14.5px !important;
+  font-size: 12.5px !important;
   font-weight: 650 !important;
   letter-spacing: -0.015em !important;
   line-height: 1.2 !important;
@@ -423,19 +477,19 @@ export const LOBBY_UI_CSS = `
 }
 
 .polemica-lobby-expand__mark--prime {
-  width: 16px !important;
-  height: 16px !important;
+  width: 13px !important;
+  height: 13px !important;
 }
 
 .polemica-lobby-expand__mark--sub {
-  width: 15px !important;
-  height: 16px !important;
+  width: 12px !important;
+  height: 13px !important;
 }
 
 .polemica-lobby-expand__mark--twitch {
-  width: 15px !important;
-  height: 15px !important;
-  border-radius: 4px !important;
+  width: 12px !important;
+  height: 12px !important;
+  border-radius: 3px !important;
   cursor: pointer !important;
   opacity: 0.55 !important;
 }
@@ -448,21 +502,21 @@ export const LOBBY_UI_CSS = `
 .polemica-lobby-expand__mmr {
   display: inline-flex !important;
   align-items: center !important;
-  gap: 5px !important;
+  gap: 3px !important;
   flex: 0 0 auto !important;
-  margin-left: auto !important;
+  margin-left: 2px !important;
 }
 
 .polemica-lobby-expand__mmr-icon {
-  width: 18px !important;
-  height: 18px !important;
-  flex: 0 0 18px !important;
+  width: 14px !important;
+  height: 14px !important;
+  flex: 0 0 14px !important;
   display: block !important;
   object-fit: contain !important;
 }
 
 .polemica-lobby-expand__mmr-text {
-  font-size: 13px !important;
+  font-size: 11px !important;
   font-weight: 700 !important;
   font-variant-numeric: tabular-nums !important;
   letter-spacing: -0.02em !important;
@@ -506,60 +560,80 @@ export const LOBBY_UI_CSS = `
 }
 
 .polemica-lobby-expand__section {
-  margin: 8px 0 2px !important;
-  padding: 0 8px !important;
-  color: rgba(232, 238, 246, 0.42) !important;
-  font-size: 11.5px !important;
+  grid-column: 1 / -1 !important;
+  margin: 4px 0 0 !important;
+  padding: 6px 2px 2px !important;
+  color: rgba(232, 238, 246, 0.38) !important;
+  font-size: 10.5px !important;
   font-weight: 650 !important;
-  letter-spacing: 0.04em !important;
+  letter-spacing: 0.05em !important;
   text-transform: uppercase !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
 }
 
 .polemica-lobby-expand__empty {
-  padding: 10px 8px !important;
-  color: rgba(232, 238, 246, 0.45) !important;
-  font-size: 13px !important;
+  grid-column: 1 / -1 !important;
+  padding: 12px 4px !important;
+  color: rgba(232, 238, 246, 0.42) !important;
+  font-size: 12.5px !important;
+  text-align: center !important;
 }
 
-/* pagination */
-.p-play__lobby .pages,
-.p-play__lobby .pagination__container,
-.pagination__container {
+.polemica-lobby-expand__foot {
   display: flex !important;
-  justify-content: center !important;
   align-items: center !important;
-  gap: 6px !important;
-  margin-top: 14px !important;
-  padding: 0 !important;
-  background: transparent !important;
+  padding: 8px 12px 12px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+  background: rgba(0, 0, 0, 0.18) !important;
 }
 
-.pagination__page {
-  min-width: 36px !important;
-  height: 36px !important;
-  padding: 0 12px !important;
-  border-radius: 10px !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  background: #101418 !important;
-  color: rgba(232, 238, 246, 0.72) !important;
-  font-size: 16px !important;
-  font-weight: 500 !important;
-  cursor: pointer !important;
+.polemica-lobby-expand__join {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease !important;
+  width: 100% !important;
+  height: 36px !important;
+  margin: 0 !important;
+  padding: 0 16px !important;
+  border: 0 !important;
+  border-radius: 9px !important;
+  background: #c8f531 !important;
+  color: #0b0f14 !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  transition: filter 0.12s ease, opacity 0.12s ease, transform 0.1s ease !important;
 }
 
-.pagination__page:hover {
-  background: rgba(255, 255, 255, 0.06) !important;
-  color: #f5f7f2 !important;
+.polemica-lobby-expand__join:hover:not(:disabled) {
+  filter: brightness(1.06) !important;
 }
 
-.pagination__page-active,
-.pagination__page.pagination__page-active {
-  background: rgba(200, 245, 49, 0.16) !important;
-  border-color: rgba(200, 245, 49, 0.35) !important;
-  color: #c8f531 !important;
+.polemica-lobby-expand__join:active:not(:disabled) {
+  transform: scale(0.99) !important;
+}
+
+.polemica-lobby-expand__join:disabled {
+  opacity: 0.38 !important;
+  cursor: default !important;
+  filter: none !important;
+}
+
+/* pagination — hidden; client loads full list via lobby-unpaginate */
+.p-play__lobby .pages,
+.p-play__lobby .pagination__container,
+.pagination__container,
+.pages,
+.pagination__page {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  max-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
 }
 `

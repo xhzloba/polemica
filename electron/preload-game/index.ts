@@ -6,6 +6,8 @@
 import { GAME_ROOM_CSS } from '@shared/gameRoomCss'
 import { LOBBY_UI_CSS } from '@shared/lobbyUiCss'
 import { LOBBY_ACCORDION_JS } from '@shared/lobbyAccordionJs'
+import { LOBBY_FILTERS_JS } from '@shared/lobbyFiltersJs'
+import { LOBBY_UNPAGINATE_JS } from '@shared/lobbyUnpaginateJs'
 import { GAME_AV_GATE_JS } from '@shared/avGateModalJs'
 import { CAMERA_OFF_ON_LOBBY_JS } from '@shared/cameraOffOnLobbyJs'
 
@@ -352,7 +354,7 @@ function hideChromeNoise(): void {
 }
 
 function injectLobbyAccordion(): void {
-  const VER = '4'
+  const VER = '5'
   if (document.documentElement.getAttribute('data-polemica-lobby-accordion') === VER) return
   document.documentElement.setAttribute('data-polemica-lobby-accordion', VER)
   const prev = document.getElementById('polemica-lobby-accordion')
@@ -360,6 +362,32 @@ function injectLobbyAccordion(): void {
   const s = document.createElement('script')
   s.id = 'polemica-lobby-accordion'
   s.textContent = LOBBY_ACCORDION_JS
+  const root = document.head || document.documentElement
+  root.appendChild(s)
+}
+
+function injectLobbyFilters(): void {
+  const VER = '2'
+  if (document.documentElement.getAttribute('data-polemica-lobby-filters') === VER) return
+  document.documentElement.setAttribute('data-polemica-lobby-filters', VER)
+  const prev = document.getElementById('polemica-lobby-filters')
+  if (prev) prev.remove()
+  const s = document.createElement('script')
+  s.id = 'polemica-lobby-filters'
+  s.textContent = LOBBY_FILTERS_JS
+  const root = document.head || document.documentElement
+  root.appendChild(s)
+}
+
+function injectLobbyUnpaginate(): void {
+  const VER = '4'
+  if (document.documentElement.getAttribute('data-polemica-lobby-unpaginate') === VER) return
+  document.documentElement.setAttribute('data-polemica-lobby-unpaginate', VER)
+  const prev = document.getElementById('polemica-lobby-unpaginate')
+  if (prev) prev.remove()
+  const s = document.createElement('script')
+  s.id = 'polemica-lobby-unpaginate'
+  s.textContent = LOBBY_UNPAGINATE_JS
   const root = document.head || document.documentElement
   root.appendChild(s)
 }
@@ -393,6 +421,8 @@ function injectCameraOffOnLobby(): void {
 function start(): void {
   ensureBootLoader()
   hideChromeNoise()
+  injectLobbyUnpaginate()
+  injectLobbyFilters()
   injectLobbyAccordion()
   injectAvGate()
   injectCameraOffOnLobby()
