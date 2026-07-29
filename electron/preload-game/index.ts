@@ -5,6 +5,7 @@
 
 import { GAME_ROOM_CSS } from '@shared/gameRoomCss'
 import { LOBBY_UI_CSS } from '@shared/lobbyUiCss'
+import { LOBBY_ACCORDION_JS } from '@shared/lobbyAccordionJs'
 
 const CLIENT_CSS = `
 :root {
@@ -270,8 +271,19 @@ function hideChromeNoise(): void {
   })
 }
 
+function injectLobbyAccordion(): void {
+  if (document.documentElement.getAttribute('data-polemica-lobby-accordion')) return
+  document.documentElement.setAttribute('data-polemica-lobby-accordion', '1')
+  const s = document.createElement('script')
+  s.id = 'polemica-lobby-accordion'
+  s.textContent = LOBBY_ACCORDION_JS
+  const root = document.head || document.documentElement
+  root.appendChild(s)
+}
+
 function start(): void {
   hideChromeNoise()
+  injectLobbyAccordion()
 
   new MutationObserver((mutations) => {
     for (const mutation of mutations) {

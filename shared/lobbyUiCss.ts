@@ -111,13 +111,18 @@ export const LOBBY_UI_CSS = `
 }
 
 .p-play__lobby-table-row-started {
-  opacity: 0.52 !important;
-  cursor: not-allowed !important;
+  opacity: 1 !important;
+  cursor: pointer !important;
+  filter: none !important;
+}
+
+.p-play__lobby-table-row-started .p-search-lobby-status {
+  color: rgba(232, 238, 246, 0.55) !important;
 }
 
 .p-play__lobby-table-row-started:hover {
-  background: #101418 !important;
-  border-color: rgba(255, 255, 255, 0.09) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
   transform: none !important;
 }
 
@@ -222,41 +227,190 @@ export const LOBBY_UI_CSS = `
   display: none !important;
 }
 
-/* participants popover */
-.p-play__participants,
-.participants {
-  z-index: 80 !important;
+/* —— hide site hover popover; accordion is injected instead —— */
+.p-play__participants {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
 }
 
-.participants {
-  background: #12171e !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-radius: 12px !important;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45) !important;
-  padding: 10px 12px !important;
+.p-play__lobby-table-row.polemica-lobby-row--open {
+  grid-template-rows: auto auto !important;
+  align-items: stretch !important;
+  padding-bottom: 12px !important;
+  border-color: rgba(200, 245, 49, 0.28) !important;
+  background: #101418 !important;
+}
+
+.polemica-lobby-expand {
+  grid-column: 1 / -1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  margin: 4px 0 0 !important;
+  padding: 4px 0 0 !important;
+  border-radius: 0 !important;
+  border: 0 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  box-sizing: border-box !important;
   font-family:
     -apple-system,
     BlinkMacSystemFont,
     'SF Pro Text',
     'Helvetica Neue',
+    Helvetica,
+    Arial,
     sans-serif !important;
+  -webkit-font-smoothing: antialiased !important;
 }
 
-.participants-title {
+.polemica-lobby-expand__head {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+}
+
+.polemica-lobby-expand__title {
   color: rgba(232, 238, 246, 0.45) !important;
-  font-size: 11px !important;
-  font-weight: 560 !important;
+  font-size: 12px !important;
+  font-weight: 650 !important;
   letter-spacing: 0.04em !important;
   text-transform: uppercase !important;
 }
 
-.participants-item {
-  border-radius: 8px !important;
+.polemica-lobby-expand__join {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 36px !important;
+  margin: 0 !important;
+  padding: 0 16px !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: #c8f531 !important;
+  color: #0b0f14 !important;
+  font-size: 13.5px !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.02em !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  transition: filter 0.12s ease, opacity 0.12s ease !important;
 }
 
-.participants-name span {
+.polemica-lobby-expand__join:hover:not(:disabled) {
+  filter: brightness(1.06) !important;
+}
+
+.polemica-lobby-expand__join:disabled {
+  opacity: 0.4 !important;
+  cursor: default !important;
+  filter: none !important;
+}
+
+.polemica-lobby-expand__list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  max-height: 280px !important;
+  overflow: auto !important;
+}
+
+.polemica-lobby-expand__player {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin: 0 !important;
+  padding: 8px 8px !important;
+  border-radius: 10px !important;
   color: #f5f7f2 !important;
-  font-weight: 500 !important;
+  text-decoration: none !important;
+  transition: background 0.12s ease !important;
+}
+
+.polemica-lobby-expand__player:hover {
+  background: rgba(200, 245, 49, 0.08) !important;
+  text-decoration: none !important;
+  color: #f5f7f2 !important;
+}
+
+.polemica-lobby-expand__avatar {
+  width: 34px !important;
+  height: 34px !important;
+  flex: 0 0 34px !important;
+  border-radius: 50% !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.12) !important;
+  object-fit: cover !important;
+  background: #1a2028 !important;
+}
+
+.polemica-lobby-expand__avatar--empty {
+  display: inline-block !important;
+}
+
+.polemica-lobby-expand__meta {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+}
+
+.polemica-lobby-expand__name {
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font-size: 14.5px !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.015em !important;
+  line-height: 1.2 !important;
+}
+
+.polemica-lobby-expand__badges {
+  display: inline-flex !important;
+  gap: 4px !important;
+}
+
+.polemica-lobby-expand__badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 1px 6px !important;
+  border-radius: 5px !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: rgba(232, 238, 246, 0.55) !important;
+  font-size: 10.5px !important;
+  font-weight: 650 !important;
+  letter-spacing: 0.02em !important;
+  text-transform: uppercase !important;
+  line-height: 1.2 !important;
+}
+
+.polemica-lobby-expand__badge--prime {
+  background: rgba(200, 245, 49, 0.12) !important;
+  color: #c8f531 !important;
+}
+
+.polemica-lobby-expand__mmr {
+  flex: 0 0 auto !important;
+  margin-left: auto !important;
+  padding: 3px 8px !important;
+  border-radius: 7px !important;
+  background: rgba(200, 245, 49, 0.1) !important;
+  border: 1px solid rgba(200, 245, 49, 0.22) !important;
+  color: #c8f531 !important;
+  font-size: 12.5px !important;
+  font-weight: 650 !important;
+  font-variant-numeric: tabular-nums !important;
+  line-height: 1.2 !important;
+}
+
+.polemica-lobby-expand__empty {
+  padding: 10px 8px !important;
+  color: rgba(232, 238, 246, 0.45) !important;
+  font-size: 13px !important;
 }
 
 /* pagination */

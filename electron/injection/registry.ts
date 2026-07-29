@@ -1,6 +1,7 @@
 import { APP_BG } from '@shared/config'
 import { GAME_ROOM_CSS } from '@shared/gameRoomCss'
 import { LOBBY_UI_CSS } from '@shared/lobbyUiCss'
+import { LOBBY_ACCORDION_JS } from '@shared/lobbyAccordionJs'
 
 export interface InjectionStyle {
   id: string
@@ -358,7 +359,14 @@ export const INJECTION_STYLES: InjectionStyle[] = [
 ]
 
 /** Prefer game preload for observers — executeJavaScript can deadlock with MutationObserver. */
-export const INJECTION_SCRIPTS: InjectionScript[] = []
+export const INJECTION_SCRIPTS: InjectionScript[] = [
+  {
+    id: 'lobby-accordion',
+    match: ['/game-search', '/'],
+    runAt: 'document-end',
+    code: LOBBY_ACCORDION_JS
+  }
+]
 
 export function stylesForUrl(url: string): InjectionStyle[] {
   return INJECTION_STYLES.filter((s) => pathMatches(url, s.match))
