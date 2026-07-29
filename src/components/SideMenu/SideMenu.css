@@ -40,12 +40,11 @@
   box-sizing: border-box;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.07);
-  background: rgba(6, 8, 11, 0.62);
-  backdrop-filter: blur(18px) saturate(1.1);
-  -webkit-backdrop-filter: blur(18px) saturate(1.1);
+  background: #0b0f14;
   -webkit-app-region: no-drag;
   animation: side-menu-in 0.2s cubic-bezier(0.22, 1, 0.36, 1);
   overflow: hidden;
+  z-index: 2;
 }
 
 /* Room for native traffic lights inside the card */
@@ -101,20 +100,10 @@
 .side-menu__nav {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
   min-height: 0;
   overflow: auto;
   padding-top: 2px;
-}
-
-.side-menu__group {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  padding: 4px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.055);
-  background: rgba(255, 255, 255, 0.025);
 }
 
 .side-menu__item {
@@ -124,9 +113,9 @@
   width: 100%;
   margin: 0;
   padding: 10px 10px;
-  border: 0;
-  border-radius: 9px;
-  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.035);
   color: rgba(245, 245, 247, 0.92);
   font-family:
     -apple-system,
@@ -141,11 +130,13 @@
   cursor: pointer;
   transition:
     background 0.12s ease,
+    border-color 0.12s ease,
     color 0.12s ease;
 }
 
 .side-menu__item:hover {
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .side-menu__item:disabled {
@@ -169,12 +160,14 @@
 }
 
 .side-menu__item--active {
-  background: rgba(200, 245, 49, 0.16);
+  background: rgba(200, 245, 49, 0.14);
+  border-color: rgba(200, 245, 49, 0.28);
   color: #c8f531;
 }
 
 .side-menu__item--active:hover {
-  background: rgba(200, 245, 49, 0.2);
+  background: rgba(200, 245, 49, 0.18);
+  border-color: rgba(200, 245, 49, 0.36);
 }
 
 .side-menu__icon {

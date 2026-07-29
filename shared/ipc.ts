@@ -37,6 +37,8 @@ export const IpcChannels = {
   CHROME_OVERLAY: 'chrome:overlay',
   LIVE_PLAYERS_MENU: 'chrome:live-players-menu',
   PLAY_ACTION_MENU: 'chrome:play-action-menu',
+  PREFS_GET: 'prefs:get',
+  PREFS_SET: 'prefs:set',
 
   // main → renderer
   NAV_STATE: 'nav:state',
@@ -85,6 +87,12 @@ export interface LivePlayer {
   primeMember: boolean
   quit: boolean
   profileUrl: string
+}
+
+/** Client-only preferences (Electron userData). */
+export interface ClientPrefs {
+  /** Force camera off when entering a /game lobby. */
+  cameraOffOnLobbyEnter: boolean
 }
 
 /** Aggregated from /current-games/get-current-games */
@@ -214,4 +222,6 @@ export interface PolemicaApi {
     },
     opts: { autoAccept: boolean }
   ) => Promise<{ autoAccept: boolean } | null>
+  getPrefs: () => Promise<ClientPrefs>
+  setPrefs: (patch: Partial<ClientPrefs>) => Promise<ClientPrefs>
 }

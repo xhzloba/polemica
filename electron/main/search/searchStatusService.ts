@@ -1047,6 +1047,13 @@ async function tick(generation: number): Promise<void> {
 
     // Inside /game room: keep sticky session, but never show continue/quit over the room.
     if (onGameRoomUrl || raw.onGameRoom || (raw.phase === 'inGame' && raw.visible === false)) {
+      if (last?.phase !== 'inGame') {
+        void import('../prefs/clientPrefs')
+          .then(({ syncCameraOffPrefToGame, getClientPrefs }) => {
+            if (getClientPrefs().cameraOffOnLobbyEnter) return syncCameraOffPrefToGame(true)
+          })
+          .catch(() => undefined)
+      }
       const next: SearchStatus = {
         phase: 'inGame',
         active: false,

@@ -37,6 +37,8 @@ import {
 import { popupProfileMenu } from '../chrome/profileMenu'
 import { openLivePlayersMenu } from '../chrome/livePlayersPopup'
 import { openPlayActionMenu } from '../chrome/playActionMenuPopup'
+import { getClientPrefs, setClientPrefs } from '../prefs/clientPrefs'
+import type { ClientPrefs } from '@shared/ipc'
 
 type WindowGetter = () => BW | null
 
@@ -130,6 +132,11 @@ export function registerIpcHandlers(getWindow: WindowGetter): void {
       if (!win) return null
       return popupProfileMenu(win, anchor)
     }
+  )
+
+  ipcMain.handle(IpcChannels.PREFS_GET, async () => getClientPrefs())
+  ipcMain.handle(IpcChannels.PREFS_SET, async (_e, patch: Partial<ClientPrefs>) =>
+    setClientPrefs(patch && typeof patch === 'object' ? patch : {})
   )
 
   ipcMain.handle(IpcChannels.WINDOW_MINIMIZE, async () => {

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { BookOpen, ChevronLeft, LoaderCircle, Menu, Plus, Radio, Search, Swords } from 'lucide-react'
+import { BookOpen, ChevronLeft, LoaderCircle, Menu, Plus, Radio, Search, Settings, Swords } from 'lucide-react'
 import { GAME_ORIGIN } from '@shared/config'
 import type { LiveStats, SearchStatus } from '@shared/ipc'
 import './SideMenu.css'
@@ -8,7 +8,7 @@ type MenuItem = {
   label: string
   icon: typeof Swords
   path?: string
-  action?: 'create-lobby' | 'play' | 'streams'
+  action?: 'create-lobby' | 'play' | 'streams' | 'settings'
   accent?: boolean
   liveDot?: boolean
 }
@@ -17,13 +17,15 @@ const ITEMS: MenuItem[] = [
   { label: 'Создать лобби', icon: Plus, action: 'create-lobby', accent: true },
   { label: 'Играть', path: '/game-search', icon: Swords, action: 'play' },
   { label: 'Трансляции', path: '/game-search', icon: Radio, action: 'streams', liveDot: true },
-  { label: 'Правила', path: '/rules', icon: BookOpen }
+  { label: 'Правила', path: '/rules', icon: BookOpen },
+  { label: 'Настройки', icon: Settings, action: 'settings' }
 ]
 
 interface Props {
   currentUrl: string
   open: boolean
   onOpenChange: (open: boolean) => void
+  onOpenSettings: () => void
   live: LiveStats
   search: SearchStatus
 }
@@ -79,7 +81,14 @@ export function SideMenuToggle({
   )
 }
 
-export function SideMenuPanel({ currentUrl, open, onOpenChange, live, search }: Props) {
+export function SideMenuPanel({
+  currentUrl,
+  open,
+  onOpenChange,
+  onOpenSettings,
+  live,
+  search
+}: Props) {
   const [query, setQuery] = useState('')
   const [lobbyTab, setLobbyTab] = useState<'play' | 'watch'>('play')
   const [tabBusy, setTabBusy] = useState(false)
@@ -137,11 +146,12 @@ export function SideMenuPanel({ currentUrl, open, onOpenChange, live, search }: 
       switchLobbyTab('watch')
       return
     }
+    if (item.action === 'settings') {
+      onOpenSettings?.()
+      return
+    }
     if (item.path) void window.polemica.goto(`${GAME_ORIGIN}${item.path}`)
   }
-
-  const primary = ITEMS.filter((i) => i.accent)
-  const rest = ITEMS.filter((i) => !i.accent)
 
   const renderItem = (item: MenuItem): ReactNode => {
     const Icon = item.icon
@@ -220,8 +230,7 @@ export function SideMenuPanel({ currentUrl, open, onOpenChange, live, search }: 
       </label>
 
       <nav className="side-menu__nav" aria-label="Разделы сайта">
-        {primary.length ? <div className="side-menu__group">{primary.map(renderItem)}</div> : null}
-        <div className="side-menu__group">{rest.map(renderItem)}</div>
+        {ITEMS.map(renderItem)}
       </nav>
     </aside>
   )

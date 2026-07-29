@@ -8,6 +8,7 @@ import { WindowControls } from '../WindowControls/WindowControls'
 import { LiveOnline } from '../LiveOnline/LiveOnline'
 import { TitleBarProfile } from '../TitleBarProfile/TitleBarProfile'
 import { SideMenuPanel, SideMenuToggle } from '../SideMenu/SideMenu'
+import { SettingsPanel } from '../SettingsPanel/SettingsPanel'
 import { BanBanner } from '../BanBanner/BanBanner'
 import { SearchBanner } from '../SearchBanner/SearchBanner'
 import { useLiveStats } from '../../hooks/useLiveStats'
@@ -16,6 +17,8 @@ import { useSearchStatus } from '../../hooks/useSearchStatus'
 import './ChromeBar.css'
 
 const INSET_DEADZONE = 12
+
+type OverlayMode = 'menu' | 'settings' | null
 
 function stabilizeLobbyInset(next: number, prev: number): number {
   const n = Math.max(12, Math.round(next) || 24)
@@ -33,29 +36,25 @@ export function ChromeBar({ nav, profile, onLogout }: Props) {
   const live = useLiveStats()
   const ban = useBanStatus()
   const search = useSearchStatus()
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [menuBusy, setMenuBusy] = useState(false)
+  const [overlay, setOverlay] = useState<OverlayMode>(null)
+  const [busy, setBusy] = useState(false)
   const [lobbyInset, setLobbyInset] = useState(24)
 
   useEffect(() => {
     setLobbyInset((prev) => stabilizeLobbyInset(search.insetLeft || 24, prev))
   }, [search.insetLeft])
 
-  const setMenu = useCallback(
-    (open: boolean) => {
-      if (!window.polemica || menuBusy) return
-      if (open === menuOpen) return
-      setMenuBusy(true)
-      try {
-        // Sync IPC + flushSync: game bounds and chrome grid commit before the next paint.
-        window.polemica.setChromeOverlay(open)
-        flushSync(() => setMenuOpen(open))
-      } finally {
-        setMenuBusy(false)
-      }
-    },
-    [menuBusy, menuOpen]
-  )
+  const applyOverlay = useCallback((next: OverlayMode) => {
+    if (!window.polemica || busy) return
+    if (next === overlay) return
+    setBusy(true)
+    try {
+      window.polemica.setChromeOverlay(next !== null)
+      flushSync(() => setOverlay(next))
+    } finally {
+      setBusy(false)
+    }
+  }, [busy, overlay])
 
   useEffect(() => {
     return () => {
@@ -67,9 +66,10 @@ export function ChromeBar({ nav, profile, onLogout }: Props) {
   const bannerVisible = ban.visible || search.visible || search.playVisible || hasNotice
   const bannerH = ban.visible ? BAN_BANNER_HEIGHT : SEARCH_PLAY_BANNER_HEIGHT
   const chromeH = CHROME_HEIGHT + (bannerVisible ? bannerH : 0)
+  const overlayOpen = overlay !== null
   const rootClass = [
     'chrome-root',
-    menuOpen && 'chrome-root--menu',
+    overlayOpen && 'chrome-root--menu',
     bannerVisible && 'chrome-root--ban'
   ]
     .filter(Boolean)
@@ -79,7 +79,7 @@ export function ChromeBar({ nav, profile, onLogout }: Props) {
     <div
       className={rootClass}
       style={{
-        ...(menuOpen ? undefined : { height: chromeH }),
+        ...(overlayOpen ? undefined : { height: chromeH }),
         ['--lobby-inset' as string]: `${lobbyInset}px`
       }}
     >
@@ -88,18 +88,30 @@ export function ChromeBar({ nav, profile, onLogout }: Props) {
         style={{ transform: `scaleX(${nav.progress > 0 ? Math.max(nav.progress, 0.04) : 0})` }}
         aria-hidden
       />
-      <SideMenuPanel
-        currentUrl={nav.url}
-        open={menuOpen}
-        onOpenChange={(open) => setMenu(open)}
-        live={live}
-        search={search}
-      />
+      {overlay === 'settings' ? (
+        <SettingsPanel
+          open
+          onBack={() => applyOverlay('menu')}
+          onClose={() => applyOverlay(null)}
+        />
+      ) : (
+        <SideMenuPanel
+          currentUrl={nav.url}
+          open={overlay === 'menu'}
+          onOpenChange={(open) => applyOverlay(open ? 'menu' : null)}
+          onOpenSettings={() => applyOverlay('settings')}
+          live={live}
+          search={search}
+        />
+      )}
       <div className="chrome-stack">
         <header className="chrome" data-platform={window.polemica ? 'electron' : 'web'}>
           <div className="chrome__drag" />
           <div className="chrome__left">
-            <SideMenuToggle open={menuOpen} onToggle={() => setMenu(!menuOpen)} />
+            <SideMenuToggle
+              open={overlayOpen}
+              onToggle={() => applyOverlay(overlayOpen ? null : 'menu')}
+            />
             <NavControls isLoading={nav.isLoading} />
           </div>
           <UrlPill url={nav.url} isLoading={nav.isLoading} />

@@ -57,7 +57,7 @@ async function withInlineAvatars(players: LivePlayer[]): Promise<{
   for (const p of players) {
     if (p.avatarUrl) urls.add(p.avatarUrl)
   }
-  await Promise.all([...urls].map((u) => avatarToDataUrl(u)))
+  await Promise.all(Array.from(urls).map((u) => avatarToDataUrl(u)))
   const fallback = avatarDataCache.get(FALLBACK_AVATAR) || FALLBACK_AVATAR
   return {
     fallback,

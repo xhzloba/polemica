@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { app } from 'electron'
 import type { WebContents } from 'electron'
 import { scriptsForUrl, stylesForUrl } from '../../injection/registry'
+import { syncCameraOffPrefToGame } from '../prefs/clientPrefs'
 
 type InjectionState = {
   generation: number
@@ -174,6 +175,16 @@ async function applyInjectionsNow(
   }
 
   if (state.scriptsGeneration !== generation) {
+    try {
+      const { pathname } = new URL(url)
+      if (pathname === '/game' || pathname.startsWith('/game/')) {
+        // Flag must exist before page-world script's first schedule().
+        await syncCameraOffPrefToGame()
+      }
+    } catch {
+      /* ignore */
+    }
+
     for (const script of scriptsForUrl(url, 'document-end')) {
       if (wc.isDestroyed() || state.generation !== generation) return
       try {
@@ -184,6 +195,15 @@ async function applyInjectionsNow(
       }
     }
     state.scriptsGeneration = generation
+
+    try {
+      const { pathname } = new URL(url)
+      if (pathname === '/game' || pathname.startsWith('/game/')) {
+        await syncCameraOffPrefToGame()
+      }
+    } catch {
+      /* ignore */
+    }
   }
 
   if (wc.isDestroyed() || state.generation !== generation) return

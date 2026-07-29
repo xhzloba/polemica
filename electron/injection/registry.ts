@@ -4,6 +4,7 @@ import { LOBBY_UI_CSS } from '@shared/lobbyUiCss'
 import { LOBBY_ACCORDION_JS } from '@shared/lobbyAccordionJs'
 import { LOBBY_EMPTY_STATE_JS } from '@shared/lobbyEmptyStateJs'
 import { GAME_AV_GATE_JS } from '@shared/avGateModalJs'
+import { CAMERA_OFF_ON_LOBBY_JS } from '@shared/cameraOffOnLobbyJs'
 
 export interface InjectionStyle {
   id: string
@@ -457,6 +458,12 @@ export const INJECTION_SCRIPTS: InjectionScript[] = [
     match: ['/game'],
     runAt: 'document-end',
     code: GAME_AV_GATE_JS
+  },
+  {
+    id: 'game-camera-off-on-lobby',
+    match: ['/game'],
+    runAt: 'document-end',
+    code: CAMERA_OFF_ON_LOBBY_JS
   }
 ]
 

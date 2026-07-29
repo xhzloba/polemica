@@ -3,6 +3,7 @@ import {
   IpcChannels,
   type AuthState,
   type BanStatus,
+  type ClientPrefs,
   type LiveStats,
   type NavState,
   type PolemicaApi,
@@ -59,7 +60,9 @@ const api: PolemicaApi = {
     ipcRenderer.sendSync(IpcChannels.CHROME_OVERLAY, open) as { viewX: number },
   openLivePlayersMenu: (anchor) => ipcRenderer.invoke(IpcChannels.LIVE_PLAYERS_MENU, anchor),
   openPlayActionMenu: (anchor, opts) =>
-    ipcRenderer.invoke(IpcChannels.PLAY_ACTION_MENU, anchor, opts)
+    ipcRenderer.invoke(IpcChannels.PLAY_ACTION_MENU, anchor, opts),
+  getPrefs: () => ipcRenderer.invoke(IpcChannels.PREFS_GET),
+  setPrefs: (patch: Partial<ClientPrefs>) => ipcRenderer.invoke(IpcChannels.PREFS_SET, patch)
 }
 
 contextBridge.exposeInMainWorld('polemica', api)

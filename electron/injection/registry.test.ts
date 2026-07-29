@@ -14,4 +14,12 @@ describe('page-world injection registry', () => {
   it('does not inject lobby scripts on unrelated pages', () => {
     expect(scriptsForUrl('https://polemicagame.com/rules', 'document-end')).toEqual([])
   })
+
+  it('injects camera-off script on /game', () => {
+    const scripts = scriptsForUrl('https://polemicagame.com/game', 'document-end')
+    expect(scripts.some((s) => s.id === 'game-camera-off-on-lobby')).toBe(true)
+    for (const script of scripts) {
+      expect(() => new Function(script.code), script.id).not.toThrow()
+    }
+  })
 })

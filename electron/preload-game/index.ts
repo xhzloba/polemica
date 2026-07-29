@@ -7,6 +7,7 @@ import { GAME_ROOM_CSS } from '@shared/gameRoomCss'
 import { LOBBY_UI_CSS } from '@shared/lobbyUiCss'
 import { LOBBY_ACCORDION_JS } from '@shared/lobbyAccordionJs'
 import { GAME_AV_GATE_JS } from '@shared/avGateModalJs'
+import { CAMERA_OFF_ON_LOBBY_JS } from '@shared/cameraOffOnLobbyJs'
 
 const BOOT_LOADER_STYLE_ID = 'polemica-boot-loader-style'
 const BOOT_LOADER_ID = 'polemica-boot-loader'
@@ -376,11 +377,25 @@ function injectAvGate(): void {
   root.appendChild(s)
 }
 
+function injectCameraOffOnLobby(): void {
+  const VER = '5'
+  if (document.documentElement.getAttribute('data-polemica-camera-off') === VER) return
+  document.documentElement.setAttribute('data-polemica-camera-off', VER)
+  const prev = document.getElementById('polemica-camera-off')
+  if (prev) prev.remove()
+  const s = document.createElement('script')
+  s.id = 'polemica-camera-off'
+  s.textContent = CAMERA_OFF_ON_LOBBY_JS
+  const root = document.head || document.documentElement
+  root.appendChild(s)
+}
+
 function start(): void {
   ensureBootLoader()
   hideChromeNoise()
   injectLobbyAccordion()
   injectAvGate()
+  injectCameraOffOnLobby()
 
   new MutationObserver((mutations) => {
     for (const mutation of mutations) {
