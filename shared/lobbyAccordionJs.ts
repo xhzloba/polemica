@@ -1,12 +1,18 @@
 /** Injected into the site page world (not isolated preload). */
+import { MMR_TIERS } from './mmrTiers'
+import { PRIME_ICON, SUBSCRIPTION_ICON } from './siteMarks'
 
 export const LOBBY_ACCORDION_JS = `
 (() => {
-  if (window.__polemicaLobbyAccordion) return;
-  window.__polemicaLobbyAccordion = true;
+  const VER = 2;
+  if (window.__polemicaLobbyAccordion === VER) return;
+  window.__polemicaLobbyAccordion = VER;
 
   const OPEN = 'polemica-lobby-row--open';
   const PANEL = 'polemica-lobby-expand';
+  const PRIME_ICON = ${JSON.stringify(PRIME_ICON)};
+  const SUB_ICON = ${JSON.stringify(SUBSCRIPTION_ICON)};
+  const MMR_TIERS = ${JSON.stringify(MMR_TIERS)};
 
   const resolveVm = (row) => {
     let cur = row && row.__vue__;
@@ -51,6 +57,78 @@ export const LOBBY_ACCORDION_JS = `
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;');
 
+  const mmrTier = (value) => {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return null;
+    let tier = null;
+    for (const item of MMR_TIERS) {
+      if (n >= item.min) tier = item;
+    }
+    return tier;
+  };
+
+  const mmrHtml = (value) => {
+    const tier = mmrTier(value);
+    if (!tier) return '';
+    const text = Number(Number(value).toFixed(0)).toLocaleString('en-US');
+    return (
+      '<span class="polemica-lobby-expand__mmr">' +
+      '<img class="polemica-lobby-expand__mmr-icon" src="' +
+      escapeHtml(tier.image) +
+      '" alt="" draggable="false" />' +
+      '<span class="polemica-lobby-expand__mmr-text polemica-lobby-expand__mmr-text--' +
+      escapeHtml(tier.type) +
+      '">' +
+      escapeHtml(text) +
+      '</span>' +
+      '</span>'
+    );
+  };
+
+  const playerHtml = (vm, p, fallbackAvatar) => {
+    const name = escapeHtml(p.username || 'Игрок');
+    const id = encodeURIComponent(String(p.id || ''));
+    const src = escapeHtml(avatarUrl(vm, p) || fallbackAvatar);
+    const quit = Boolean(p.quit);
+    const sub =
+      p.subscription && !p.primeMember
+        ? '<img class="polemica-lobby-expand__mark polemica-lobby-expand__mark--sub" src="' +
+          escapeHtml(SUB_ICON) +
+          '" alt="" title="' +
+          escapeHtml(p.subscription) +
+          '" draggable="false" />'
+        : '';
+    const prime = p.primeMember
+      ? '<img class="polemica-lobby-expand__mark polemica-lobby-expand__mark--prime" src="' +
+        escapeHtml(PRIME_ICON) +
+        '" alt="" title="Prime" draggable="false" />'
+      : '';
+    const mmr = p.mmr != null && p.mmr !== '' ? mmrHtml(p.mmr) : '';
+    return (
+      '<a class="polemica-lobby-expand__player' +
+      (quit ? ' polemica-lobby-expand__player--quit' : '') +
+      '" href="/profile/' +
+      id +
+      '" target="_blank" rel="noopener">' +
+      '<img class="polemica-lobby-expand__avatar" src="' +
+      src +
+      '" alt="" loading="lazy" decoding="async" data-fallback="' +
+      escapeHtml(fallbackAvatar) +
+      '" />' +
+      '<span class="polemica-lobby-expand__meta">' +
+      '<span class="polemica-lobby-expand__name-row">' +
+      '<span class="polemica-lobby-expand__name">' +
+      name +
+      '</span>' +
+      sub +
+      prime +
+      '</span>' +
+      '</span>' +
+      mmr +
+      '</a>'
+    );
+  };
+
   const closeAll = (except) => {
     document.querySelectorAll('.' + OPEN).forEach((row) => {
       if (row === except) return;
@@ -74,52 +152,32 @@ export const LOBBY_ACCORDION_JS = `
     const joinDisabled = started && !canWatch;
     const fallbackAvatar = DEFAULT_AVATAR();
 
-    const list = players.length
-      ? players
-          .map((p) => {
-            const name = escapeHtml(p.username || 'Игрок');
-            const id = encodeURIComponent(String(p.id || ''));
-            const src = escapeHtml(avatarUrl(vm, p) || fallbackAvatar);
-            const mmr =
-              p.mmr != null && p.mmr !== ''
-                ? '<span class="polemica-lobby-expand__mmr">' + escapeHtml(p.mmr) + '</span>'
-                : '';
-            const badges = [
-              p.subscription
-                ? '<span class="polemica-lobby-expand__badge">' + escapeHtml(p.subscription) + '</span>'
-                : '',
-              p.primeMember
-                ? '<span class="polemica-lobby-expand__badge polemica-lobby-expand__badge--prime">prime</span>'
-                : ''
-            ].join('');
-            return (
-              '<a class="polemica-lobby-expand__player" href="/profile/' +
-              id +
-              '" target="_blank" rel="noopener">' +
-              '<img class="polemica-lobby-expand__avatar" src="' +
-              src +
-              '" alt="" loading="lazy" decoding="async" data-fallback="' +
-              escapeHtml(fallbackAvatar) +
-              '" />' +
-              '<span class="polemica-lobby-expand__meta">' +
-              '<span class="polemica-lobby-expand__name">' +
-              name +
-              '</span>' +
-              (badges ? '<span class="polemica-lobby-expand__badges">' + badges + '</span>' : '') +
-              '</span>' +
-              mmr +
-              '</a>'
-            );
-          })
-          .join('')
+    const active = players.filter((p) => !p.quit);
+    const quit = players.filter((p) => p.quit);
+    const parts = [];
+    if (active.length) {
+      parts.push(active.map((p) => playerHtml(vm, p, fallbackAvatar)).join(''));
+    }
+    if (quit.length) {
+      parts.push(
+        '<div class="polemica-lobby-expand__section">Выбывшие · ' + quit.length + '</div>'
+      );
+      parts.push(quit.map((p) => playerHtml(vm, p, fallbackAvatar)).join(''));
+    }
+    const list = parts.length
+      ? parts.join('')
       : '<div class="polemica-lobby-expand__empty">Нет данных об игроках</div>';
+
+    const titleCount = active.length
+      ? String(active.length) + (quit.length ? ' · выб. ' + quit.length : '')
+      : String(players.length);
 
     const panel = document.createElement('div');
     panel.className = PANEL;
     panel.innerHTML =
       '<div class="polemica-lobby-expand__head">' +
       '<div class="polemica-lobby-expand__title">Игроки · ' +
-      players.length +
+      titleCount +
       '</div>' +
       '<button type="button" class="polemica-lobby-expand__join"' +
       (joinDisabled ? ' disabled' : '') +
@@ -180,7 +238,6 @@ export const LOBBY_ACCORDION_JS = `
       if (!(t instanceof Element)) return;
 
       if (t.closest('.' + PANEL)) {
-        // panel handles its own controls; don't enterLobby via row
         if (!t.closest('.polemica-lobby-expand__join') && !t.closest('a')) {
           e.preventDefault();
           e.stopPropagation();
@@ -192,9 +249,6 @@ export const LOBBY_ACCORDION_JS = `
 
       const row = t.closest('.p-play__lobby-table-row');
       if (!row) return;
-      if (row.classList.contains('p-play__lobby-table-row-started') && !row.__vue__) {
-        /* still allow expand */
-      }
 
       e.preventDefault();
       e.stopImmediatePropagation();

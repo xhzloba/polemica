@@ -19,7 +19,7 @@ export const CHROME_HEIGHT = 68
 export const BAN_BANNER_HEIGHT = 70
 
 /** Extra chrome height for play/search row (modes + Играть / статус в одну линию). */
-export const SEARCH_PLAY_BANNER_HEIGHT = 158
+export const SEARCH_PLAY_BANNER_HEIGHT = 176
 
 /** Apple-settings-style side menu geometry */
 export const SIDE_MENU_INSET = 12

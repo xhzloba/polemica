@@ -317,8 +317,11 @@ function hideChromeNoise(): void {
 }
 
 function injectLobbyAccordion(): void {
-  if (document.documentElement.getAttribute('data-polemica-lobby-accordion')) return
-  document.documentElement.setAttribute('data-polemica-lobby-accordion', '1')
+  const VER = '2'
+  if (document.documentElement.getAttribute('data-polemica-lobby-accordion') === VER) return
+  document.documentElement.setAttribute('data-polemica-lobby-accordion', VER)
+  const prev = document.getElementById('polemica-lobby-accordion')
+  if (prev) prev.remove()
   const s = document.createElement('script')
   s.id = 'polemica-lobby-accordion'
   s.textContent = LOBBY_ACCORDION_JS

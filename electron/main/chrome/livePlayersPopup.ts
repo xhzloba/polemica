@@ -3,8 +3,8 @@ import type { LivePlayer } from '@shared/ipc'
 import { GAME_ORIGIN } from '@shared/config'
 import { getLiveStats, refreshLiveStats } from '../live/liveStatsService'
 import { gameGoto } from '../views/GameBrowserView'
-import { MMR_TIERS } from './mmrTiers'
-import { PRIME_ICON, SUBSCRIPTION_ICON } from './siteMarks'
+import { MMR_TIERS } from '@shared/mmrTiers'
+import { PRIME_ICON, SUBSCRIPTION_ICON } from '@shared/siteMarks'
 
 const POPUP_WIDTH = 320
 const POPUP_MAX_HEIGHT = 420

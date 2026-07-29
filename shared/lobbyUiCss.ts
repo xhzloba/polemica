@@ -345,13 +345,17 @@ export const LOBBY_UI_CSS = `
   border-radius: 10px !important;
   color: #f5f7f2 !important;
   text-decoration: none !important;
-  transition: background 0.12s ease !important;
+  transition: background 0.12s ease, opacity 0.12s ease !important;
 }
 
 .polemica-lobby-expand__player:hover {
   background: rgba(200, 245, 49, 0.08) !important;
   text-decoration: none !important;
   color: #f5f7f2 !important;
+}
+
+.polemica-lobby-expand__player--quit {
+  opacity: 0.48 !important;
 }
 
 .polemica-lobby-expand__avatar {
@@ -376,6 +380,13 @@ export const LOBBY_UI_CSS = `
   flex: 1 1 auto !important;
 }
 
+.polemica-lobby-expand__name-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  min-width: 0 !important;
+}
+
 .polemica-lobby-expand__name {
   overflow: hidden !important;
   text-overflow: ellipsis !important;
@@ -384,44 +395,93 @@ export const LOBBY_UI_CSS = `
   font-weight: 650 !important;
   letter-spacing: -0.015em !important;
   line-height: 1.2 !important;
+  min-width: 0 !important;
 }
 
-.polemica-lobby-expand__badges {
-  display: inline-flex !important;
-  gap: 4px !important;
+.polemica-lobby-expand__mark {
+  flex: 0 0 auto !important;
+  display: block !important;
+  object-fit: contain !important;
 }
 
-.polemica-lobby-expand__badge {
-  display: inline-flex !important;
-  align-items: center !important;
-  padding: 1px 6px !important;
-  border-radius: 5px !important;
-  background: rgba(255, 255, 255, 0.06) !important;
-  color: rgba(232, 238, 246, 0.55) !important;
-  font-size: 10.5px !important;
-  font-weight: 650 !important;
-  letter-spacing: 0.02em !important;
-  text-transform: uppercase !important;
-  line-height: 1.2 !important;
+.polemica-lobby-expand__mark--prime {
+  width: 16px !important;
+  height: 16px !important;
 }
 
-.polemica-lobby-expand__badge--prime {
-  background: rgba(200, 245, 49, 0.12) !important;
-  color: #c8f531 !important;
+.polemica-lobby-expand__mark--sub {
+  width: 15px !important;
+  height: 16px !important;
 }
 
 .polemica-lobby-expand__mmr {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
   flex: 0 0 auto !important;
   margin-left: auto !important;
-  padding: 3px 8px !important;
-  border-radius: 7px !important;
-  background: rgba(200, 245, 49, 0.1) !important;
-  border: 1px solid rgba(200, 245, 49, 0.22) !important;
-  color: #c8f531 !important;
-  font-size: 12.5px !important;
-  font-weight: 650 !important;
+}
+
+.polemica-lobby-expand__mmr-icon {
+  width: 18px !important;
+  height: 18px !important;
+  flex: 0 0 18px !important;
+  display: block !important;
+  object-fit: contain !important;
+}
+
+.polemica-lobby-expand__mmr-text {
+  font-size: 13px !important;
+  font-weight: 700 !important;
   font-variant-numeric: tabular-nums !important;
-  line-height: 1.2 !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1 !important;
+}
+
+.polemica-lobby-expand__mmr-text--white {
+  background: linear-gradient(180deg, #f5f7f2 0%, #9aa3ad 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+}
+
+.polemica-lobby-expand__mmr-text--green {
+  background: linear-gradient(180deg, #e8ff8a 0%, #c8f531 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+}
+
+.polemica-lobby-expand__mmr-text--yellow {
+  background: linear-gradient(180deg, #ffe58a 0%, #ffd71b 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+}
+
+.polemica-lobby-expand__mmr-text--orange {
+  background: linear-gradient(180deg, #ffc49a 0%, #fb8b5a 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+}
+
+.polemica-lobby-expand__mmr-text--red,
+.polemica-lobby-expand__mmr-text--purple {
+  background: linear-gradient(90deg, #fb5a5f 0%, #c65ef6 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+}
+
+.polemica-lobby-expand__section {
+  margin: 8px 0 2px !important;
+  padding: 0 8px !important;
+  color: rgba(232, 238, 246, 0.42) !important;
+  font-size: 11.5px !important;
+  font-weight: 650 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
 }
 
 .polemica-lobby-expand__empty {

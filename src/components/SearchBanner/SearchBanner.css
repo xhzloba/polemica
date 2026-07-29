@@ -13,14 +13,14 @@
 .search-banner--play {
   --play-h: 60px;
   --play-r: 14px;
-  height: 158px;
-  flex: 0 0 158px;
+  height: 176px;
+  flex: 0 0 176px;
   /* padding-left set inline from measured lobby table inset */
-  padding-top: 16px;
+  padding-top: 14px;
   padding-right: 16px;
-  padding-bottom: 16px;
+  padding-bottom: 18px;
   padding-left: 24px;
-  align-items: center;
+  align-items: flex-start;
   box-sizing: border-box;
   overflow: visible;
 }
