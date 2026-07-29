@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { BookOpen, Crown, LoaderCircle, Menu, Plus, Radio, Search, Swords, Trophy, X } from 'lucide-react'
 import { GAME_ORIGIN } from '@shared/config'
-import { useLiveStats } from '../../hooks/useLiveStats'
-import { useSearchStatus } from '../../hooks/useSearchStatus'
+import type { LiveStats, SearchStatus } from '@shared/ipc'
 import './SideMenu.css'
 
 type MenuItem = {
@@ -28,6 +27,8 @@ interface Props {
   currentUrl: string
   open: boolean
   onOpenChange: (open: boolean) => void
+  live: LiveStats
+  search: SearchStatus
 }
 
 function pathFromUrl(url: string): string {
@@ -38,7 +39,7 @@ function pathFromUrl(url: string): string {
   }
 }
 
-function playItemMeta(search: ReturnType<typeof useSearchStatus>): string {
+function playItemMeta(search: SearchStatus): string {
   if (search.phase === 'searching') {
     const parts = [search.title || 'Идёт поиск', search.time].filter(Boolean)
     return parts.join(' · ')
@@ -77,9 +78,7 @@ export function SideMenuToggle({
   )
 }
 
-export function SideMenuPanel({ currentUrl, open, onOpenChange }: Props) {
-  const live = useLiveStats()
-  const search = useSearchStatus()
+export function SideMenuPanel({ currentUrl, open, onOpenChange, live, search }: Props) {
   const [query, setQuery] = useState('')
   const [lobbyTab, setLobbyTab] = useState<'play' | 'watch'>('play')
   const [tabBusy, setTabBusy] = useState(false)

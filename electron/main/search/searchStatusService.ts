@@ -944,7 +944,11 @@ export function bindSearchStatusWindow(win: BrowserWindow): void {
   hostWindow = win
 }
 
-export function onSearchStatusChange(cb: (status: SearchStatus) => void): void {
+export function unbindSearchStatusWindow(win: BrowserWindow): void {
+  if (hostWindow === win) hostWindow = null
+}
+
+export function onSearchStatusChange(cb: ((status: SearchStatus) => void) | null): void {
   onChange = cb
 }
 
@@ -1140,9 +1144,12 @@ function bindNavigationRefresh(): void {
 }
 
 export function startSearchStatusPolling(): void {
-  if (running) return
-  running = true
   bindNavigationRefresh()
+  if (running) {
+    void tick()
+    return
+  }
+  running = true
   void tick()
   timer = setInterval(() => {
     void tick()

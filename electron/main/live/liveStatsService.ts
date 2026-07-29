@@ -31,8 +31,15 @@ export function bindLiveStatsWindow(win: BrowserWindow): void {
   hostWindow = win
 }
 
+export function unbindLiveStatsWindow(win: BrowserWindow): void {
+  if (hostWindow === win) hostWindow = null
+}
+
 export function startLiveStatsPolling(): void {
-  if (running) return
+  if (running) {
+    void tick()
+    return
+  }
   running = true
   void tick()
   timer = setInterval(() => {

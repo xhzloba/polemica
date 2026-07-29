@@ -142,7 +142,11 @@ export function bindBanStatusWindow(win: BrowserWindow): void {
   hostWindow = win
 }
 
-export function onBanStatusChange(cb: (status: BanStatus) => void): void {
+export function unbindBanStatusWindow(win: BrowserWindow): void {
+  if (hostWindow === win) hostWindow = null
+}
+
+export function onBanStatusChange(cb: ((status: BanStatus) => void) | null): void {
   onChange = cb
 }
 
@@ -166,9 +170,12 @@ function bindNavigationRefresh(): void {
 }
 
 export function startBanStatusPolling(): void {
-  if (running) return
-  running = true
   bindNavigationRefresh()
+  if (running) {
+    void tick()
+    return
+  }
+  running = true
   void tick()
   timer = setInterval(() => {
     void tick()

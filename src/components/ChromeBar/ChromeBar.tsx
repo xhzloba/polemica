@@ -75,6 +75,8 @@ export function ChromeBar({ nav, profile, onLogout }: Props) {
         currentUrl={nav.url}
         open={menuOpen}
         onOpenChange={(open) => void setMenu(open)}
+        live={live}
+        search={search}
       />
       <div className="chrome-stack">
         <header className="chrome" data-platform={window.polemica ? 'electron' : 'web'}>

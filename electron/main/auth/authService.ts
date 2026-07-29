@@ -20,19 +20,25 @@ import {
   setGameViewVisible,
   setSessionWatch
 } from '../views/GameBrowserView'
-import { startLiveStatsPolling, stopLiveStatsPolling } from '../live/liveStatsService'
+import {
+  startLiveStatsPolling,
+  stopLiveStatsPolling,
+  unbindLiveStatsWindow
+} from '../live/liveStatsService'
 import {
   getBanStatus,
   onBanStatusChange,
   startBanStatusPolling,
-  stopBanStatusPolling
+  stopBanStatusPolling,
+  unbindBanStatusWindow
 } from '../ban/banStatusService'
 import {
   getSearchStatus,
   onSearchStatusChange,
   refreshSearchStatus,
   startSearchStatusPolling,
-  stopSearchStatusPolling
+  stopSearchStatusPolling,
+  unbindSearchStatusWindow
 } from '../search/searchStatusService'
 
 let phase: AuthPhase = 'splash'
@@ -82,6 +88,25 @@ export function bindAuthWindow(win: BrowserWindow): void {
 
   layoutForPhase(win)
   emit()
+}
+
+/** Release window-bound services without clearing the cached login profile. */
+export function disposeAuthWindow(win: BrowserWindow): void {
+  if (hostWindow !== win) return
+
+  phase = 'splash'
+  busy = false
+  chromeOverlay = false
+  setSessionWatch(null)
+  onBanStatusChange(null)
+  onSearchStatusChange(null)
+  stopLiveStatsPolling()
+  stopBanStatusPolling()
+  stopSearchStatusPolling()
+  unbindLiveStatsWindow(win)
+  unbindBanStatusWindow(win)
+  unbindSearchStatusWindow(win)
+  hostWindow = null
 }
 
 function chromeHeightForApp(): number {

@@ -6,7 +6,12 @@ import {
   detachGameView,
   getGameView
 } from '../views/GameBrowserView'
-import { bindAuthWindow, getAuthState, relayoutAuth } from '../auth/authService'
+import {
+  bindAuthWindow,
+  disposeAuthWindow,
+  getAuthState,
+  relayoutAuth
+} from '../auth/authService'
 import { bindLiveStatsWindow } from '../live/liveStatsService'
 import { bindBanStatusWindow } from '../ban/banStatusService'
 import { bindSearchStatusWindow } from '../search/searchStatusService'
@@ -94,6 +99,7 @@ export function createMainWindow(): BrowserWindow {
   }
 
   win.on('close', () => {
+    disposeAuthWindow(win)
     detachGameView(win)
   })
 
