@@ -62,7 +62,8 @@ const api: PolemicaApi = {
   openPlayActionMenu: (anchor, opts) =>
     ipcRenderer.invoke(IpcChannels.PLAY_ACTION_MENU, anchor, opts),
   getPrefs: () => ipcRenderer.invoke(IpcChannels.PREFS_GET),
-  setPrefs: (patch: Partial<ClientPrefs>) => ipcRenderer.invoke(IpcChannels.PREFS_SET, patch)
+  setPrefs: (patch: Partial<ClientPrefs>) => ipcRenderer.invoke(IpcChannels.PREFS_SET, patch),
+  onPrefs: (cb) => subscribe<ClientPrefs>(IpcChannels.PREFS_CHANGED, cb)
 }
 
 contextBridge.exposeInMainWorld('polemica', api)

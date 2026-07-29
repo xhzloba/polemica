@@ -16,8 +16,14 @@ if (!gotLock) {
     mainWindow.focus()
   })
 
-  app.whenReady().then(() => {
+  app.whenReady().then(async () => {
     hardenSession()
+    try {
+      const { initClientPrefs } = await import('./prefs/clientPrefs')
+      await initClientPrefs()
+    } catch (err) {
+      console.warn('[prefs] db init failed', err)
+    }
     registerIpcHandlers(() => mainWindow)
     mainWindow = createMainWindow()
 

@@ -47,7 +47,8 @@ export const IpcChannels = {
   AUTH_STATE: 'auth:state',
   LIVE_STATS: 'live:stats',
   BAN_STATUS: 'ban:status',
-  SEARCH_STATUS: 'search:status'
+  SEARCH_STATUS: 'search:status',
+  PREFS_CHANGED: 'prefs:changed'
 } as const
 
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels]
@@ -89,10 +90,12 @@ export interface LivePlayer {
   profileUrl: string
 }
 
-/** Client-only preferences (Electron userData). */
+/** Client-only preferences (SQLite in app-adjacent `db/`). */
 export interface ClientPrefs {
   /** Force camera off when entering a /game lobby. */
   cameraOffOnLobbyEnter: boolean
+  /** Auto-accept match when found (play button). Default off. */
+  autoAccept: boolean
 }
 
 /** Aggregated from /current-games/get-current-games */
@@ -224,4 +227,5 @@ export interface PolemicaApi {
   ) => Promise<{ autoAccept: boolean } | null>
   getPrefs: () => Promise<ClientPrefs>
   setPrefs: (patch: Partial<ClientPrefs>) => Promise<ClientPrefs>
+  onPrefs: (cb: (prefs: ClientPrefs) => void) => () => void
 }

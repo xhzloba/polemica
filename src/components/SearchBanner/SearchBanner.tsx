@@ -1,27 +1,15 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { ChevronDown, LoaderCircle, X } from 'lucide-react'
 import type { SearchStatus } from '@shared/ipc'
+import {
+  getCachedPrefs,
+  loadClientPrefs,
+  setCachedPrefs
+} from '../../lib/clientPrefsCache'
 import './SearchBanner.css'
 
-const AUTO_ACCEPT_KEY = 'polemica.autoAccept'
 /** Replay match-found sound once when accept timer drops to this many seconds. */
 const ACCEPT_REMIND_AT_SEC = 5
-
-function readAutoAccept(): boolean {
-  try {
-    return localStorage.getItem(AUTO_ACCEPT_KEY) === '1'
-  } catch {
-    return false
-  }
-}
-
-function writeAutoAccept(on: boolean): void {
-  try {
-    localStorage.setItem(AUTO_ACCEPT_KEY, on ? '1' : '0')
-  } catch {
-    /* ignore */
-  }
-}
 
 function parseAcceptClockSeconds(value: string): number | null {
   const m = String(value || '')
@@ -40,8 +28,17 @@ export function SearchBanner({ search }: Props) {
   const splitRef = useRef<HTMLDivElement>(null)
   const autoFiredKey = useRef<string>('')
   const remindFiredKey = useRef<string>('')
-  const [autoAccept, setAutoAccept] = useState(readAutoAccept)
+  const [autoAccept, setAutoAccept] = useState(() => Boolean(getCachedPrefs()?.autoAccept))
   const [menuOpenLocal, setMenuOpenLocal] = useState(false)
+
+  useEffect(() => {
+    const api = window.polemica
+    void loadClientPrefs().then((p) => setAutoAccept(Boolean(p.autoAccept)))
+    return api?.onPrefs?.((p) => {
+      setCachedPrefs(p)
+      setAutoAccept(Boolean(p.autoAccept))
+    })
+  }, [])
 
   useEffect(() => {
     if (!autoAccept) return
@@ -110,8 +107,10 @@ export function SearchBanner({ search }: Props) {
       )
       .then((result) => {
         if (!result) return
-        writeAutoAccept(result.autoAccept)
         setAutoAccept(result.autoAccept)
+        void window.polemica.setPrefs({ autoAccept: result.autoAccept }).then((prefs) => {
+          setCachedPrefs(prefs)
+        })
       })
       .finally(() => setMenuOpenLocal(false))
   }

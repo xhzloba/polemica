@@ -44,6 +44,12 @@ export function ChromeBar({ nav, profile, onLogout }: Props) {
     setLobbyInset((prev) => stabilizeLobbyInset(search.insetLeft || 24, prev))
   }, [search.insetLeft])
 
+  useEffect(() => {
+    void import('../../lib/clientPrefsCache').then(({ loadClientPrefs }) => {
+      void loadClientPrefs()
+    })
+  }, [])
+
   const applyOverlay = useCallback((next: OverlayMode) => {
     if (!window.polemica || busy) return
     if (next === overlay) return
