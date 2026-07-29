@@ -8,6 +8,7 @@ const empty: LiveStats = {
   playing: 0,
   recruiting: 0,
   streams: 0,
+  onlinePlayers: [],
   updatedAt: 0
 }
 

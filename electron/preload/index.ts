@@ -39,6 +39,7 @@ const api: PolemicaApi = {
   logout: () => ipcRenderer.invoke(IpcChannels.AUTH_LOGOUT),
   onAuthState: (cb) => subscribe<AuthState>(IpcChannels.AUTH_STATE, cb),
   getLiveStats: () => ipcRenderer.invoke(IpcChannels.LIVE_STATS_GET),
+  refreshLiveStats: () => ipcRenderer.invoke(IpcChannels.LIVE_STATS_REFRESH),
   onLiveStats: (cb) => subscribe<LiveStats>(IpcChannels.LIVE_STATS, cb),
   getBanStatus: () => ipcRenderer.invoke(IpcChannels.BAN_STATUS_GET),
   onBanStatus: (cb) => subscribe<BanStatus>(IpcChannels.BAN_STATUS, cb),
@@ -53,7 +54,8 @@ const api: PolemicaApi = {
   dismissSearchNotice: () => ipcRenderer.invoke(IpcChannels.SEARCH_DISMISS_NOTICE),
   openProfileMenu: (anchor?: { x: number; y: number; width?: number; height?: number }) =>
     ipcRenderer.invoke(IpcChannels.PROFILE_MENU, anchor),
-  setChromeOverlay: (open: boolean) => ipcRenderer.invoke(IpcChannels.CHROME_OVERLAY, open)
+  setChromeOverlay: (open: boolean) => ipcRenderer.invoke(IpcChannels.CHROME_OVERLAY, open),
+  openLivePlayersMenu: (anchor) => ipcRenderer.invoke(IpcChannels.LIVE_PLAYERS_MENU, anchor)
 }
 
 contextBridge.exposeInMainWorld('polemica', api)

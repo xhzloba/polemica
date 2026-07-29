@@ -27,6 +27,11 @@ export function getLiveStats(): LiveStats {
   return last
 }
 
+export async function refreshLiveStats(): Promise<LiveStats> {
+  await tick()
+  return last
+}
+
 export function bindLiveStatsWindow(win: BrowserWindow): void {
   hostWindow = win
 }

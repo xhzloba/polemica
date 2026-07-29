@@ -22,6 +22,7 @@ export const IpcChannels = {
   AUTH_ENTER_APP: 'auth:enter-app',
   AUTH_LOGOUT: 'auth:logout',
   LIVE_STATS_GET: 'live:stats-get',
+  LIVE_STATS_REFRESH: 'live:stats-refresh',
   BAN_STATUS_GET: 'ban:status-get',
   SEARCH_STATUS_GET: 'search:status-get',
   SEARCH_CANCEL: 'search:cancel',
@@ -33,6 +34,7 @@ export const IpcChannels = {
   SEARCH_DISMISS_NOTICE: 'search:dismiss-notice',
   PROFILE_MENU: 'chrome:profile-menu',
   CHROME_OVERLAY: 'chrome:overlay',
+  LIVE_PLAYERS_MENU: 'chrome:live-players-menu',
 
   // main → renderer
   NAV_STATE: 'nav:state',
@@ -71,6 +73,18 @@ export interface AuthState {
   busy: boolean
 }
 
+/** Player currently sitting in a lobby from /current-games/get-current-games */
+export interface LivePlayer {
+  id: number
+  username: string
+  avatarUrl: string
+  mmr: number | null
+  subscription: string
+  primeMember: boolean
+  quit: boolean
+  profileUrl: string
+}
+
 /** Aggregated from /current-games/get-current-games */
 export interface LiveStats {
   lobbies: number
@@ -81,6 +95,8 @@ export interface LiveStats {
   recruiting: number
   /** Lobbies with `lobbyInMediaRoom` — available streams */
   streams: number
+  /** Deduped player roster across open lobbies */
+  onlinePlayers: LivePlayer[]
   updatedAt: number
 }
 
@@ -160,6 +176,7 @@ export interface PolemicaApi {
   logout: () => Promise<AuthState>
   onAuthState: (cb: (state: AuthState) => void) => () => void
   getLiveStats: () => Promise<LiveStats>
+  refreshLiveStats: () => Promise<LiveStats>
   onLiveStats: (cb: (stats: LiveStats) => void) => () => void
   getBanStatus: () => Promise<BanStatus>
   onBanStatus: (cb: (status: BanStatus) => void) => () => void
@@ -179,4 +196,10 @@ export interface PolemicaApi {
     height?: number
   }) => Promise<'profile' | 'settings' | 'logout' | null>
   setChromeOverlay: (open: boolean) => Promise<{ viewX: number }>
+  openLivePlayersMenu: (anchor: {
+    x: number
+    y: number
+    right: number
+    bottom: number
+  }) => Promise<void>
 }

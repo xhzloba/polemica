@@ -20,7 +20,7 @@ import {
   resumeSession,
   setChromeOverlay
 } from '../auth/authService'
-import { getLiveStats } from '../live/liveStatsService'
+import { getLiveStats, refreshLiveStats } from '../live/liveStatsService'
 import { getBanStatus, refreshBanStatus } from '../ban/banStatusService'
 import {
   acceptGameSearch,
@@ -34,6 +34,7 @@ import {
   toggleSearchMode
 } from '../search/searchStatusService'
 import { popupProfileMenu } from '../chrome/profileMenu'
+import { openLivePlayersMenu } from '../chrome/livePlayersPopup'
 
 type WindowGetter = () => BW | null
 
@@ -62,6 +63,7 @@ export function registerIpcHandlers(getWindow: WindowGetter): void {
   ipcMain.handle(IpcChannels.AUTH_ENTER_APP, async () => enterApp())
   ipcMain.handle(IpcChannels.AUTH_LOGOUT, async () => logout())
   ipcMain.handle(IpcChannels.LIVE_STATS_GET, async () => getLiveStats())
+  ipcMain.handle(IpcChannels.LIVE_STATS_REFRESH, async () => refreshLiveStats())
   ipcMain.handle(IpcChannels.BAN_STATUS_GET, async () => getBanStatus())
   ipcMain.handle(IpcChannels.SEARCH_STATUS_GET, async () => getSearchStatus())
   ipcMain.handle(IpcChannels.SEARCH_CANCEL, async () => cancelGameSearch())
@@ -77,6 +79,22 @@ export function registerIpcHandlers(getWindow: WindowGetter): void {
   })
   ipcMain.handle(IpcChannels.CHROME_OVERLAY, async (_e, open: boolean) =>
     setChromeOverlay(Boolean(open))
+  )
+  ipcMain.handle(
+    IpcChannels.LIVE_PLAYERS_MENU,
+    async (
+      event,
+      anchor: { x: number; y: number; right: number; bottom: number }
+    ) => {
+      const win = BrowserWindow.fromWebContents(event.sender) ?? getWindow()
+      if (!win) return
+      await openLivePlayersMenu(win, {
+        x: Number(anchor?.x) || 0,
+        y: Number(anchor?.y) || 0,
+        right: Number(anchor?.right) || 0,
+        bottom: Number(anchor?.bottom) || 0
+      })
+    }
   )
   ipcMain.handle(
     IpcChannels.PROFILE_MENU,

@@ -23,6 +23,33 @@
   color: rgba(232, 238, 246, 0.38);
 }
 
+.live-online__people {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  padding: 4px 6px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.live-online__people:hover,
+.live-online--open .live-online__people {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.live-online__people:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
 .live-online__dot {
   position: relative;
   width: 9px;

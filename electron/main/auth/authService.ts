@@ -40,6 +40,7 @@ import {
   stopSearchStatusPolling,
   unbindSearchStatusWindow
 } from '../search/searchStatusService'
+import { closeLivePlayersMenu } from '../chrome/livePlayersPopup'
 
 let phase: AuthPhase = 'splash'
 let profile: UserProfile | null = null
@@ -103,6 +104,7 @@ export function disposeAuthWindow(win: BrowserWindow): void {
   stopLiveStatsPolling()
   stopBanStatusPolling()
   stopSearchStatusPolling()
+  closeLivePlayersMenu()
   unbindLiveStatsWindow(win)
   unbindBanStatusWindow(win)
   unbindSearchStatusWindow(win)

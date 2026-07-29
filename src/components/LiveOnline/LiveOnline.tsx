@@ -60,6 +60,9 @@ export function LiveOnline({ stats }: Props) {
   const lobbies = useAnimatedInt(stats.lobbies)
   const playersFlash = useFlashDirection(stats.players)
   const lobbiesFlash = useFlashDirection(stats.lobbies)
+  const [open, setOpen] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const triggerRef = useRef<HTMLButtonElement>(null)
 
   if (!stats.updatedAt) {
     return (
@@ -93,14 +96,43 @@ export function LiveOnline({ stats }: Props) {
     .filter(Boolean)
     .join(' ')
 
+  const openMenu = async (): Promise<void> => {
+    if (!window.polemica || busy) return
+    const rect = triggerRef.current?.getBoundingClientRect()
+    if (!rect) return
+    setBusy(true)
+    setOpen(true)
+    try {
+      await window.polemica.openLivePlayersMenu({
+        x: rect.x,
+        y: rect.y,
+        right: rect.right,
+        bottom: rect.bottom
+      })
+    } finally {
+      setBusy(false)
+      setOpen(false)
+    }
+  }
+
   return (
-    <div className="live-online" title={title}>
-      <span className="live-online__dot" aria-hidden>
-        <span className="live-online__dot-core" />
-        <span className="live-online__dot-ping" />
-      </span>
-      <span className={playersClass}>{players}</span>
-      <span className="live-online__label">онлайн</span>
+    <div className={`live-online${open ? ' live-online--open' : ''}`} title={title}>
+      <button
+        ref={triggerRef}
+        type="button"
+        className="live-online__people"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        disabled={busy}
+        onClick={() => void openMenu()}
+      >
+        <span className="live-online__dot" aria-hidden>
+          <span className="live-online__dot-core" />
+          <span className="live-online__dot-ping" />
+        </span>
+        <span className={playersClass}>{players}</span>
+        <span className="live-online__label">онлайн</span>
+      </button>
       <span className="live-online__sep" aria-hidden />
       <span className={lobbiesClass}>{lobbies} лобби</span>
     </div>
