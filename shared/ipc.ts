@@ -107,7 +107,7 @@ export interface LiveStats {
   viewers: number
   playing: number
   recruiting: number
-  /** Lobbies with `lobbyInMediaRoom` — available streams */
+  /** Lobbies with an active Twitch stream among seated players */
   streams: number
   /** Deduped player roster across open lobbies */
   onlinePlayers: LivePlayer[]

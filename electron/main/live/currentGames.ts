@@ -12,6 +12,7 @@ interface CurrentGamePlayer {
   subscription?: string
   primeMember?: boolean
   quit?: boolean
+  stream?: { link?: string; active?: boolean }
 }
 
 interface CurrentGame {
@@ -88,6 +89,11 @@ export function emptyLiveStats(): LiveStats {
   }
 }
 
+function gameHasActiveTwitch(g: CurrentGame): boolean {
+  const players = Array.isArray(g.players) ? g.players : []
+  return players.some((p) => Boolean(p && !p.quit && p.stream?.active && p.stream?.link))
+}
+
 export function aggregateLiveStats(games: CurrentGame[]): LiveStats {
   let players = 0
   let viewers = 0
@@ -98,7 +104,7 @@ export function aggregateLiveStats(games: CurrentGame[]): LiveStats {
   for (const g of games) {
     players += g.playersNumber ?? 0
     viewers += g.viewersNumber ?? 0
-    if (g.lobbyInMediaRoom) streams += 1
+    if (gameHasActiveTwitch(g)) streams += 1
     if (g.gameIsStarted) playing += 1
     else recruiting += 1
   }

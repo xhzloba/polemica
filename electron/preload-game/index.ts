@@ -367,7 +367,7 @@ function injectLobbyAccordion(): void {
 }
 
 function injectLobbyFilters(): void {
-  const VER = '2'
+  const VER = '3'
   if (document.documentElement.getAttribute('data-polemica-lobby-filters') === VER) return
   document.documentElement.setAttribute('data-polemica-lobby-filters', VER)
   const prev = document.getElementById('polemica-lobby-filters')
@@ -380,7 +380,7 @@ function injectLobbyFilters(): void {
 }
 
 function injectLobbyUnpaginate(): void {
-  const VER = '4'
+  const VER = '5'
   if (document.documentElement.getAttribute('data-polemica-lobby-unpaginate') === VER) return
   document.documentElement.setAttribute('data-polemica-lobby-unpaginate', VER)
   const prev = document.getElementById('polemica-lobby-unpaginate')

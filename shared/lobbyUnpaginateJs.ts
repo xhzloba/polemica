@@ -4,7 +4,7 @@
  */
 export const LOBBY_UNPAGINATE_JS = `
 (() => {
-  const VER = 4;
+  const VER = 5;
   if (window.__polemicaLobbyUnpaginate === VER) return;
   window.__polemicaLobbyUnpaginate = VER;
 
@@ -24,7 +24,7 @@ export const LOBBY_UNPAGINATE_JS = `
   ];
   const PAGE_INDEX_KEYS = ['page', 'currentPage', 'pageNumber', 'activePage', 'selectedPage'];
 
-  let lastGames = [];
+  let lastAllGames = [];
   let lastFetchAt = 0;
   let fetchInFlight = null;
 
@@ -35,6 +35,18 @@ export const LOBBY_UNPAGINATE_JS = `
 
   const isLobbyArray = (arr) =>
     Array.isArray(arr) && (arr.length === 0 || looksLikeLobby(arr[0]));
+
+  const isWatchTab = () => {
+    const tabs = Array.from(document.querySelectorAll('.p-play__tab'));
+    const watch = tabs.find((el) => (el.textContent || '').includes('Смотреть'));
+    return Boolean(watch && watch.classList.contains('p-play__tab--active'));
+  };
+
+  const gameHasActiveTwitch = (g) => {
+    if (!g || typeof g !== 'object') return false;
+    const players = Array.isArray(g.players) ? g.players : [];
+    return players.some((p) => p && !p.quit && p.stream && p.stream.active && p.stream.link);
+  };
 
   const walk = (vm, fn, depth) => {
     if (!vm || depth > 18) return;
@@ -317,21 +329,23 @@ export const LOBBY_UNPAGINATE_JS = `
   const fetchGames = () => {
     const now = Date.now();
     if (fetchInFlight) return fetchInFlight;
-    if (now - lastFetchAt < 2000 && lastGames.length) return Promise.resolve(lastGames);
+    if (now - lastFetchAt < 2000 && lastAllGames.length) {
+      const games = isWatchTab() ? lastAllGames.filter(gameHasActiveTwitch) : lastAllGames;
+      return Promise.resolve(games);
+    }
     fetchInFlight = fetch(ENDPOINT, {
       credentials: 'include',
       headers: { accept: 'application/json' }
     })
       .then((r) => r.json())
       .then((data) => {
-        const games = Array.isArray(data && data.result) ? data.result : [];
-        lastGames = games;
+        lastAllGames = Array.isArray(data && data.result) ? data.result : [];
         lastFetchAt = Date.now();
-        return games;
+        return isWatchTab() ? lastAllGames.filter(gameHasActiveTwitch) : lastAllGames;
       })
       .catch((err) => {
         console.warn('[polemica] lobby fetch failed', err);
-        return lastGames;
+        return isWatchTab() ? lastAllGames.filter(gameHasActiveTwitch) : lastAllGames;
       })
       .finally(() => {
         fetchInFlight = null;

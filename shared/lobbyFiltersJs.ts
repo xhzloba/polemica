@@ -1,7 +1,7 @@
 /** Lobby table filters + fill-descending sort (injected into page world). */
 export const LOBBY_FILTERS_JS = `
 (() => {
-  const VER = 2;
+  const VER = 3;
   if (window.__polemicaLobbyFilters === VER) return;
   window.__polemicaLobbyFilters = VER;
 
@@ -31,6 +31,22 @@ export const LOBBY_FILTERS_JS = `
       cur = cur.$parent;
     }
     return row && row.__vue__;
+  };
+
+  const isWatchTab = () => {
+    const tabs = Array.from(document.querySelectorAll('.p-play__tab'));
+    const watch = tabs.find((el) => (el.textContent || '').includes('Смотреть'));
+    return Boolean(watch && watch.classList.contains('p-play__tab--active'));
+  };
+
+  const rowHasActiveTwitch = (vm) => {
+    if (!vm) return false;
+    const twitch = vm.lobbyTwitchUrl && vm.lobbyTwitchUrl.stream;
+    if (twitch && twitch.active && twitch.link) return true;
+    const players = Array.isArray(vm.lobby && vm.lobby.players) ? vm.lobby.players : [];
+    return players.some(
+      (p) => p && !p.quit && p.stream && p.stream.active && p.stream.link
+    );
   };
 
   /**
@@ -109,7 +125,8 @@ export const LOBBY_FILTERS_JS = `
     const started =
       Boolean(lobby.gameIsStarted) ||
       row.classList.contains('p-play__lobby-table-row-started');
-    return { mode, ...seats, started };
+    const live = rowHasActiveTwitch(vm);
+    return { mode, ...seats, started, live };
   };
 
   const ensureBar = (table) => {
@@ -172,7 +189,12 @@ export const LOBBY_FILTERS_JS = `
     const table = document.querySelector('.p-play__lobby-table');
     if (!table) return;
 
-    ensureBar(table);
+    const watch = isWatchTab();
+    const bar = ensureBar(table);
+    if (bar) {
+      bar.style.display = watch ? 'none' : '';
+      bar.style.order = '-3';
+    }
 
     const header = table.querySelector('.p-play__lobby-table-header-row');
     if (header) {
@@ -180,14 +202,13 @@ export const LOBBY_FILTERS_JS = `
       headerUnit.style.order = '-2';
     }
 
-    const bar = document.querySelector('.' + BAR);
-    if (bar) bar.style.order = '-3';
-
     const rows = Array.from(table.querySelectorAll('.p-play__lobby-table-row'));
     const scored = rows.map((row, idx) => {
       const meta = rowMeta(row);
       const unit = rowUnit(row);
-      const match = filterId === 'all' || meta.mode === filterId;
+      const match = watch
+        ? meta.live
+        : filterId === 'all' || meta.mode === filterId;
       return { row, unit, meta, idx, match };
     });
 
