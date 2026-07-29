@@ -38,7 +38,7 @@ function ensureBootLoader(): void {
         height: 36px !important;
         border-radius: 50% !important;
         border: 2.5px solid rgba(255, 255, 255, 0.12) !important;
-        border-top-color: #c8f531 !important;
+        border-top-color: #1677ff !important;
         animation: polemica-boot-spin 0.7s linear infinite !important;
       }
       @keyframes polemica-boot-spin {

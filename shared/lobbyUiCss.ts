@@ -23,14 +23,15 @@ export const LOBBY_UI_CSS = `
   justify-content: center;
   text-align: center;
   width: 100%;
-  padding: 14px 14px;
-  margin: 0 12px 6px;
-  border-radius: 10px;
-  background: #101418;
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  color: rgba(232, 238, 246, 0.72);
+  padding: 24px 14px;
+  margin: 0;
+  border-radius: 0;
+  background: #121820;
+  border: 1px solid rgba(22, 119, 255, 0.2);
+  border-top: 0;
+  color: rgba(255, 255, 255, 0.55);
   font-size: 14px;
-  font-weight: 560;
+  font-weight: 400;
   box-sizing: border-box;
 }
 
@@ -50,9 +51,14 @@ export const LOBBY_UI_CSS = `
 .p-play__lobby-table {
   display: flex !important;
   flex-direction: column !important;
-  gap: 6px !important;
+  gap: 0 !important;
   padding: 0 !important;
   margin: 0 !important;
+  border: 1px solid rgba(22, 119, 255, 0.28) !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  background: #121820 !important;
+  box-shadow: 0 0 0 1px rgba(22, 119, 255, 0.06) !important;
 }
 
 .p-play__lobby-table-delimiter {
@@ -63,18 +69,19 @@ export const LOBBY_UI_CSS = `
   border: 0 !important;
 }
 
-/* —— header —— */
+/* —— header (antd Table thead) —— */
 .p-play__lobby-table-header-row {
   display: grid !important;
   grid-template-columns: minmax(0, 1.85fr) minmax(0, 1.7fr) minmax(0, 1.65fr) minmax(0, 1fr) !important;
   align-items: center !important;
   gap: 0 !important;
   width: 100% !important;
-  min-height: 24px !important;
+  min-height: 46px !important;
   margin: 0 !important;
-  padding: 0 12px !important;
-  background: transparent !important;
+  padding: 0 16px !important;
+  background: #152033 !important;
   border: 0 !important;
+  border-bottom: 1px solid rgba(22, 119, 255, 0.28) !important;
   border-radius: 0 !important;
   box-shadow: none !important;
 }
@@ -82,20 +89,20 @@ export const LOBBY_UI_CSS = `
 .p-play__lobby-table-header-row .p-play__lobby-table-cell {
   display: flex !important;
   align-items: center !important;
-  padding: 4px 0 !important;
+  padding: 12px 8px 12px 0 !important;
   border: 0 !important;
   background: transparent !important;
-  color: rgba(232, 238, 246, 0.38) !important;
-  font-size: 11px !important;
-  font-weight: 650 !important;
-  letter-spacing: 0.05em !important;
-  text-transform: uppercase !important;
+  color: #91caff !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
   line-height: 1.2 !important;
 }
 
 .p-play__lobby-table-cell-twitch {
   gap: 5px !important;
-  color: rgba(232, 238, 246, 0.38) !important;
+  color: #91caff !important;
 }
 
 .p-play__lobby-table-cell-twitch img {
@@ -104,7 +111,7 @@ export const LOBBY_UI_CSS = `
   height: 10px !important;
 }
 
-/* —— rows (compact) —— */
+/* —— rows (antd Table tbody) —— */
 .p-play__lobby-table-row {
   display: grid !important;
   grid-template-columns: minmax(0, 1.85fr) minmax(0, 1.7fr) minmax(0, 1.65fr) minmax(0, 1fr) !important;
@@ -113,23 +120,24 @@ export const LOBBY_UI_CSS = `
   width: 100% !important;
   min-height: 48px !important;
   margin: 0 !important;
-  padding: 0 12px !important;
+  padding: 0 16px !important;
   box-sizing: border-box !important;
-  background: #101418 !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  border-radius: 10px !important;
+  background: #121820 !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(22, 119, 255, 0.12) !important;
+  border-radius: 0 !important;
   box-shadow: none !important;
   cursor: pointer !important;
-  transition:
-    background 0.14s ease,
-    border-color 0.14s ease,
-    transform 0.14s ease !important;
+  transition: background 0.2s ease !important;
   overflow: visible !important;
 }
 
+.p-play__lobby-table-row:last-child {
+  border-bottom: 0 !important;
+}
+
 .p-play__lobby-table-row:hover {
-  background: rgba(200, 245, 49, 0.07) !important;
-  border-color: rgba(200, 245, 49, 0.28) !important;
+  background: rgba(22, 119, 255, 0.2) !important;
 }
 
 /* live Twitch in room — same purple as expand player --live */
@@ -141,11 +149,6 @@ export const LOBBY_UI_CSS = `
 .p-play__lobby-table-row.polemica-lobby-row--live:hover {
   background: rgba(145, 70, 255, 0.16) !important;
   border-color: rgba(145, 70, 255, 0.45) !important;
-}
-
-.p-play__lobby-table-row.polemica-lobby-row--live.polemica-lobby-row--open {
-  border-color: rgba(145, 70, 255, 0.42) !important;
-  background: rgba(145, 70, 255, 0.08) !important;
 }
 
 .p-play__lobby-table-row.polemica-lobby-row--live .p-play__lobby-table-avatars img {
@@ -167,8 +170,7 @@ export const LOBBY_UI_CSS = `
 }
 
 .p-play__lobby-table-row-started:hover {
-  background: rgba(255, 255, 255, 0.03) !important;
-  border-color: rgba(255, 255, 255, 0.12) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
   transform: none !important;
 }
 
@@ -219,8 +221,8 @@ export const LOBBY_UI_CSS = `
 }
 
 .p-search-lobby-type {
-  color: rgba(200, 245, 49, 0.88) !important;
-  font-weight: 500 !important;
+  color: #69b1ff !important;
+  font-weight: 600 !important;
   font-size: 13px !important;
 }
 
@@ -239,7 +241,7 @@ export const LOBBY_UI_CSS = `
   width: 26px !important;
   height: 26px !important;
   border-radius: 50% !important;
-  border: 1.5px solid #0b0f14 !important;
+  border: 1.5px solid #121820 !important;
   object-fit: cover !important;
   margin-left: -7px !important;
   background: #1a2028 !important;
@@ -280,14 +282,23 @@ export const LOBBY_UI_CSS = `
   opacity: 0 !important;
 }
 
-/* —— open row —— */
+/* —— open row: blue header + left accent; expand panel keeps app bg —— */
 .p-play__lobby-table-row.polemica-lobby-row--open {
   grid-template-rows: auto auto !important;
   align-items: stretch !important;
+  padding: 0 16px 0 13px !important;
   padding-bottom: 0 !important;
-  border-color: rgba(200, 245, 49, 0.32) !important;
-  background: #0e1217 !important;
+  background: rgba(22, 119, 255, 0.16) !important;
+  border-left: 3px solid #1677ff !important;
+  box-shadow: none !important;
   overflow: hidden !important;
+}
+
+.p-play__lobby-table-row.polemica-lobby-row--live.polemica-lobby-row--open {
+  border-color: transparent !important;
+  border-left: 3px solid #1677ff !important;
+  background: rgba(22, 119, 255, 0.16) !important;
+  box-shadow: none !important;
 }
 
 .polemica-lobby-expand {
@@ -295,12 +306,12 @@ export const LOBBY_UI_CSS = `
   display: flex !important;
   flex-direction: column !important;
   gap: 0 !important;
-  margin: 0 -12px 0 !important;
+  margin: 0 -16px 0 -13px !important;
   padding: 0 !important;
   border-radius: 0 0 10px 10px !important;
   border: 0 !important;
   border-top: 1px solid rgba(255, 255, 255, 0.07) !important;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, transparent 28%) !important;
+  background: #0b0f14 !important;
   box-shadow: none !important;
   box-sizing: border-box !important;
   font-family:
@@ -368,8 +379,8 @@ export const LOBBY_UI_CSS = `
 }
 
 .polemica-lobby-expand__player:hover {
-  background: rgba(200, 245, 49, 0.08) !important;
-  border-color: rgba(200, 245, 49, 0.22) !important;
+  background: rgba(22, 119, 255, 0.1) !important;
+  border-color: rgba(22, 119, 255, 0.35) !important;
   text-decoration: none !important;
   color: #f5f7f2 !important;
 }
@@ -557,23 +568,23 @@ export const LOBBY_UI_CSS = `
   align-items: center !important;
   justify-content: center !important;
   width: 100% !important;
-  height: 36px !important;
+  height: 32px !important;
   margin: 0 !important;
   padding: 0 16px !important;
   border: 0 !important;
-  border-radius: 9px !important;
-  background: #c8f531 !important;
-  color: #0b0f14 !important;
-  font-size: 13px !important;
-  font-weight: 700 !important;
-  letter-spacing: -0.02em !important;
+  border-radius: 6px !important;
+  background: #1677ff !important;
+  color: #fff !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
   cursor: pointer !important;
   white-space: nowrap !important;
-  transition: filter 0.12s ease, opacity 0.12s ease, transform 0.1s ease !important;
+  transition: background 0.2s ease, opacity 0.12s ease !important;
 }
 
 .polemica-lobby-expand__join:hover:not(:disabled) {
-  filter: brightness(1.06) !important;
+  background: #4096ff !important;
 }
 
 .polemica-lobby-expand__join:active:not(:disabled) {

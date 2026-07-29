@@ -1,3 +1,5 @@
+import { Alert, Avatar, Button, List, Space, Typography } from 'antd'
+import { CloseOutlined } from '@ant-design/icons'
 import type { SavedAccount } from '@shared/ipc'
 import { APP_VERSION } from '@shared/config'
 import polemicaLogo from '../../assets/polemica-logo.svg'
@@ -27,93 +29,91 @@ export function Splash({
 
       <div className="splash__stage">
         <div className="splash__identity">
-          <img
-            className="splash__logo"
-            src={polemicaLogo}
-            alt=""
-            width={56}
-            height={56}
-          />
+          <img className="splash__logo" src={polemicaLogo} alt="" width={56} height={56} />
           <div className="splash__titles">
-            <p className="splash__brand">Polemica</p>
-            <p className="splash__product">Unofficial Client</p>
-            <p className="splash__version">Version {APP_VERSION}</p>
+            <Typography.Title level={2} className="splash__brand">
+              Polemica
+            </Typography.Title>
+            <Typography.Text className="splash__product">Unofficial Client</Typography.Text>
+            <Typography.Text type="secondary" className="splash__version">
+              Version {APP_VERSION}
+            </Typography.Text>
           </div>
         </div>
 
-        <p className="splash__lead">
+        <Typography.Paragraph type="secondary" className="splash__lead">
           {accounts.length
             ? 'Выбери сохранённый аккаунт или добавь новый через Chrome.'
             : 'Войди через Chrome — профиль и токен сохраним локально.'}
-        </p>
+        </Typography.Paragraph>
 
         {accounts.length > 0 ? (
-          <div className="splash__accounts" role="list" aria-label="Сохранённые аккаунты">
-            {accounts.map((acc) => (
-              <div key={acc.id} className="splash__account" role="listitem">
-                <button
-                  type="button"
+          <List
+            className="splash__accounts"
+            itemLayout="horizontal"
+            dataSource={accounts}
+            renderItem={(acc) => (
+              <List.Item
+                className="splash__account"
+                actions={[
+                  <Button
+                    key="remove"
+                    type="text"
+                    size="small"
+                    icon={<CloseOutlined />}
+                    disabled={busy}
+                    aria-label={`Удалить ${acc.username}`}
+                    onClick={() => onRemoveAccount(acc.id)}
+                  />
+                ]}
+              >
+                <Button
+                  type="text"
                   className="splash__account-main"
                   disabled={busy || !acc.hasToken}
-                  title={
-                    acc.hasToken
-                      ? `Войти как ${acc.username}`
-                      : 'Нет сохранённого токена — добавь через Chrome'
-                  }
+                  block
                   onClick={() => onResume(acc.id)}
                 >
-                  <img
-                    className="splash__account-avatar"
-                    src={acc.avatarUrl}
-                    alt=""
-                    width={36}
-                    height={36}
-                  />
-                  <span className="splash__account-meta">
-                    <span className="splash__account-name">{acc.username}</span>
-                    <span className="splash__account-hint">
-                      {busy
-                        ? 'Вход…'
-                        : acc.hasToken
-                          ? 'Нажми, чтобы продолжить'
-                          : 'Нужен повторный вход через Chrome'}
+                  <Space size={12} align="center">
+                    <Avatar src={acc.avatarUrl} size={36} />
+                    <span className="splash__account-meta">
+                      <Typography.Text strong className="splash__account-name">
+                        {acc.username}
+                      </Typography.Text>
+                      <Typography.Text type="secondary" className="splash__account-hint">
+                        {busy
+                          ? 'Вход…'
+                          : acc.hasToken
+                            ? 'Нажми, чтобы продолжить'
+                            : 'Нужен повторный вход через Chrome'}
+                      </Typography.Text>
                     </span>
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  className="splash__account-remove"
-                  disabled={busy}
-                  aria-label={`Удалить ${acc.username}`}
-                  title="Удалить аккаунт"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onRemoveAccount(acc.id)
-                  }}
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
+                  </Space>
+                </Button>
+              </List.Item>
+            )}
+          />
         ) : null}
 
-        <div className="splash__actions">
-          <button
-            type="button"
-            className={accounts.length ? 'splash__cta splash__cta--ghost' : 'splash__cta'}
-            disabled={busy}
+        <Space direction="vertical" size={12} className="splash__actions">
+          <Button
+            type={accounts.length ? 'default' : 'primary'}
+            size="large"
+            block
+            loading={busy}
             onClick={onLoginChrome}
           >
-            {busy ? 'Синхронизация…' : accounts.length ? 'Добавить через Chrome' : 'Войти через Chrome'}
-          </button>
-        </div>
+            {accounts.length ? 'Добавить через Chrome' : 'Войти через Chrome'}
+          </Button>
+        </Space>
 
-        {error ? <p className="splash__error">{error}</p> : null}
+        {error ? (
+          <Alert className="splash__error" type="error" showIcon message={error} />
+        ) : null}
 
-        <p className="splash__hint">
+        <Typography.Text type="secondary" className="splash__hint">
           Новый аккаунт: залогинься на polemicagame.com в Chrome, потом «Добавить через Chrome»
-        </p>
+        </Typography.Text>
       </div>
     </div>
   )

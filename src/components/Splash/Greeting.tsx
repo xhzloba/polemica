@@ -1,3 +1,4 @@
+import { Avatar, Button, Typography } from 'antd'
 import { APP_VERSION } from '@shared/config'
 import './Splash.css'
 
@@ -14,21 +15,27 @@ export function Greeting({ username, avatarUrl, onContinue }: GreetingProps) {
       <div className="splash__glow splash__glow--soft" aria-hidden />
 
       <div className="greet">
-        <img className="greet__avatar" src={avatarUrl} alt="" />
+        <Avatar src={avatarUrl} size={88} className="greet__avatar" />
 
-        <p className="greet__eyebrow">Polemica</p>
+        <Typography.Text type="secondary" className="greet__eyebrow">
+          Polemica
+        </Typography.Text>
 
-        <h1 className="greet__hello">
+        <Typography.Title level={2} className="greet__hello">
           Привет, <span className="greet__name">{username}</span>
-        </h1>
+        </Typography.Title>
 
-        <p className="greet__lead">Можно начинать — профиль уже сохранён.</p>
+        <Typography.Paragraph type="secondary" className="greet__lead">
+          Можно начинать — профиль уже сохранён.
+        </Typography.Paragraph>
 
-        <button type="button" className="greet__cta" onClick={onContinue}>
+        <Button type="primary" size="large" className="greet__cta" onClick={onContinue}>
           Продолжить
-        </button>
+        </Button>
 
-        <p className="greet__version">Version {APP_VERSION}</p>
+        <Typography.Text type="secondary" className="greet__version">
+          Version {APP_VERSION}
+        </Typography.Text>
       </div>
     </div>
   )

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { ChevronDown, LoaderCircle, X } from 'lucide-react'
+import { Alert, Button, Checkbox, Space, Spin, Typography } from 'antd'
+import { CloseOutlined, DownOutlined } from '@ant-design/icons'
 import type { SearchStatus } from '@shared/ipc'
 import {
   getCachedPrefs,
@@ -90,29 +91,28 @@ export function SearchBanner({ search }: Props) {
         autoAccept ? ' search-banner__play-split--auto' : ''
       }`}
     >
-      <button
-        type="button"
+      <Button
+        type="primary"
         className="search-banner__play search-banner__play--main"
         disabled={opts.disabled}
         onClick={opts.onPlay}
       >
         Играть
         {autoAccept ? <span className="search-banner__play-auto-tag">авто</span> : null}
-      </button>
-      <button
-        type="button"
+      </Button>
+      <Button
+        type="primary"
         className="search-banner__play search-banner__play--caret"
         disabled={opts.disabled}
         aria-label="Настройки поиска"
         aria-haspopup="menu"
         aria-expanded={menuOpenLocal}
+        icon={<DownOutlined />}
         onClick={(e) => {
           e.stopPropagation()
           openActionMenu()
         }}
-      >
-        <ChevronDown size={16} strokeWidth={2.4} aria-hidden />
-      </button>
+      />
     </div>
   )
 
@@ -129,76 +129,60 @@ export function SearchBanner({ search }: Props) {
         }`}
       >
         {showModes ? (
-          <div className="search-banner__modes-block">
-            <div className="search-banner__modes" role="group" aria-label="Режимы поиска">
-              {search.modes.map((mode) => (
-                <button
-                  key={mode.mode}
-                  type="button"
-                  className={[
-                    'search-banner__mode',
-                    mode.selected && 'search-banner__mode--on',
-                    !mode.available && 'search-banner__mode--off'
-                  ]
-                    .filter(Boolean)
-                    .join(' ')}
-                  disabled={!mode.available}
-                  title={mode.description || mode.title}
-                  onClick={() => void window.polemica.toggleSearchMode(mode.mode)}
-                >
-                  <span className="search-banner__mode-check" aria-hidden />
-                  <span className="search-banner__mode-name">{mode.title}</span>
-                  <span className="search-banner__mode-count">
-                    {mode.count}/{mode.countTarget}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
+          <Space className="search-banner__modes" size={8} wrap={false}>
+            {search.modes.map((mode) => (
+              <Checkbox
+                key={mode.mode}
+                className="search-banner__mode"
+                checked={mode.selected}
+                disabled={!mode.available}
+                title={mode.description || mode.title}
+                onChange={() => void window.polemica.toggleSearchMode(mode.mode)}
+              >
+                <span className="search-banner__mode-name">{mode.title}</span>
+                <Typography.Text type="secondary" className="search-banner__mode-count">
+                  {mode.count}/{mode.countTarget}
+                </Typography.Text>
+              </Checkbox>
+            ))}
+          </Space>
         ) : null}
 
         {phase === 'launching' ? (
-          <div className="search-banner__status search-banner__status--loading">
-            <LoaderCircle
-              size={18}
-              strokeWidth={2.2}
-              className="search-banner__spinner"
-              aria-label="Загрузка"
-            />
-            <div className="search-banner__center">
-              <div className="search-banner__title">{search.title || 'Игра запускается'}</div>
-            </div>
-          </div>
+          <Space className="search-banner__status" size={10}>
+            <Spin size="small" />
+            <Typography.Text strong>{search.title || 'Игра запускается'}</Typography.Text>
+          </Space>
         ) : phase === 'accept' ? (
           search.acceptAccepted ? (
-            <div className="search-banner__status">
-              {search.time ? <div className="search-banner__time">{search.time}</div> : null}
-              <div className="search-banner__center">
-                <div className="search-banner__title">{search.title}</div>
+            <Space className="search-banner__status" size={10}>
+              {search.time ? (
+                <Typography.Text className="search-banner__time">{search.time}</Typography.Text>
+              ) : null}
+              <span className="search-banner__center">
+                <Typography.Text strong>{search.title}</Typography.Text>
                 {search.delay || search.acceptMode ? (
-                  <div className="search-banner__delay">{search.delay || search.acceptMode}</div>
+                  <Typography.Text type="secondary" className="search-banner__delay">
+                    {search.delay || search.acceptMode}
+                  </Typography.Text>
                 ) : null}
-              </div>
-              <span className="search-banner__close-spacer" aria-hidden />
-            </div>
+              </span>
+            </Space>
           ) : autoAccept ? (
-            <div className="search-banner__status search-banner__status--loading">
-              <LoaderCircle
-                size={18}
-                strokeWidth={2.2}
-                className="search-banner__spinner"
-                aria-label="Автопринятие"
-              />
-              <div className="search-banner__center">
-                <div className="search-banner__title">Автопринятие…</div>
+            <Space className="search-banner__status" size={10}>
+              <Spin size="small" />
+              <span className="search-banner__center">
+                <Typography.Text strong>Автопринятие…</Typography.Text>
                 {search.delay || search.acceptMode ? (
-                  <div className="search-banner__delay">{search.delay || search.acceptMode}</div>
+                  <Typography.Text type="secondary" className="search-banner__delay">
+                    {search.delay || search.acceptMode}
+                  </Typography.Text>
                 ) : null}
-              </div>
-            </div>
+              </span>
+            </Space>
           ) : (
-            <button
-              type="button"
+            <Button
+              type="primary"
               className="search-banner__accept"
               onClick={() => void window.polemica.acceptGameSearch()}
             >
@@ -211,58 +195,48 @@ export function SearchBanner({ search }: Props) {
                   </span>
                 ) : null}
               </span>
-            </button>
+            </Button>
           )
         ) : phase === 'inGame' ? (
-          <div className="search-banner__decide">
-            <button
-              type="button"
-              className="search-banner__play"
-              onClick={() => void window.polemica.returnToGame()}
-            >
+          <Space className="search-banner__decide" size={10}>
+            <Button type="primary" onClick={() => void window.polemica.returnToGame()}>
               Продолжить игру
-            </button>
-            <button
-              type="button"
-              className="search-banner__quit"
-              onClick={() => void window.polemica.quitActiveGame()}
-            >
+            </Button>
+            <Button danger onClick={() => void window.polemica.quitActiveGame()}>
               Покинуть игру
-            </button>
-          </div>
+            </Button>
+          </Space>
         ) : phase === 'searching' ? (
-          <div
-            className={`search-banner__status${search.loading ? ' search-banner__status--loading' : ''}`}
-          >
+          <Space className="search-banner__status" size={10}>
             {search.loading ? (
-              <LoaderCircle
-                size={18}
-                strokeWidth={2.2}
-                className="search-banner__spinner"
-                aria-label="Загрузка"
-              />
+              <Spin size="small" />
             ) : search.time ? (
-              <div className="search-banner__time">{search.time}</div>
+              <Typography.Text className="search-banner__time">{search.time}</Typography.Text>
             ) : (
               <span className="search-banner__close-spacer" aria-hidden />
             )}
-            <div className="search-banner__center">
-              <div className="search-banner__title">
+            <span className="search-banner__center">
+              <Typography.Text strong>
                 {search.title || (search.loading ? 'Подключение…' : 'Идёт поиск игры')}
-                {autoAccept ? <span className="search-banner__auto-inline"> · авто</span> : null}
-              </div>
-              {search.delay ? <div className="search-banner__delay">{search.delay}</div> : null}
-            </div>
-            <button
-              type="button"
+                {autoAccept ? (
+                  <Typography.Text type="secondary"> · авто</Typography.Text>
+                ) : null}
+              </Typography.Text>
+              {search.delay ? (
+                <Typography.Text type="secondary" className="search-banner__delay">
+                  {search.delay}
+                </Typography.Text>
+              ) : null}
+            </span>
+            <Button
+              type="text"
+              size="small"
               className="search-banner__close"
               aria-label="Отменить поиск"
-              title="Отменить поиск"
+              icon={<CloseOutlined />}
               onClick={() => void window.polemica.cancelGameSearch()}
-            >
-              <X size={14} strokeWidth={2.4} aria-hidden />
-            </button>
-          </div>
+            />
+          </Space>
         ) : showIdleControls ? (
           canPlay ? (
             playSplit({
@@ -272,25 +246,15 @@ export function SearchBanner({ search }: Props) {
         ) : null}
 
         {hasNotice ? (
-          <div className="search-banner__notice" role="alert">
-            <div className="search-banner__notice-body">
-              {search.noticeTitle ? (
-                <div className="search-banner__notice-title">{search.noticeTitle}</div>
-              ) : null}
-              {search.noticeText ? (
-                <div className="search-banner__notice-text">{search.noticeText}</div>
-              ) : null}
-            </div>
-            <button
-              type="button"
-              className="search-banner__notice-close"
-              aria-label="Скрыть уведомление"
-              title="Скрыть"
-              onClick={() => void window.polemica.dismissSearchNotice()}
-            >
-              <X size={14} strokeWidth={2.4} aria-hidden />
-            </button>
-          </div>
+          <Alert
+            className="search-banner__notice"
+            type="warning"
+            showIcon
+            closable
+            onClose={() => void window.polemica.dismissSearchNotice()}
+            message={search.noticeTitle || undefined}
+            description={search.noticeText || undefined}
+          />
         ) : null}
       </div>
     </div>

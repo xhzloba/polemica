@@ -5,35 +5,9 @@
 }
 
 .tb-profile__btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0;
-  padding: 4px 10px 4px 4px;
-  border: 0;
-  border-radius: 14px;
-  background: transparent;
-  color: #f5f7f2;
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
-  font-size: 13.5px;
-  font-weight: 500;
-  letter-spacing: -0.015em;
-  cursor: pointer;
-  transition: background 0.18s ease;
-}
-
-.tb-profile__btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.tb-profile__avatar {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  object-fit: cover;
-  display: block;
-  background: rgba(255, 255, 255, 0.06);
+  height: auto !important;
+  padding: 4px 10px 4px 4px !important;
+  border-radius: 14px !important;
 }
 
 .tb-profile__name {
@@ -41,9 +15,11 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: #f5f7f2 !important;
 }
 
 .tb-profile__chevron {
-  flex: 0 0 auto;
+  font-size: 10px;
   opacity: 0.55;
+  color: #f5f7f2;
 }

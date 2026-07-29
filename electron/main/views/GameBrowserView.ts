@@ -599,7 +599,7 @@ export async function gameSetLobbyTab(tab: 'play' | 'watch'): Promise<boolean> {
               height: 36px;
               border-radius: 50%;
               border: 2.5px solid rgba(255, 255, 255, 0.12);
-              border-top-color: #c8f531;
+              border-top-color: #1677ff;
               animation: polemica-tab-spin 0.7s linear infinite;
             }
             @keyframes polemica-tab-spin {

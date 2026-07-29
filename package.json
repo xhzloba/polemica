@@ -18,7 +18,9 @@
     "dist:win": "npm run build && electron-builder --win"
   },
   "dependencies": {
-    "lucide-react": "^1.27.0",
+    "@ant-design/cssinjs": "^2.1.2",
+    "@ant-design/icons": "^6.3.2",
+    "antd": "^6.5.2",
     "sql.js": "^1.14.1"
   },
   "devDependencies": {

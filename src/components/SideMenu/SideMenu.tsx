@@ -1,25 +1,18 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { BookOpen, ChevronLeft, LoaderCircle, Menu, Plus, Radio, Search, Settings, Swords } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Badge, Button, Input, Menu, Spin } from 'antd'
+import {
+  BookOutlined,
+  LeftOutlined,
+  MenuOutlined,
+  PlayCircleOutlined,
+  SettingOutlined,
+  ThunderboltOutlined
+} from '@ant-design/icons'
 import { GAME_ORIGIN } from '@shared/config'
 import type { LiveStats, SearchStatus } from '@shared/ipc'
 import './SideMenu.css'
 
-type MenuItem = {
-  label: string
-  icon: typeof Swords
-  path?: string
-  action?: 'create-lobby' | 'play' | 'streams' | 'settings'
-  accent?: boolean
-  liveDot?: boolean
-}
-
-const ITEMS: MenuItem[] = [
-  { label: 'Создать лобби', icon: Plus, action: 'create-lobby', accent: true },
-  { label: 'Играть', path: '/game-search', icon: Swords, action: 'play' },
-  { label: 'Трансляции', path: '/game-search', icon: Radio, action: 'streams', liveDot: true },
-  { label: 'Правила', path: '/rules', icon: BookOpen },
-  { label: 'Настройки', icon: Settings, action: 'settings' }
-]
+type MenuKey = 'play' | 'streams' | 'rules' | 'settings'
 
 interface Props {
   currentUrl: string
@@ -44,7 +37,9 @@ function playItemMeta(search: SearchStatus): string {
     return parts.join(' · ')
   }
   if (search.phase === 'accept') {
-    const parts = [search.acceptAccepted ? 'Матч принят' : 'Найден матч', search.time].filter(Boolean)
+    const parts = [search.acceptAccepted ? 'Матч принят' : 'Найден матч', search.time].filter(
+      Boolean
+    )
     return parts.join(' · ')
   }
   if (search.phase === 'launching') {
@@ -65,19 +60,14 @@ export function SideMenuToggle({
   onToggle: () => void
 }) {
   return (
-    <button
-      type="button"
+    <Button
+      type="text"
       className={`side-menu__toggle${open ? ' side-menu__toggle--open' : ''}`}
       aria-label={open ? 'Закрыть меню' : 'Открыть меню'}
       aria-expanded={open}
+      icon={open ? <LeftOutlined /> : <MenuOutlined />}
       onClick={onToggle}
-    >
-      {open ? (
-        <ChevronLeft size={22} strokeWidth={2.2} aria-hidden />
-      ) : (
-        <Menu size={20} strokeWidth={2.2} aria-hidden />
-      )}
-    </button>
+    />
   )
 }
 
@@ -133,105 +123,80 @@ export function SideMenuPanel({
 
   if (!open) return null
 
-  const onItem = (item: MenuItem): void => {
-    if (item.action === 'create-lobby') {
-      void window.polemica.createLobby()
-      return
-    }
-    if (item.action === 'play') {
-      switchLobbyTab('play')
-      return
-    }
-    if (item.action === 'streams') {
-      switchLobbyTab('watch')
-      return
-    }
-    if (item.action === 'settings') {
-      onOpenSettings?.()
-      return
-    }
-    if (item.path) void window.polemica.goto(`${GAME_ORIGIN}${item.path}`)
-  }
+  const selectedKeys: MenuKey[] = []
+  if (onGameSearch && lobbyTab === 'play') selectedKeys.push('play')
+  if (onGameSearch && lobbyTab === 'watch') selectedKeys.push('streams')
+  if (activePath === '/rules') selectedKeys.push('rules')
 
-  const renderItem = (item: MenuItem): ReactNode => {
-    const Icon = item.icon
-    const normalized = (item.path || '').replace(/\/$/, '')
-    let active = false
-    if (item.action === 'play') {
-      active = onGameSearch && lobbyTab === 'play'
-    } else if (item.action === 'streams') {
-      active = onGameSearch && lobbyTab === 'watch'
-    } else if (normalized) {
-      active = activePath === normalized
-    }
-
-    const showLive = Boolean(item.liveDot && live.streams > 0)
-    const meta = item.action === 'play' ? playItemMeta(search) : ''
-    const itemBusy =
-      tabBusy &&
-      ((item.action === 'play' && lobbyTab === 'play') ||
-        (item.action === 'streams' && lobbyTab === 'watch'))
-
-    return (
-      <button
-        key={item.label}
-        type="button"
-        className={[
-          'side-menu__item',
-          active && 'side-menu__item--active',
-          item.accent && 'side-menu__item--accent',
-          itemBusy && 'side-menu__item--busy'
-        ]
-          .filter(Boolean)
-          .join(' ')}
-        onClick={() => onItem(item)}
-        disabled={tabBusy && (item.action === 'play' || item.action === 'streams')}
-        title={
-          item.action === 'streams' && live.streams > 0
-            ? `${live.streams} трансляц.`
-            : undefined
-        }
-      >
-        <span className="side-menu__icon" aria-hidden>
-          {itemBusy ? (
-            <LoaderCircle size={22} strokeWidth={2.2} className="side-menu__spinner" />
-          ) : (
-            <>
-              {showLive ? <span className="side-menu__live-dot" /> : null}
-              <Icon size={22} strokeWidth={2} />
-            </>
-          )}
-        </span>
-        <span className="side-menu__text">
-          <span className="side-menu__label">{item.label}</span>
-          {meta ? <span className="side-menu__meta">{meta}</span> : null}
-        </span>
-      </button>
-    )
-  }
+  const playMeta = playItemMeta(search)
 
   return (
     <aside className="side-menu__panel" aria-label="Меню">
       <div className="side-menu__traffic-spacer" aria-hidden />
 
-      <label className="side-menu__search">
-        <Search size={15} strokeWidth={2.2} aria-hidden />
-        <input
-          type="search"
-          value={query}
-          placeholder="Найти игру..."
-          onChange={(e) => syncSearch(e.target.value)}
-          onFocus={() => {
-            if (!currentUrl.includes('/game-search')) {
-              void window.polemica.goto(`${GAME_ORIGIN}/game-search`)
-            }
-          }}
-        />
-      </label>
+      <Input.Search
+        className="side-menu__search"
+        allowClear
+        value={query}
+        placeholder="Найти игру..."
+        onChange={(e) => syncSearch(e.target.value)}
+        onFocus={() => {
+          if (!currentUrl.includes('/game-search')) {
+            void window.polemica.goto(`${GAME_ORIGIN}/game-search`)
+          }
+        }}
+      />
 
-      <nav className="side-menu__nav" aria-label="Разделы сайта">
-        {ITEMS.map(renderItem)}
-      </nav>
+      <Menu
+        className="side-menu__nav"
+        mode="inline"
+        selectable
+        selectedKeys={selectedKeys}
+        onClick={({ key }) => {
+          const k = key as MenuKey
+          if (k === 'play') switchLobbyTab('play')
+          else if (k === 'streams') switchLobbyTab('watch')
+          else if (k === 'settings') onOpenSettings()
+          else if (k === 'rules') void window.polemica.goto(`${GAME_ORIGIN}/rules`)
+        }}
+        items={[
+          {
+            key: 'play',
+            disabled: tabBusy,
+            icon: tabBusy && lobbyTab === 'play' ? <Spin size="small" /> : <ThunderboltOutlined />,
+            label: (
+              <span className="side-menu__label-wrap">
+                <span>Играть</span>
+                {playMeta ? <span className="side-menu__meta">{playMeta}</span> : null}
+              </span>
+            )
+          },
+          {
+            key: 'streams',
+            disabled: tabBusy,
+            icon:
+              tabBusy && lobbyTab === 'watch' ? (
+                <Spin size="small" />
+              ) : (
+                <Badge dot={live.streams > 0} color="#4096ff">
+                  <PlayCircleOutlined />
+                </Badge>
+              ),
+            label: 'Трансляции',
+            title: live.streams > 0 ? `${live.streams} трансляц.` : undefined
+          },
+          {
+            key: 'rules',
+            icon: <BookOutlined />,
+            label: 'Правила'
+          },
+          {
+            key: 'settings',
+            icon: <SettingOutlined />,
+            label: 'Настройки'
+          }
+        ]}
+      />
     </aside>
   )
 }

@@ -55,9 +55,9 @@ const SHELL_HTML = `<!doctype html>
   }
   .item:hover { background: rgba(255, 255, 255, 0.06); }
   .item--on .check {
-    background: rgba(200, 245, 49, 0.18);
-    color: #c8f531;
-    border-color: rgba(200, 245, 49, 0.35);
+    background: rgba(22, 119, 255, 0.18);
+    color: #1677ff;
+    border-color: rgba(22, 119, 255, 0.35);
   }
   .check {
     display: inline-flex;

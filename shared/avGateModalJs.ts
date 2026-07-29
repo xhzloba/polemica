@@ -25,10 +25,10 @@ export const GAME_AV_GATE_JS = `
     'border:0!important;' +
     'border-color:transparent!important;' +
     'border-radius:12px!important;' +
-    'background:#c8f531!important;' +
-    'background-color:#c8f531!important;' +
+    'background:#1677ff!important;' +
+    'background-color:#1677ff!important;' +
     'background-image:none!important;' +
-    'color:#0b0f14!important;' +
+    'color:#fff!important;' +
     'box-shadow:none!important;' +
     'outline:none!important;' +
     'font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif!important;' +
@@ -44,11 +44,11 @@ export const GAME_AV_GATE_JS = `
     '.polemica-av-gate .button-comp:focus,' +
     'button.polemica-av-btn:hover,' +
     'button.polemica-av-btn:focus{' +
-    'background:#d4f85c!important;' +
-    'background-color:#d4f85c!important;' +
+    'background:#4096ff!important;' +
+    'background-color:#4096ff!important;' +
     'background-image:none!important;' +
     'border:0!important;' +
-    'color:#0b0f14!important;' +
+    'color:#fff!important;' +
     'opacity:1!important;' +
     'filter:none!important;' +
     '}';
@@ -91,10 +91,10 @@ export const GAME_AV_GATE_JS = `
     try {
       btn.classList.add('polemica-av-btn');
       // Vue rewrites style= to CSS vars only — keep forcing fill after each patch.
-      btn.style.setProperty('background', '#c8f531', 'important');
-      btn.style.setProperty('background-color', '#c8f531', 'important');
+      btn.style.setProperty('background', '#1677ff', 'important');
+      btn.style.setProperty('background-color', '#1677ff', 'important');
       btn.style.setProperty('background-image', 'none', 'important');
-      btn.style.setProperty('color', '#0b0f14', 'important');
+      btn.style.setProperty('color', '#fff', 'important');
       btn.style.setProperty('border', '0 solid transparent', 'important');
       btn.style.setProperty('border-width', '0', 'important');
       btn.style.setProperty('border-style', 'none', 'important');
@@ -107,12 +107,12 @@ export const GAME_AV_GATE_JS = `
       btn.style.setProperty('font-weight', '650', 'important');
       btn.style.setProperty('font-size', '14px', 'important');
       btn.style.setProperty('opacity', '1', 'important');
-      btn.style.setProperty('--main-color', '#c8f531');
-      btn.style.setProperty('--text-color', '#0b0f14');
-      btn.style.setProperty('--hover-color', '#d4f85c');
-      btn.style.setProperty('--hover-border-color', '#d4f85c');
-      btn.style.setProperty('--hover-text-color', '#0b0f14');
-      btn.style.setProperty('--hover-text-color-inverted', '#0b0f14');
+      btn.style.setProperty('--main-color', '#1677ff');
+      btn.style.setProperty('--text-color', '#fff');
+      btn.style.setProperty('--hover-color', '#4096ff');
+      btn.style.setProperty('--hover-border-color', '#4096ff');
+      btn.style.setProperty('--hover-text-color', '#fff');
+      btn.style.setProperty('--hover-text-color-inverted', '#fff');
       btn.style.setProperty('--is-transparent', 'false');
     } finally {
       btn.__polemicaPainting = false;

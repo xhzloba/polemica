@@ -11,27 +11,19 @@
   overflow: hidden;
 }
 
-.win-controls__btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.win-controls__btn.ant-btn {
   width: 36px;
   height: 30px;
-  margin: 0;
   padding: 0;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--chrome-muted, #8b97a8);
-  cursor: pointer;
+  color: rgba(255, 255, 255, 0.45);
 }
 
-.win-controls__btn:hover {
-  background: var(--chrome-hover, rgba(255, 255, 255, 0.08));
-  color: var(--chrome-fg, #e8eef6);
+.win-controls__btn.ant-btn:hover {
+  color: rgba(255, 255, 255, 0.85) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
 }
 
-.win-controls__btn--close:hover {
-  background: #e81123;
-  color: #fff;
+.win-controls__btn--close.ant-btn:hover {
+  background: #e81123 !important;
+  color: #fff !important;
 }

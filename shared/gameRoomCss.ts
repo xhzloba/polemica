@@ -194,18 +194,18 @@ body:has(.common-room-modal.default-modal) .full-page {
 .common-room-modal.default-modal .button-comp.outline[class],
 .polemica-av-gate .button-comp,
 .polemica-av-gate button.button-comp {
-  background: #c8f531 !important;
-  background-color: #c8f531 !important;
+  background: #1677ff !important;
+  background-color: #1677ff !important;
   background-image: none !important;
   border: 0 !important;
   border-color: transparent !important;
-  color: #0b0f14 !important;
-  --main-color: #c8f531 !important;
-  --text-color: #0b0f14 !important;
-  --hover-color: #d4f85c !important;
-  --hover-border-color: #d4f85c !important;
-  --hover-text-color: #0b0f14 !important;
-  --hover-text-color-inverted: #0b0f14 !important;
+  color: #fff !important;
+  --main-color: #1677ff !important;
+  --text-color: #fff !important;
+  --hover-color: #4096ff !important;
+  --hover-border-color: #4096ff !important;
+  --hover-text-color: #fff !important;
+  --hover-text-color-inverted: #fff !important;
   --is-transparent: false !important;
 }
 
@@ -215,13 +215,13 @@ body:has(.common-room-modal.default-modal) .full-page {
 .common-room-modal.default-modal button.button-comp.outline:focus,
 .polemica-av-gate .button-comp:hover,
 .polemica-av-gate .button-comp:focus {
-  background: #d4f85c !important;
-  background-color: #d4f85c !important;
+  background: #4096ff !important;
+  background-color: #4096ff !important;
   background-image: none !important;
   border: 0 !important;
   border-color: transparent !important;
-  color: #0b0f14 !important;
-  filter: brightness(1.02) !important;
+  color: #fff !important;
+  filter: none !important;
   opacity: 1 !important;
 }
 
@@ -254,9 +254,9 @@ body:has(.common-room-modal.default-modal) .full-page {
   height: 56px !important;
   margin: 0 0 2px !important;
   border-radius: 16px !important;
-  border: 1px solid rgba(200, 245, 49, 0.28) !important;
-  background: rgba(200, 245, 49, 0.1) !important;
-  color: #c8f531 !important;
+  border: 1px solid rgba(22, 119, 255, 0.35) !important;
+  background: rgba(22, 119, 255, 0.12) !important;
+  color: #1677ff !important;
   flex: 0 0 auto !important;
 }
 

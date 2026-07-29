@@ -1,6 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { ConfigProvider, App as AntdApp } from 'antd'
 import { App } from './App'
+import { polemicaAntdTheme } from './theme/antdTheme'
 import './styles/global.css'
 
 const root = document.getElementById('root')
@@ -15,6 +17,10 @@ document.body.classList.add(`platform-${platform}`)
 
 createRoot(root).render(
   <StrictMode>
-    <App />
+    <ConfigProvider theme={polemicaAntdTheme}>
+      <AntdApp>
+        <App />
+      </AntdApp>
+    </ConfigProvider>
   </StrictMode>
 )

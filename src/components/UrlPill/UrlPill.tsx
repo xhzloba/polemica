@@ -1,4 +1,5 @@
-import { Lock, LoaderCircle, ShieldAlert, ShieldQuestion } from 'lucide-react'
+import { LockOutlined, WarningOutlined, QuestionCircleOutlined, LoadingOutlined } from '@ant-design/icons'
+import { Space, Spin, Typography } from 'antd'
 import polemicaLogo from '../../assets/polemica-logo.svg'
 import { getConnectionInfo, type ConnectionSecurity } from '../../lib/connectionSecurity'
 import './UrlPill.css'
@@ -13,27 +14,25 @@ export function UrlPill({ url, isLoading }: Props) {
 
   return (
     <div className="url-pill" title={url}>
-      <img className="url-pill__logo" src={polemicaLogo} alt="" draggable={false} />
-      <span className={`url-pill__security url-pill__security--${connection.security}`} aria-hidden>
-        <SecurityIcon security={connection.security} />
-      </span>
-      <span className="url-pill__name">{connection.label}</span>
-      {isLoading && (
-        <LoaderCircle size={18} strokeWidth={2} className="url-pill__spinner" aria-label="Загрузка" />
-      )}
+      <Space size={8} align="center">
+        <img className="url-pill__logo" src={polemicaLogo} alt="" draggable={false} />
+        <span className={`url-pill__security url-pill__security--${connection.security}`} aria-hidden>
+          <SecurityIcon security={connection.security} />
+        </span>
+        <Typography.Text className="url-pill__name">{connection.label}</Typography.Text>
+        {isLoading ? <Spin indicator={<LoadingOutlined spin />} size="small" /> : null}
+      </Space>
     </div>
   )
 }
 
 function SecurityIcon({ security }: { security: ConnectionSecurity }) {
-  const props = { size: 18, strokeWidth: 2, 'aria-hidden': true as const }
-
   switch (security) {
     case 'secure':
-      return <Lock {...props} />
+      return <LockOutlined />
     case 'insecure':
-      return <ShieldAlert {...props} />
+      return <WarningOutlined />
     default:
-      return <ShieldQuestion {...props} />
+      return <QuestionCircleOutlined />
   }
 }

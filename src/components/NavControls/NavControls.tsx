@@ -1,32 +1,30 @@
-import { RotateCw, Home } from 'lucide-react'
+import { ReloadOutlined, HomeOutlined } from '@ant-design/icons'
+import { Button } from 'antd'
 import './NavControls.css'
 
 interface Props {
   isLoading: boolean
 }
 
-const iconProps = { size: 20, strokeWidth: 2 } as const
-
 export function NavControls({ isLoading }: Props) {
   const api = window.polemica
 
   return (
     <nav className="nav" aria-label="Навигация">
-      <button
-        type="button"
+      <Button
+        type="text"
         className="nav__btn"
         title={isLoading ? 'Остановить' : 'Обновить'}
+        icon={<ReloadOutlined spin={isLoading} />}
         onClick={() => void (isLoading ? api?.stop() : api?.reload())}
-      >
-        <RotateCw
-          {...iconProps}
-          className={isLoading ? 'nav__spin' : undefined}
-          aria-hidden
-        />
-      </button>
-      <button type="button" className="nav__btn" title="Поиск игр" onClick={() => void api?.goHome()}>
-        <Home {...iconProps} aria-hidden />
-      </button>
+      />
+      <Button
+        type="text"
+        className="nav__btn"
+        title="Поиск игр"
+        icon={<HomeOutlined />}
+        onClick={() => void api?.goHome()}
+      />
     </nav>
   )
 }

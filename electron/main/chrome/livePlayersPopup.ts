@@ -172,7 +172,7 @@ const SHELL_HTML = `<!doctype html>
   }
   .filter--prime.filter--on {
     background: rgba(200,245,49,0.14);
-    color: #c8f531;
+    color: #1677ff;
   }
   .list {
     display: flex;

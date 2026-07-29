@@ -26,6 +26,13 @@ body,
   -webkit-font-smoothing: antialiased;
 }
 
+/* ConfigProvider → Antd App wrapper must pass height to chrome layout */
+#root > .ant-app,
+.ant-app {
+  width: 100%;
+  height: 100%;
+}
+
 .app-shell {
   width: 100%;
   height: 100%;

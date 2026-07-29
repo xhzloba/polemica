@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Badge, Button, Typography } from 'antd'
 import type { LiveStats } from '@shared/ipc'
 import './LiveOnline.css'
 
@@ -23,7 +24,6 @@ function useAnimatedInt(value: number, durationMs = 780): number {
 
     const tick = (now: number): void => {
       const t = Math.min(1, (now - start) / durationMs)
-      // smooth ease-in-out
       const eased = t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2
       const next = Math.round(from + (to - from) * eased)
       displayRef.current = next
@@ -66,8 +66,8 @@ export function LiveOnline({ stats }: Props) {
   if (!stats.updatedAt) {
     return (
       <div className="live-online live-online--empty" title="Онлайн в лобби">
-        <span className="live-online__dot live-online__dot--off" aria-hidden />
-        <span>офлайн</span>
+        <Badge status="default" />
+        <Typography.Text type="secondary">офлайн</Typography.Text>
       </div>
     )
   }
@@ -112,23 +112,22 @@ export function LiveOnline({ stats }: Props) {
 
   return (
     <div className={`live-online${open ? ' live-online--open' : ''}`} title={title}>
-      <button
+      <Button
         ref={triggerRef}
-        type="button"
+        type="text"
         className="live-online__people"
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={openMenu}
       >
-        <span className="live-online__dot" aria-hidden>
-          <span className="live-online__dot-core" />
-          <span className="live-online__dot-ping" />
-        </span>
+        <Badge status="success" />
         <span className={playersClass}>{players}</span>
-        <span className="live-online__label">онлайн</span>
-      </button>
+        <Typography.Text type="secondary" className="live-online__label">
+          онлайн
+        </Typography.Text>
+      </Button>
       <span className="live-online__sep" aria-hidden />
-      <span className={lobbiesClass}>{lobbies} лобби</span>
+      <Typography.Text className={lobbiesClass}>{lobbies} лобби</Typography.Text>
     </div>
   )
 }

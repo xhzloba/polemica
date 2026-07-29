@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { ChevronLeft, VideoOff, Zap } from 'lucide-react'
+import { Button, List, Switch, Typography } from 'antd'
+import { LeftOutlined, ThunderboltOutlined, VideoCameraOutlined } from '@ant-design/icons'
 import type { ClientPrefs } from '@shared/ipc'
 import {
   getCachedPrefs,
@@ -65,67 +66,57 @@ export function SettingsPanel({ open, onBack, onClose }: Props) {
       <div className="settings-panel__traffic-spacer" aria-hidden />
 
       <div className="settings-panel__head">
-        <button
-          type="button"
+        <Button
+          type="text"
           className="settings-panel__back"
-          onClick={onBack}
+          icon={<LeftOutlined />}
           aria-label="Назад в меню"
-        >
-          <ChevronLeft size={20} strokeWidth={2.2} aria-hidden />
-        </button>
-        <h1 className="settings-panel__title">Настройки</h1>
+          onClick={onBack}
+        />
+        <Typography.Title level={4} className="settings-panel__title">
+          Настройки
+        </Typography.Title>
       </div>
 
       {prefs ? (
-        <div className="settings-panel__list">
-          <button
-            type="button"
-            className="settings-panel__row"
-            onClick={() => toggle('autoAccept')}
-            disabled={busyKey !== null}
-            aria-pressed={prefs.autoAccept}
-          >
-            <span className="settings-panel__row-icon" aria-hidden>
-              <Zap size={18} strokeWidth={2} />
-            </span>
-            <span className="settings-panel__row-text">
-              <span className="settings-panel__row-label">Автопринятие матча</span>
-              <span className="settings-panel__row-hint">
-                По умолчанию выкл. Когда вкл — сразу Accept в кнопке «Играть»
-              </span>
-            </span>
-            <span
-              className={`settings-panel__switch${prefs.autoAccept ? ' settings-panel__switch--on' : ''}`}
-              aria-hidden
+        <List
+          className="settings-panel__list"
+          itemLayout="horizontal"
+          dataSource={[
+            {
+              key: 'autoAccept' as const,
+              icon: <ThunderboltOutlined />,
+              label: 'Автопринятие матча',
+              hint: 'По умолчанию выкл. Когда вкл — сразу Accept в кнопке «Играть»'
+            },
+            {
+              key: 'cameraOffOnLobbyEnter' as const,
+              icon: <VideoCameraOutlined />,
+              label: 'Камера выкл в лобби',
+              hint: 'В лобби камера сразу выкл; тумблер сразу жмёт кнопку камеры'
+            }
+          ]}
+          renderItem={(item) => (
+            <List.Item
+              className="settings-panel__row"
+              actions={[
+                <Switch
+                  key="sw"
+                  checked={Boolean(prefs[item.key])}
+                  loading={busyKey === item.key}
+                  disabled={busyKey !== null && busyKey !== item.key}
+                  onChange={() => toggle(item.key)}
+                />
+              ]}
             >
-              <span className="settings-panel__switch-knob" />
-            </span>
-          </button>
-
-          <button
-            type="button"
-            className="settings-panel__row"
-            onClick={() => toggle('cameraOffOnLobbyEnter')}
-            disabled={busyKey !== null}
-            aria-pressed={prefs.cameraOffOnLobbyEnter}
-          >
-            <span className="settings-panel__row-icon" aria-hidden>
-              <VideoOff size={18} strokeWidth={2} />
-            </span>
-            <span className="settings-panel__row-text">
-              <span className="settings-panel__row-label">Камера выкл в лобби</span>
-              <span className="settings-panel__row-hint">
-                В лобби камера сразу выкл; тумблер сразу жмёт кнопку камеры
-              </span>
-            </span>
-            <span
-              className={`settings-panel__switch${prefs.cameraOffOnLobbyEnter ? ' settings-panel__switch--on' : ''}`}
-              aria-hidden
-            >
-              <span className="settings-panel__switch-knob" />
-            </span>
-          </button>
-        </div>
+              <List.Item.Meta
+                avatar={<span className="settings-panel__row-icon">{item.icon}</span>}
+                title={item.label}
+                description={item.hint}
+              />
+            </List.Item>
+          )}
+        />
       ) : (
         <div className="settings-panel__list settings-panel__list--loading" aria-hidden>
           <div className="settings-panel__row settings-panel__row--skeleton" />

@@ -1,5 +1,6 @@
 import { useCallback, useRef } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { Avatar, Button, Space, Typography } from 'antd'
+import { DownOutlined } from '@ant-design/icons'
 import type { UserProfile } from '@shared/ipc'
 import { GAME_ORIGIN } from '@shared/config'
 import './TitleBarProfile.css'
@@ -30,17 +31,19 @@ export function TitleBarProfile({ profile, onLogout }: Props) {
 
   return (
     <div className="tb-profile">
-      <button
+      <Button
         ref={btnRef}
-        type="button"
+        type="text"
         className="tb-profile__btn"
         aria-haspopup="menu"
         onClick={() => void openMenu()}
       >
-        <img className="tb-profile__avatar" src={profile.avatarUrl} alt="" />
-        <span className="tb-profile__name">{profile.username}</span>
-        <ChevronDown size={14} strokeWidth={2.2} className="tb-profile__chevron" aria-hidden />
-      </button>
+        <Space size={8}>
+          <Avatar src={profile.avatarUrl} size={28} />
+          <Typography.Text className="tb-profile__name">{profile.username}</Typography.Text>
+          <DownOutlined className="tb-profile__chevron" />
+        </Space>
+      </Button>
     </div>
   )
 }

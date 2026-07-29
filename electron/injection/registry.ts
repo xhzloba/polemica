@@ -392,14 +392,14 @@ button.polemica-av-btn {
   padding: 0 16px !important;
   border: 0 !important;
   border-radius: 12px !important;
-  background: #c8f531 !important;
-  background-color: #c8f531 !important;
+  background: #1677ff !important;
+  background-color: #1677ff !important;
   background-image: none !important;
-  color: #0b0f14 !important;
+  color: #fff !important;
   box-shadow: none !important;
   font-size: 14px !important;
-  font-weight: 650 !important;
-  letter-spacing: -0.02em !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
   cursor: pointer !important;
   opacity: 1 !important;
 }
@@ -407,9 +407,9 @@ button.polemica-av-btn {
 .common-room-modal.default-modal .button-comp:focus,
 .polemica-av-gate .button-comp:hover,
 button.polemica-av-btn:hover {
-  background: #d4f85c !important;
-  background-color: #d4f85c !important;
-  color: #0b0f14 !important;
+  background: #4096ff !important;
+  background-color: #4096ff !important;
+  color: #fff !important;
   border: 0 !important;
   opacity: 1 !important;
 }
