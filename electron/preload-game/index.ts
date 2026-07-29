@@ -288,7 +288,7 @@ header.p-header,
 }
 
 .p-play__lobby {
-  padding-top: 18px !important;
+  padding-top: 28px !important;
   margin-top: 0 !important;
 }
 

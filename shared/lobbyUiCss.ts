@@ -35,7 +35,7 @@ export const LOBBY_UI_CSS = `
 }
 
 .p-play__lobby {
-  padding: 18px 4px 12px !important;
+  padding: 28px 4px 12px !important;
 }
 
 .p-play__lobby-table {
