@@ -4,6 +4,8 @@ import type { SearchStatus } from '@shared/ipc'
 import './SearchBanner.css'
 
 const AUTO_ACCEPT_KEY = 'polemica.autoAccept'
+/** Replay match-found sound once when accept timer drops to this many seconds. */
+const ACCEPT_REMIND_AT_SEC = 5
 
 function readAutoAccept(): boolean {
   try {
@@ -21,6 +23,14 @@ function writeAutoAccept(on: boolean): void {
   }
 }
 
+function parseAcceptClockSeconds(value: string): number | null {
+  const m = String(value || '')
+    .trim()
+    .match(/^(\d+):(\d{2})$/)
+  if (!m) return null
+  return Number(m[1]) * 60 + Number(m[2])
+}
+
 interface Props {
   search: SearchStatus
 }
@@ -29,6 +39,7 @@ export function SearchBanner({ search }: Props) {
   const hasNotice = Boolean(search.noticeTitle || search.noticeText)
   const splitRef = useRef<HTMLDivElement>(null)
   const autoFiredKey = useRef<string>('')
+  const remindFiredKey = useRef<string>('')
   const [autoAccept, setAutoAccept] = useState(readAutoAccept)
   const [menuOpenLocal, setMenuOpenLocal] = useState(false)
 
@@ -50,8 +61,30 @@ export function SearchBanner({ search }: Props) {
   ])
 
   useEffect(() => {
-    if (search.phase !== 'accept') autoFiredKey.current = ''
+    if (search.phase !== 'accept') {
+      autoFiredKey.current = ''
+      remindFiredKey.current = ''
+    }
   }, [search.phase])
+
+  useEffect(() => {
+    if (autoAccept) return
+    if (search.phase !== 'accept' || search.acceptAccepted) return
+    const secs = parseAcceptClockSeconds(search.time)
+    if (secs == null || secs > ACCEPT_REMIND_AT_SEC) return
+    const foundKey = `${search.title}|${search.acceptMode}|${search.delay}`
+    if (remindFiredKey.current === foundKey) return
+    remindFiredKey.current = foundKey
+    void window.polemica?.playAcceptReminderSound()
+  }, [
+    autoAccept,
+    search.phase,
+    search.acceptAccepted,
+    search.time,
+    search.title,
+    search.acceptMode,
+    search.delay
+  ])
 
   if (!search.visible && !search.playVisible && !hasNotice) return null
 

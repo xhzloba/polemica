@@ -457,6 +457,56 @@ const ACCEPT_GAME_JS = `
 })()
 `
 
+const PLAY_ACCEPT_SOUND_JS = `
+(() => {
+  const walk = (vm, fn) => {
+    if (!vm) return false;
+    if (fn(vm)) return true;
+    const kids = vm.$children || [];
+    for (let i = 0; i < kids.length; i++) {
+      if (walk(kids[i], fn)) return true;
+    }
+    return false;
+  };
+  const replay = (audio) => {
+    if (!audio) return false;
+    try {
+      audio.currentTime = 0;
+      audio.volume = 0.7;
+      const p = audio.play();
+      if (p && typeof p.catch === 'function') p.catch(() => {});
+      return true;
+    } catch (_) {
+      return false;
+    }
+  };
+  const app = document.querySelector('#app') && document.querySelector('#app').__vue__;
+  if (app) {
+    let done = false;
+    walk(app, (vm) => {
+      if (typeof vm.playStartGameSignal === 'function') {
+        if (vm.startGameSignal) replay(vm.startGameSignal);
+        else vm.playStartGameSignal();
+        done = true;
+        return true;
+      }
+      if (vm.startGameSignal) {
+        done = replay(vm.startGameSignal);
+        return done;
+      }
+      return false;
+    });
+    if (done) return true;
+  }
+  const a = document.createElement('audio');
+  a.src = '/bundle/sounds/start-game-signal.mp3';
+  a.volume = 0.7;
+  const p = a.play();
+  if (p && typeof p.catch === 'function') p.catch(() => {});
+  return true;
+})()
+`
+
 const RETURN_TO_GAME_JS = `
 (() => {
   const walk = (vm, fn) => {
@@ -1180,6 +1230,18 @@ export async function acceptGameSearch(): Promise<boolean> {
     return ok
   } catch (err) {
     console.warn('[search] accept failed', err)
+    return false
+  }
+}
+
+/** Replay site match-found signal (manual accept, near timer end). */
+export async function playAcceptReminderSound(): Promise<boolean> {
+  const wc = getGameView()?.webContents
+  if (!wc || wc.isDestroyed()) return false
+  try {
+    return Boolean(await wc.executeJavaScript(PLAY_ACCEPT_SOUND_JS, true))
+  } catch (err) {
+    console.warn('[search] accept reminder sound failed', err)
     return false
   }
 }

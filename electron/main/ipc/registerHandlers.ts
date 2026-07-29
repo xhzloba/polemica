@@ -27,6 +27,7 @@ import {
   cancelGameSearch,
   dismissSearchNotice,
   getSearchStatus,
+  playAcceptReminderSound,
   quitActiveGame,
   refreshSearchStatus,
   returnToGame,
@@ -73,6 +74,7 @@ export function registerIpcHandlers(getWindow: WindowGetter): void {
     toggleSearchMode(String(mode ?? ''))
   )
   ipcMain.handle(IpcChannels.SEARCH_ACCEPT, async () => acceptGameSearch())
+  ipcMain.handle(IpcChannels.SEARCH_PLAY_ACCEPT_SOUND, async () => playAcceptReminderSound())
   ipcMain.handle(IpcChannels.SEARCH_RETURN_GAME, async () => returnToGame())
   ipcMain.handle(IpcChannels.SEARCH_QUIT_GAME, async () => quitActiveGame())
   ipcMain.handle(IpcChannels.SEARCH_DISMISS_NOTICE, async () => {
