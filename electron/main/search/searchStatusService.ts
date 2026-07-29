@@ -1,10 +1,12 @@
-import type { BrowserWindow, WebContents } from 'electron'
+import { net, type BrowserWindow, type WebContents } from 'electron'
 import { IpcChannels, type SearchMode, type SearchStatus } from '@shared/ipc'
 import { getBanStatus } from '../ban/banStatusService'
 import { getGameView, gameSetLobbyTab } from '../views/GameBrowserView'
 
 /** Timer / queue counts update often. */
 const POLL_MS = 1_000
+const SEARCH_QUEUE_URL = 'https://game.polemicagame.com/api/search'
+const SEARCH_QUEUE_TIMEOUT_MS = 1_500
 
 const SCRAPE_SEARCH_JS = `
 (() => {
@@ -610,6 +612,9 @@ let hostWindow: BrowserWindow | null = null
 let timer: ReturnType<typeof setInterval> | null = null
 let last: SearchStatus = emptySearch()
 let running = false
+let tickInFlight: Promise<void> | null = null
+let tickQueued = false
+let pollGeneration = 0
 let onChange: ((status: SearchStatus) => void) | null = null
 let stickyNotice: { title: string; text: string; until: number } | null = null
 /** Last modes scraped from the play panel — reused off-page when Vue panel is unmounted. */
@@ -801,7 +806,48 @@ function normalizeModes(raw: unknown): SearchMode[] {
   })
 }
 
-async function tick(): Promise<void> {
+function normalizeQueueCounts(raw: unknown): Record<string, number> | null {
+  if (!raw || typeof raw !== 'object') return null
+  const queues = (raw as { queues?: unknown }).queues
+  if (!queues || typeof queues !== 'object' || Array.isArray(queues)) return null
+
+  const counts: Record<string, number> = {}
+  for (const [mode, value] of Object.entries(queues)) {
+    if (!value || typeof value !== 'object') continue
+    const players = (value as { players?: unknown }).players
+    const count = Array.isArray(players) ? players.length : Number(players)
+    if (Number.isFinite(count) && count >= 0) counts[mode] = Math.floor(count)
+  }
+  return Object.keys(counts).length ? counts : null
+}
+
+async function fetchQueueCounts(): Promise<Record<string, number> | null> {
+  try {
+    const response = await net.fetch(SEARCH_QUEUE_URL, {
+      headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(SEARCH_QUEUE_TIMEOUT_MS)
+    })
+    if (!response.ok) return null
+    return normalizeQueueCounts((await response.json()) as unknown)
+  } catch {
+    // Keep the last known site snapshot while the queue API is unavailable.
+    return null
+  }
+}
+
+function mergeQueueCounts(
+  modes: SearchMode[],
+  counts: Record<string, number> | null
+): SearchMode[] {
+  if (!counts) return modes
+  return modes.map((mode) =>
+    Object.prototype.hasOwnProperty.call(counts, mode.mode)
+      ? { ...mode, count: counts[mode.mode] }
+      : mode
+  )
+}
+
+async function tick(generation: number): Promise<void> {
   const view = getGameView()
   const wc = view?.webContents
   if (!wc || wc.isDestroyed()) {
@@ -850,12 +896,38 @@ async function tick(): Promise<void> {
       panelMissing?: boolean
     } | null
 
+    if (
+      !running ||
+      generation !== pollGeneration ||
+      wc.isDestroyed() ||
+      wc.getURL() !== url
+    ) {
+      return
+    }
+
     // Page mid-load / SPA tear-down — keep last sticky Play / search strip
     if (!raw || typeof raw !== 'object') return
 
     rememberNotice(String(raw.noticeTitle || ''), String(raw.noticeText || ''))
     const notice = activeNotice()
     const insetLeft = Math.max(0, Math.round(Number(raw.insetLeft) || 24))
+    const shouldRefreshQueues =
+      raw.phase === 'searching' ||
+      Boolean(raw.panelMissing && stickyActive?.phase === 'searching')
+    const queueCounts = shouldRefreshQueues ? await fetchQueueCounts() : null
+
+    if (
+      !running ||
+      generation !== pollGeneration ||
+      wc.isDestroyed() ||
+      wc.getURL() !== url
+    ) {
+      return
+    }
+
+    if (queueCounts) {
+      stickyModes = mergeQueueCounts(stickyModes, queueCounts)
+    }
 
     // Off play page the search Vue panel is gone — keep searching/accept/timer chrome alive
     if (raw.panelMissing && stickyActive) {
@@ -895,7 +967,7 @@ async function tick(): Promise<void> {
       playVisible = false
     }
 
-    let modes = normalizeModes(raw.modes)
+    let modes = mergeQueueCounts(normalizeModes(raw.modes), queueCounts)
     if (modes.length) {
       stickyModes = modes
     } else if (phase === 'idle' || playVisible) {
@@ -936,6 +1008,22 @@ async function tick(): Promise<void> {
   }
 }
 
+function requestTick(): void {
+  if (!running) return
+  if (tickInFlight) {
+    tickQueued = true
+    return
+  }
+
+  const generation = pollGeneration
+  tickInFlight = tick(generation).finally(() => {
+    tickInFlight = null
+    const rerun = tickQueued || generation !== pollGeneration
+    tickQueued = false
+    if (running && rerun) requestTick()
+  })
+}
+
 export function getSearchStatus(): SearchStatus {
   return last
 }
@@ -954,7 +1042,7 @@ export function onSearchStatusChange(cb: ((status: SearchStatus) => void) | null
 
 export function refreshSearchStatus(): void {
   if (!running) return
-  void tick()
+  requestTick()
 }
 
 export async function cancelGameSearch(): Promise<boolean> {
@@ -1146,18 +1234,21 @@ function bindNavigationRefresh(): void {
 export function startSearchStatusPolling(): void {
   bindNavigationRefresh()
   if (running) {
-    void tick()
+    requestTick()
     return
   }
   running = true
-  void tick()
+  pollGeneration += 1
+  requestTick()
   timer = setInterval(() => {
-    void tick()
+    requestTick()
   }, POLL_MS)
 }
 
 export function stopSearchStatusPolling(): void {
   running = false
+  pollGeneration += 1
+  tickQueued = false
   if (timer) {
     clearInterval(timer)
     timer = null
