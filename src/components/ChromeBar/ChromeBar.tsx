@@ -81,11 +81,7 @@ export function ChromeBar({ nav, profile, onLogout }: Props) {
           <div className="chrome__drag" />
           <div className="chrome__left">
             <SideMenuToggle open={menuOpen} onToggle={() => void setMenu(!menuOpen)} />
-            <NavControls
-              canGoBack={nav.canGoBack}
-              canGoForward={nav.canGoForward}
-              isLoading={nav.isLoading}
-            />
+            <NavControls isLoading={nav.isLoading} />
           </div>
           <UrlPill url={nav.url} isLoading={nav.isLoading} />
           <div className="chrome__right">

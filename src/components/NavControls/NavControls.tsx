@@ -1,37 +1,17 @@
-import { ChevronLeft, ChevronRight, RotateCw, Home } from 'lucide-react'
+import { RotateCw, Home } from 'lucide-react'
 import './NavControls.css'
 
 interface Props {
-  canGoBack: boolean
-  canGoForward: boolean
   isLoading: boolean
 }
 
 const iconProps = { size: 20, strokeWidth: 2 } as const
 
-export function NavControls({ canGoBack, canGoForward, isLoading }: Props) {
+export function NavControls({ isLoading }: Props) {
   const api = window.polemica
 
   return (
     <nav className="nav" aria-label="Навигация">
-      <button
-        type="button"
-        className="nav__btn"
-        disabled={!canGoBack}
-        title="Назад"
-        onClick={() => void api?.goBack()}
-      >
-        <ChevronLeft {...iconProps} aria-hidden />
-      </button>
-      <button
-        type="button"
-        className="nav__btn"
-        disabled={!canGoForward}
-        title="Вперёд"
-        onClick={() => void api?.goForward()}
-      >
-        <ChevronRight {...iconProps} aria-hidden />
-      </button>
       <button
         type="button"
         className="nav__btn"

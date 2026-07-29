@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { BookOpen, Crown, LoaderCircle, Menu, Plus, Radio, Search, Swords, Trophy, X } from 'lucide-react'
 import { GAME_ORIGIN } from '@shared/config'
 import { useLiveStats } from '../../hooks/useLiveStats'
+import { useSearchStatus } from '../../hooks/useSearchStatus'
 import './SideMenu.css'
 
 type MenuItem = {
@@ -37,6 +38,25 @@ function pathFromUrl(url: string): string {
   }
 }
 
+function playItemMeta(search: ReturnType<typeof useSearchStatus>): string {
+  if (search.phase === 'searching') {
+    const parts = [search.title || 'Идёт поиск', search.time].filter(Boolean)
+    return parts.join(' · ')
+  }
+  if (search.phase === 'accept') {
+    const parts = [search.acceptAccepted ? 'Матч принят' : 'Найден матч', search.time].filter(Boolean)
+    return parts.join(' · ')
+  }
+  if (search.phase === 'launching') {
+    const parts = [search.title || 'Запуск игры', search.time].filter(Boolean)
+    return parts.join(' · ')
+  }
+  if (search.phase === 'inGame') {
+    return 'Можно продолжить игру'
+  }
+  return ''
+}
+
 export function SideMenuToggle({
   open,
   onToggle
@@ -59,6 +79,7 @@ export function SideMenuToggle({
 
 export function SideMenuPanel({ currentUrl, open, onOpenChange }: Props) {
   const live = useLiveStats()
+  const search = useSearchStatus()
   const [query, setQuery] = useState('')
   const [lobbyTab, setLobbyTab] = useState<'play' | 'watch'>('play')
   const [tabBusy, setTabBusy] = useState(false)
@@ -152,6 +173,7 @@ export function SideMenuPanel({ currentUrl, open, onOpenChange }: Props) {
           }
 
           const showLive = Boolean(item.liveDot && live.streams > 0)
+          const meta = item.action === 'play' ? playItemMeta(search) : ''
           const itemBusy =
             tabBusy &&
             ((item.action === 'play' && lobbyTab === 'play') ||
@@ -188,7 +210,10 @@ export function SideMenuPanel({ currentUrl, open, onOpenChange }: Props) {
                   </>
                 )}
               </span>
-              <span className="side-menu__label">{item.label}</span>
+              <span className="side-menu__text">
+                <span className="side-menu__label">{item.label}</span>
+                {meta ? <span className="side-menu__meta">{meta}</span> : null}
+              </span>
             </button>
           )
         })}
