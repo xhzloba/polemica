@@ -343,9 +343,11 @@ export const LOBBY_UI_CSS = `
   margin: 0 !important;
   padding: 8px 8px !important;
   border-radius: 10px !important;
+  border: 1px solid transparent !important;
+  box-sizing: border-box !important;
   color: #f5f7f2 !important;
   text-decoration: none !important;
-  transition: background 0.12s ease, opacity 0.12s ease !important;
+  transition: background 0.12s ease, opacity 0.12s ease, border-color 0.12s ease !important;
 }
 
 .polemica-lobby-expand__player:hover {
@@ -356,6 +358,21 @@ export const LOBBY_UI_CSS = `
 
 .polemica-lobby-expand__player--quit {
   opacity: 0.48 !important;
+}
+
+.polemica-lobby-expand__player--live {
+  background: rgba(145, 70, 255, 0.1) !important;
+  border-color: rgba(145, 70, 255, 0.32) !important;
+}
+
+.polemica-lobby-expand__player--live:hover {
+  background: rgba(145, 70, 255, 0.16) !important;
+  border-color: rgba(145, 70, 255, 0.45) !important;
+}
+
+.polemica-lobby-expand__player--live .polemica-lobby-expand__avatar {
+  border-color: rgba(145, 70, 255, 0.55) !important;
+  box-shadow: 0 0 0 2px rgba(145, 70, 255, 0.18) !important;
 }
 
 .polemica-lobby-expand__avatar {
@@ -412,6 +429,19 @@ export const LOBBY_UI_CSS = `
 .polemica-lobby-expand__mark--sub {
   width: 15px !important;
   height: 16px !important;
+}
+
+.polemica-lobby-expand__mark--twitch {
+  width: 15px !important;
+  height: 15px !important;
+  border-radius: 4px !important;
+  cursor: pointer !important;
+  opacity: 0.55 !important;
+}
+
+.polemica-lobby-expand__mark--twitch-live {
+  opacity: 1 !important;
+  box-shadow: 0 0 0 1px rgba(145, 70, 255, 0.45) !important;
 }
 
 .polemica-lobby-expand__mmr {

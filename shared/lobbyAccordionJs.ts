@@ -4,7 +4,7 @@ import { PRIME_ICON, SUBSCRIPTION_ICON } from './siteMarks'
 
 export const LOBBY_ACCORDION_JS = `
 (() => {
-  const VER = 2;
+  const VER = 4;
   if (window.__polemicaLobbyAccordion === VER) return;
   window.__polemicaLobbyAccordion = VER;
 
@@ -12,6 +12,7 @@ export const LOBBY_ACCORDION_JS = `
   const PANEL = 'polemica-lobby-expand';
   const PRIME_ICON = ${JSON.stringify(PRIME_ICON)};
   const SUB_ICON = ${JSON.stringify(SUBSCRIPTION_ICON)};
+  const TWITCH_ICON = '/images/socials/twitch-rounded-square-purple.svg';
   const MMR_TIERS = ${JSON.stringify(MMR_TIERS)};
 
   const resolveVm = (row) => {
@@ -90,6 +91,11 @@ export const LOBBY_ACCORDION_JS = `
     const id = encodeURIComponent(String(p.id || ''));
     const src = escapeHtml(avatarUrl(vm, p) || fallbackAvatar);
     const quit = Boolean(p.quit);
+    const streamLink =
+      p.stream && p.stream.link ? String(p.stream.link) : '';
+    // stream.link = Twitch attached; stream.active = currently live (site lobbyTwitchUrl).
+    const live = Boolean(p.stream && p.stream.active && streamLink);
+    const hasTwitch = Boolean(streamLink);
     const sub =
       p.subscription && !p.primeMember
         ? '<img class="polemica-lobby-expand__mark polemica-lobby-expand__mark--sub" src="' +
@@ -103,13 +109,25 @@ export const LOBBY_ACCORDION_JS = `
         escapeHtml(PRIME_ICON) +
         '" alt="" title="Prime" draggable="false" />'
       : '';
+    const twitch = hasTwitch
+      ? '<img class="polemica-lobby-expand__mark polemica-lobby-expand__mark--twitch' +
+        (live ? ' polemica-lobby-expand__mark--twitch-live' : '') +
+        '" src="' +
+        escapeHtml(TWITCH_ICON) +
+        '" alt="" title="' +
+        (live ? 'Стримит сейчас' : 'Twitch') +
+        '" draggable="false" />'
+      : '';
     const mmr = p.mmr != null && p.mmr !== '' ? mmrHtml(p.mmr) : '';
     return (
       '<a class="polemica-lobby-expand__player' +
       (quit ? ' polemica-lobby-expand__player--quit' : '') +
+      (live ? ' polemica-lobby-expand__player--live' : '') +
       '" href="/profile/' +
       id +
-      '" target="_blank" rel="noopener">' +
+      '" target="_blank" rel="noopener"' +
+      (hasTwitch ? ' data-twitch="' + escapeHtml(streamLink) + '"' : '') +
+      '>' +
       '<img class="polemica-lobby-expand__avatar" src="' +
       src +
       '" alt="" loading="lazy" decoding="async" data-fallback="' +
@@ -122,6 +140,7 @@ export const LOBBY_ACCORDION_JS = `
       '</span>' +
       sub +
       prime +
+      twitch +
       '</span>' +
       '</span>' +
       mmr +
@@ -190,7 +209,17 @@ export const LOBBY_ACCORDION_JS = `
       '</div>';
 
     panel.querySelectorAll('a.polemica-lobby-expand__player').forEach((a) => {
-      a.addEventListener('click', (e) => e.stopPropagation());
+      a.addEventListener('click', (e) => {
+        const twitch = e.target instanceof Element && e.target.closest('.polemica-lobby-expand__mark--twitch');
+        if (twitch) {
+          e.preventDefault();
+          e.stopPropagation();
+          const link = a.getAttribute('data-twitch');
+          if (link) window.open(link, '_blank', 'noopener');
+          return;
+        }
+        e.stopPropagation();
+      });
     });
 
     panel.querySelectorAll('img.polemica-lobby-expand__avatar').forEach((img) => {

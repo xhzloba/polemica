@@ -32,11 +32,11 @@
   grid-column: 1;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   width: 100%;
   height: 100%;
   min-height: 0;
-  padding: 8px 10px 12px;
+  padding: 8px 10px 14px;
   box-sizing: border-box;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.07);
@@ -57,13 +57,23 @@
 .side-menu__search {
   display: flex;
   align-items: center;
-  gap: 8px;
-  height: 32px;
-  padding: 0 10px;
-  border-radius: 9px;
-  background: rgba(255, 255, 255, 0.04);
+  gap: 9px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.045);
   color: rgba(235, 235, 245, 0.45);
   -webkit-app-region: no-drag;
+  transition:
+    background 0.14s ease,
+    border-color 0.14s ease;
+}
+
+.side-menu__search:focus-within {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: rgba(232, 238, 246, 0.72);
 }
 
 .side-menu__search input {
@@ -74,48 +84,68 @@
   background: transparent;
   color: rgba(245, 245, 247, 0.92);
   font-family:
-    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
-  font-size: 13px;
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Text',
+    'Helvetica Neue',
+    sans-serif;
+  font-size: 13.5px;
   font-weight: 400;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
 }
 
 .side-menu__search input::placeholder {
-  color: rgba(235, 235, 245, 0.4);
+  color: rgba(235, 235, 245, 0.38);
 }
 
 .side-menu__nav {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 10px;
   min-height: 0;
   overflow: auto;
-  padding-top: 4px;
+  padding-top: 2px;
+}
+
+.side-menu__group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  background: rgba(255, 255, 255, 0.025);
 }
 
 .side-menu__item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   width: 100%;
   margin: 0;
-  padding: 7px 8px;
+  padding: 10px 10px;
   border: 0;
-  border-radius: 8px;
+  border-radius: 9px;
   background: transparent;
   color: rgba(245, 245, 247, 0.92);
   font-family:
-    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
-  font-size: 13.5px;
-  font-weight: 400;
-  letter-spacing: -0.015em;
+    -apple-system,
+    BlinkMacSystemFont,
+    'SF Pro Text',
+    'Helvetica Neue',
+    sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
   text-align: left;
   cursor: pointer;
-  transition: background 0.12s ease;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
 }
 
 .side-menu__item:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.07);
 }
 
 .side-menu__item:disabled {
@@ -152,18 +182,29 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
-  background: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
   color: inherit;
   flex: 0 0 auto;
-  opacity: 0.92;
+  opacity: 0.95;
+}
+
+.side-menu__item--active .side-menu__icon {
+  background: rgba(200, 245, 49, 0.16);
+  opacity: 1;
+}
+
+.side-menu__item--accent:not(.side-menu__item--active) .side-menu__icon {
+  background: rgba(200, 245, 49, 0.12);
+  color: #c8f531;
 }
 
 .side-menu__live-dot {
   position: absolute;
-  top: 1px;
-  left: -1px;
+  top: 2px;
+  left: 2px;
   z-index: 1;
   width: 7px;
   height: 7px;
@@ -190,11 +231,6 @@
   }
 }
 
-.side-menu__item--active .side-menu__icon {
-  background: none;
-  opacity: 1;
-}
-
 .side-menu__label {
   display: block;
   min-width: 0;
@@ -208,7 +244,7 @@
   flex: 1 1 auto;
   flex-direction: column;
   min-width: 0;
-  gap: 1px;
+  gap: 2px;
 }
 
 .side-menu__meta {
@@ -222,18 +258,11 @@
   color: rgba(232, 238, 246, 0.48);
 }
 
-.side-menu__item--pro:not(.side-menu__item--active) .side-menu__label {
-  background: linear-gradient(90deg, #f5f7f2, #c8f531);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+.side-menu__item--active .side-menu__meta {
+  color: rgba(200, 245, 49, 0.72);
 }
 
 .side-menu__item--accent:not(.side-menu__item--active) {
-  color: #c8f531;
-}
-
-.side-menu__item--accent:not(.side-menu__item--active) .side-menu__icon {
   color: #c8f531;
 }
 

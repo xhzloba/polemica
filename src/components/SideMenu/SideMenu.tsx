@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
-import { BookOpen, ChevronLeft, Crown, LoaderCircle, Menu, Plus, Radio, Search, Swords, Trophy } from 'lucide-react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { BookOpen, ChevronLeft, LoaderCircle, Menu, Plus, Radio, Search, Swords } from 'lucide-react'
 import { GAME_ORIGIN } from '@shared/config'
 import type { LiveStats, SearchStatus } from '@shared/ipc'
 import './SideMenu.css'
@@ -9,7 +9,6 @@ type MenuItem = {
   icon: typeof Swords
   path?: string
   action?: 'create-lobby' | 'play' | 'streams'
-  pro?: boolean
   accent?: boolean
   liveDot?: boolean
 }
@@ -18,9 +17,7 @@ const ITEMS: MenuItem[] = [
   { label: 'Создать лобби', icon: Plus, action: 'create-lobby', accent: true },
   { label: 'Играть', path: '/game-search', icon: Swords, action: 'play' },
   { label: 'Трансляции', path: '/game-search', icon: Radio, action: 'streams', liveDot: true },
-  { label: 'Правила', path: '/rules', icon: BookOpen },
-  { label: 'Лидеры', path: '/ratings', icon: Trophy },
-  { label: 'Подписка', path: '/subscription', icon: Crown, pro: true }
+  { label: 'Правила', path: '/rules', icon: BookOpen }
 ]
 
 interface Props {
@@ -143,12 +140,72 @@ export function SideMenuPanel({ currentUrl, open, onOpenChange, live, search }: 
     if (item.path) void window.polemica.goto(`${GAME_ORIGIN}${item.path}`)
   }
 
+  const primary = ITEMS.filter((i) => i.accent)
+  const rest = ITEMS.filter((i) => !i.accent)
+
+  const renderItem = (item: MenuItem): ReactNode => {
+    const Icon = item.icon
+    const normalized = (item.path || '').replace(/\/$/, '')
+    let active = false
+    if (item.action === 'play') {
+      active = onGameSearch && lobbyTab === 'play'
+    } else if (item.action === 'streams') {
+      active = onGameSearch && lobbyTab === 'watch'
+    } else if (normalized) {
+      active = activePath === normalized
+    }
+
+    const showLive = Boolean(item.liveDot && live.streams > 0)
+    const meta = item.action === 'play' ? playItemMeta(search) : ''
+    const itemBusy =
+      tabBusy &&
+      ((item.action === 'play' && lobbyTab === 'play') ||
+        (item.action === 'streams' && lobbyTab === 'watch'))
+
+    return (
+      <button
+        key={item.label}
+        type="button"
+        className={[
+          'side-menu__item',
+          active && 'side-menu__item--active',
+          item.accent && 'side-menu__item--accent',
+          itemBusy && 'side-menu__item--busy'
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        onClick={() => onItem(item)}
+        disabled={tabBusy && (item.action === 'play' || item.action === 'streams')}
+        title={
+          item.action === 'streams' && live.streams > 0
+            ? `${live.streams} трансляц.`
+            : undefined
+        }
+      >
+        <span className="side-menu__icon" aria-hidden>
+          {itemBusy ? (
+            <LoaderCircle size={22} strokeWidth={2.2} className="side-menu__spinner" />
+          ) : (
+            <>
+              {showLive ? <span className="side-menu__live-dot" /> : null}
+              <Icon size={22} strokeWidth={2} />
+            </>
+          )}
+        </span>
+        <span className="side-menu__text">
+          <span className="side-menu__label">{item.label}</span>
+          {meta ? <span className="side-menu__meta">{meta}</span> : null}
+        </span>
+      </button>
+    )
+  }
+
   return (
     <aside className="side-menu__panel" aria-label="Меню">
       <div className="side-menu__traffic-spacer" aria-hidden />
 
       <label className="side-menu__search">
-        <Search size={14} strokeWidth={2.2} aria-hidden />
+        <Search size={15} strokeWidth={2.2} aria-hidden />
         <input
           type="search"
           value={query}
@@ -163,63 +220,8 @@ export function SideMenuPanel({ currentUrl, open, onOpenChange, live, search }: 
       </label>
 
       <nav className="side-menu__nav" aria-label="Разделы сайта">
-        {ITEMS.map((item) => {
-          const Icon = item.icon
-          const normalized = (item.path || '').replace(/\/$/, '')
-          let active = false
-          if (item.action === 'play') {
-            active = onGameSearch && lobbyTab === 'play'
-          } else if (item.action === 'streams') {
-            active = onGameSearch && lobbyTab === 'watch'
-          } else if (normalized) {
-            active = activePath === normalized
-          }
-
-          const showLive = Boolean(item.liveDot && live.streams > 0)
-          const meta = item.action === 'play' ? playItemMeta(search) : ''
-          const itemBusy =
-            tabBusy &&
-            ((item.action === 'play' && lobbyTab === 'play') ||
-              (item.action === 'streams' && lobbyTab === 'watch'))
-
-          return (
-            <button
-              key={item.label}
-              type="button"
-              className={[
-                'side-menu__item',
-                active && 'side-menu__item--active',
-                item.pro && 'side-menu__item--pro',
-                item.accent && 'side-menu__item--accent',
-                itemBusy && 'side-menu__item--busy'
-              ]
-                .filter(Boolean)
-                .join(' ')}
-              onClick={() => onItem(item)}
-              disabled={tabBusy && (item.action === 'play' || item.action === 'streams')}
-              title={
-                item.action === 'streams' && live.streams > 0
-                  ? `${live.streams} трансляц.`
-                  : undefined
-              }
-            >
-              <span className="side-menu__icon" aria-hidden>
-                {itemBusy ? (
-                  <LoaderCircle size={18} strokeWidth={2.2} className="side-menu__spinner" />
-                ) : (
-                  <>
-                    {showLive ? <span className="side-menu__live-dot" /> : null}
-                    <Icon size={18} strokeWidth={2} />
-                  </>
-                )}
-              </span>
-              <span className="side-menu__text">
-                <span className="side-menu__label">{item.label}</span>
-                {meta ? <span className="side-menu__meta">{meta}</span> : null}
-              </span>
-            </button>
-          )
-        })}
+        {primary.length ? <div className="side-menu__group">{primary.map(renderItem)}</div> : null}
+        <div className="side-menu__group">{rest.map(renderItem)}</div>
       </nav>
     </aside>
   )
