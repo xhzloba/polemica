@@ -1,4 +1,5 @@
 import { Lock, LoaderCircle, ShieldAlert, ShieldQuestion } from 'lucide-react'
+import polemicaLogo from '../../assets/polemica-logo.svg'
 import { getConnectionInfo, type ConnectionSecurity } from '../../lib/connectionSecurity'
 import './UrlPill.css'
 
@@ -12,6 +13,7 @@ export function UrlPill({ url, isLoading }: Props) {
 
   return (
     <div className="url-pill" title={url}>
+      <img className="url-pill__logo" src={polemicaLogo} alt="" draggable={false} />
       <span className={`url-pill__security url-pill__security--${connection.security}`} aria-hidden>
         <SecurityIcon security={connection.security} />
       </span>
@@ -24,7 +26,7 @@ export function UrlPill({ url, isLoading }: Props) {
 }
 
 function SecurityIcon({ security }: { security: ConnectionSecurity }) {
-  const props = { size: 14, strokeWidth: 2.2, 'aria-hidden': true as const }
+  const props = { size: 13, strokeWidth: 2.3, 'aria-hidden': true as const }
 
   switch (security) {
     case 'secure':
