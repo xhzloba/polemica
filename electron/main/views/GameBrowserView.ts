@@ -409,12 +409,26 @@ export function getGameView(): WebContentsView | null {
   return gameView
 }
 
-export function detachGameView(win: BrowserWindow): void {
+export function detachGameView(win?: BrowserWindow | null): void {
   if (!gameView) return
-  win.contentView.removeChildView(gameView)
-  gameView.webContents.close()
+  const view = gameView
   gameView = null
   sessionWatch = null
+
+  try {
+    if (win && !win.isDestroyed()) {
+      win.contentView.removeChildView(view)
+    }
+  } catch {
+    /* window/contentView already gone */
+  }
+
+  try {
+    const wc = view.webContents
+    if (wc && !wc.isDestroyed()) wc.close()
+  } catch {
+    /* webContents already gone */
+  }
 }
 
 export function getGameNavState(): NavState {

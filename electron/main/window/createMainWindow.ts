@@ -93,7 +93,7 @@ export function createMainWindow(): BrowserWindow {
     })
   }
 
-  win.on('closed', () => {
+  win.on('close', () => {
     detachGameView(win)
   })
 
