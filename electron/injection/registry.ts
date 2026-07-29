@@ -3,6 +3,7 @@ import { GAME_ROOM_CSS } from '@shared/gameRoomCss'
 import { LOBBY_UI_CSS } from '@shared/lobbyUiCss'
 import { LOBBY_ACCORDION_JS } from '@shared/lobbyAccordionJs'
 import { LOBBY_EMPTY_STATE_JS } from '@shared/lobbyEmptyStateJs'
+import { GAME_AV_GATE_JS } from '@shared/avGateModalJs'
 
 export interface InjectionStyle {
   id: string
@@ -368,6 +369,50 @@ export const INJECTION_STYLES: InjectionStyle[] = [
     css: GAME_ROOM_CSS
   },
   {
+    id: 'game-av-btn',
+    match: ['/game'],
+    css: `
+.common-room-modal.default-modal .button-comp,
+.common-room-modal.default-modal button.button-comp,
+.common-room-modal .buttons-wrapper .button-comp,
+.polemica-av-gate .button-comp,
+button.polemica-av-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-height: 44px !important;
+  height: 44px !important;
+  margin: 0 !important;
+  padding: 0 16px !important;
+  border: 0 !important;
+  border-radius: 12px !important;
+  background: #c8f531 !important;
+  background-color: #c8f531 !important;
+  background-image: none !important;
+  color: #0b0f14 !important;
+  box-shadow: none !important;
+  font-size: 14px !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.02em !important;
+  cursor: pointer !important;
+  opacity: 1 !important;
+}
+.common-room-modal.default-modal .button-comp:hover,
+.common-room-modal.default-modal .button-comp:focus,
+.polemica-av-gate .button-comp:hover,
+button.polemica-av-btn:hover {
+  background: #d4f85c !important;
+  background-color: #d4f85c !important;
+  color: #0b0f14 !important;
+  border: 0 !important;
+  opacity: 1 !important;
+}
+`
+  },
+  {
     id: 'hide-footer',
     css: HIDE_FOOTER_CSS
   },
@@ -406,6 +451,12 @@ export const INJECTION_SCRIPTS: InjectionScript[] = [
     match: ['/game-search', '/'],
     runAt: 'document-end',
     code: LOBBY_EMPTY_STATE_JS
+  },
+  {
+    id: 'game-av-gate',
+    match: ['/game'],
+    runAt: 'document-end',
+    code: GAME_AV_GATE_JS
   }
 ]
 

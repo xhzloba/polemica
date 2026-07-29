@@ -14,6 +14,9 @@ const SCRAPE_SEARCH_JS = `
 (() => {
   const path = (location.pathname || '').replace(/\\/$/, '') || '/';
   const onPlayPage = path === '/game-search' || path === '/';
+  // /game and /game/<id> — not /game-search
+  const onGameRoomPath = path === '/game' || path.startsWith('/game/');
+  const onGameRoom = onGameRoomPath || Boolean(document.querySelector('.game-room'));
 
   const tabs = Array.from(document.querySelectorAll('.p-play__tab'));
   const watchTab = tabs.find((el) => (el.textContent || '').includes('Смотреть'));
@@ -28,6 +31,22 @@ const SCRAPE_SEARCH_JS = `
       if (walk(kids[i], fn)) return true;
     }
     return false;
+  };
+
+  const readStoreInGame = () => {
+    try {
+      const app = document.querySelector('#app') && document.querySelector('#app').__vue__;
+      if (!app) return { ready: false, inGame: false };
+      const store = app.$store || (app.$root && app.$root.$store);
+      if (!store || !store.state || !store.state.userInGame) return { ready: false, inGame: false };
+      const v = store.state.userInGame.value;
+      return {
+        ready: true,
+        inGame: v != null && v !== false && v !== '' && v !== 0
+      };
+    } catch (e) {
+      return { ready: false, inGame: false };
+    }
   };
 
   const stripHtml = (s) =>
@@ -149,8 +168,34 @@ const SCRAPE_SEARCH_JS = `
       insetLeft
     });
 
+  const inGamePayload = (opts) =>
+    wrap({
+      phase: 'inGame',
+      active: false,
+      // Show continue/quit only when off the room page.
+      visible: !opts || !opts.inRoom,
+      playVisible: false,
+      loading: false,
+      title: 'Вы в игре',
+      time: '',
+      delay: '',
+      canCancel: false,
+      acceptAccepted: false,
+      acceptMode: '',
+      modes: [],
+      insetLeft,
+      onGameRoom: Boolean(opts && opts.inRoom)
+    });
+
   // Ban chrome only on Играть tab — elsewhere keep Play strip available.
   if (ban && onPlayTab) return empty('hidden');
+
+  const storeInGameState = readStoreInGame();
+  const storeInGame = storeInGameState.inGame;
+
+  // Already inside the room UI — remember session, hide continue/quit strip.
+  if (onGameRoom) return inGamePayload({ inRoom: true });
+  if (storeInGame) return inGamePayload();
 
   const app = document.querySelector('#app') && document.querySelector('#app').__vue__;
   let panel = null;
@@ -185,6 +230,19 @@ const SCRAPE_SEARCH_JS = `
     });
   }
 
+  // Any vm still flagged in-game (profile strip is display:none but Vue state lives).
+  let vmInGame = Boolean(panel && panel.userInGame);
+  if (!vmInGame && app) {
+    walk(app, (vm) => {
+      if (vm && vm.userInGame) {
+        vmInGame = true;
+        return true;
+      }
+      return false;
+    });
+  }
+  if (vmInGame || storeInGame) return inGamePayload();
+
   // Panel missing (other routes / watch / cold load).
   // Main process keeps sticky searching/accept UI when panelMissing.
   if (!panel) {
@@ -215,28 +273,14 @@ const SCRAPE_SEARCH_JS = `
     );
   const group = panel && panel.searchState && panel.searchState.group;
   const accepted = Boolean(panel && panel.isGameAccepted);
-  const inGame = Boolean(panel && panel.userInGame) || Boolean(decideEl);
+  const inGame = Boolean(panel && panel.userInGame) || Boolean(decideEl) || vmInGame || storeInGame;
   const searching =
     Boolean(panel && panel.isActiveSearch) ||
     Boolean(searchEl && !searchEl.classList.contains('p-play__profile-game-loader'));
 
   // Site render order: ban → userInGame(decide) → processing → group(accept) → search → idle
   if (inGame) {
-    return wrap({
-      phase: 'inGame',
-      active: false,
-      visible: true,
-      playVisible: false,
-      loading: false,
-      title: 'Вы в игре',
-      time: '',
-      delay: '',
-      canCancel: false,
-      acceptAccepted: false,
-      acceptMode: '',
-      modes: [],
-      insetLeft
-    });
+    return inGamePayload();
   }
 
   if (launching) {
@@ -344,7 +388,9 @@ const SCRAPE_SEARCH_JS = `
     acceptAccepted: false,
     acceptMode: '',
     modes,
-    insetLeft
+    insetLeft,
+    // Store hydrated and empty → safe to drop sticky continue/quit.
+    leftGame: Boolean(onPlayPage && storeInGameState.ready && !storeInGame && !vmInGame && !decideEl)
   });
 })()
 `
@@ -953,6 +999,8 @@ async function tick(generation: number): Promise<void> {
       modes: SearchMode[]
       insetLeft: number
       panelMissing?: boolean
+      leftGame?: boolean
+      onGameRoom?: boolean
     } | null
 
     if (
@@ -988,6 +1036,44 @@ async function tick(generation: number): Promise<void> {
       stickyModes = mergeQueueCounts(stickyModes, queueCounts)
     }
 
+    const onGameRoomUrl = (() => {
+      try {
+        const p = new URL(url).pathname.replace(/\/$/, '') || '/'
+        return p === '/game' || p.startsWith('/game/')
+      } catch {
+        return false
+      }
+    })()
+
+    // Inside /game room: keep sticky session, but never show continue/quit over the room.
+    if (onGameRoomUrl || raw.onGameRoom || (raw.phase === 'inGame' && raw.visible === false)) {
+      const next: SearchStatus = {
+        phase: 'inGame',
+        active: false,
+        visible: false,
+        playVisible: false,
+        loading: false,
+        title: 'Вы в игре',
+        time: '',
+        delay: '',
+        canCancel: false,
+        acceptAccepted: false,
+        acceptMode: '',
+        noticeTitle: notice.title,
+        noticeText: notice.text,
+        modes: [],
+        insetLeft,
+        updatedAt: Date.now()
+      }
+      rememberStickyActive({ ...next, visible: true })
+      if (sameSearch(last, next)) return
+      const wasLayout = layoutFlag(last)
+      last = next
+      emit()
+      if (wasLayout !== layoutFlag(next)) onChange?.(next)
+      return
+    }
+
     // Off play page the search Vue panel is gone — keep searching/accept/timer chrome alive
     if (raw.panelMissing && stickyActive) {
       const next = statusFromStickyActive(insetLeft, notice)
@@ -997,6 +1083,10 @@ async function tick(generation: number): Promise<void> {
       emit()
       if (wasLayout !== layoutFlag(next)) onChange?.(next)
       return
+    }
+
+    if (raw.leftGame && stickyActive?.phase === 'inGame') {
+      stickyActive = null
     }
 
     let phase = (['hidden', 'idle', 'searching', 'accept', 'launching', 'inGame'] as const).includes(
@@ -1019,6 +1109,17 @@ async function tick(generation: number): Promise<void> {
       if (phase === 'idle' || phase === 'hidden') phase = 'hidden'
       stickyActive = null
     } else if (phase === 'hidden' || phase === 'idle') {
+      // Keep continue/quit after leaving /game via home/menu — site idle scrape
+      // would otherwise wipe sticky before (or without) store hydrate.
+      if (stickyActive?.phase === 'inGame') {
+        const next = statusFromStickyActive(insetLeft, notice)
+        if (sameSearch(last, next)) return
+        const wasLayout = layoutFlag(last)
+        last = next
+        emit()
+        if (wasLayout !== layoutFlag(next)) onChange?.(next)
+        return
+      }
       phase = 'idle'
       playVisible = true
       stickyActive = null
@@ -1266,6 +1367,7 @@ export async function quitActiveGame(): Promise<boolean> {
   try {
     await ensurePlaySearchReady(wc)
     const ok = Boolean(await wc.executeJavaScript(QUIT_GAME_JS, true))
+    if (ok) stickyActive = null
     setTimeout(() => refreshSearchStatus(), 300)
     setTimeout(() => refreshSearchStatus(), 1200)
     refreshSearchStatus()
