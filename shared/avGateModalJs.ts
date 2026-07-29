@@ -7,8 +7,6 @@ export const GAME_AV_GATE_JS = `
 
   const STYLE_ID = 'polemica-av-gate-css';
   const BTN_CSS =
-    '.common-room-modal.default-modal .button-comp,' +
-    '.common-room-modal.default-modal button.button-comp,' +
     '.polemica-av-gate .button-comp,' +
     '.polemica-av-gate button.button-comp,' +
     'button.polemica-av-btn{' +
@@ -38,8 +36,6 @@ export const GAME_AV_GATE_JS = `
     'cursor:pointer!important;' +
     'opacity:1!important;' +
     '}' +
-    '.common-room-modal.default-modal .button-comp:hover,' +
-    '.common-room-modal.default-modal .button-comp:focus,' +
     '.polemica-av-gate .button-comp:hover,' +
     '.polemica-av-gate .button-comp:focus,' +
     'button.polemica-av-btn:hover,' +

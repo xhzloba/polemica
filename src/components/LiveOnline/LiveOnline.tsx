@@ -5,6 +5,7 @@ import './LiveOnline.css'
 
 interface Props {
   stats: LiveStats
+  onOpenOnline?: () => void
 }
 
 type Flash = 'up' | 'down' | null
@@ -55,13 +56,11 @@ function useFlashDirection(value: number): Flash {
   return flash
 }
 
-export function LiveOnline({ stats }: Props) {
+export function LiveOnline({ stats, onOpenOnline }: Props) {
   const players = useAnimatedInt(stats.players)
   const lobbies = useAnimatedInt(stats.lobbies)
   const playersFlash = useFlashDirection(stats.players)
   const lobbiesFlash = useFlashDirection(stats.lobbies)
-  const [open, setOpen] = useState(false)
-  const triggerRef = useRef<HTMLButtonElement>(null)
 
   if (!stats.updatedAt) {
     return (
@@ -95,30 +94,13 @@ export function LiveOnline({ stats }: Props) {
     .filter(Boolean)
     .join(' ')
 
-  const openMenu = (): void => {
-    if (!window.polemica) return
-    const rect = triggerRef.current?.getBoundingClientRect()
-    if (!rect) return
-    setOpen(true)
-    void window.polemica
-      .openLivePlayersMenu({
-        x: rect.x,
-        y: rect.y,
-        right: rect.right,
-        bottom: rect.bottom
-      })
-      .finally(() => setOpen(false))
-  }
-
   return (
-    <div className={`live-online${open ? ' live-online--open' : ''}`} title={title}>
+    <div className="live-online" title={title}>
       <Button
-        ref={triggerRef}
         type="text"
         className="live-online__people"
-        aria-haspopup="menu"
-        aria-expanded={open}
-        onClick={openMenu}
+        aria-label="Открыть список онлайн"
+        onClick={() => onOpenOnline?.()}
       >
         <Badge status="success" />
         <span className={playersClass}>{players}</span>

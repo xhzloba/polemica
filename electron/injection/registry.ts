@@ -375,10 +375,8 @@ export const INJECTION_STYLES: InjectionStyle[] = [
     id: 'game-av-btn',
     match: ['/game'],
     css: `
-.common-room-modal.default-modal .button-comp,
-.common-room-modal.default-modal button.button-comp,
-.common-room-modal .buttons-wrapper .button-comp,
 .polemica-av-gate .button-comp,
+.polemica-av-gate button.button-comp,
 button.polemica-av-btn {
   display: inline-flex !important;
   align-items: center !important;
@@ -403,9 +401,8 @@ button.polemica-av-btn {
   cursor: pointer !important;
   opacity: 1 !important;
 }
-.common-room-modal.default-modal .button-comp:hover,
-.common-room-modal.default-modal .button-comp:focus,
 .polemica-av-gate .button-comp:hover,
+.polemica-av-gate .button-comp:focus,
 button.polemica-av-btn:hover {
   background: #4096ff !important;
   background-color: #4096ff !important;

@@ -342,24 +342,23 @@ export const LOBBY_UI_CSS = `
   align-items: center !important;
   justify-content: space-between !important;
   gap: 10px !important;
-  padding: 10px 12px 8px !important;
+  padding: 12px 16px 6px !important;
 }
 
 .polemica-lobby-expand__title {
-  color: rgba(232, 238, 246, 0.42) !important;
-  font-size: 11px !important;
-  font-weight: 650 !important;
-  letter-spacing: 0.05em !important;
-  text-transform: uppercase !important;
+  color: rgba(255, 255, 255, 0.45) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
 }
 
 .polemica-lobby-expand__list {
-  display: grid !important;
-  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  column-gap: 20px !important;
-  row-gap: 0 !important;
-  padding: 2px 14px 8px !important;
-  max-height: min(42vh, 380px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+  padding: 0 12px 8px !important;
+  max-height: min(48vh, 420px) !important;
   overflow: auto !important;
 }
 
@@ -368,21 +367,28 @@ export const LOBBY_UI_CSS = `
   align-items: center !important;
   gap: 10px !important;
   margin: 0 !important;
-  padding: 7px 2px !important;
+  padding: 8px 4px !important;
   min-width: 0 !important;
   border: 0 !important;
-  border-radius: 0 !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-radius: 6px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
   background: transparent !important;
   box-sizing: border-box !important;
   color: rgba(255, 255, 255, 0.88) !important;
   text-decoration: none !important;
-  transition: color 0.12s ease, opacity 0.12s ease !important;
+  transition:
+    color 0.12s ease,
+    background 0.12s ease,
+    border-color 0.12s ease !important;
+}
+
+.polemica-lobby-expand__player:last-child {
+  border-bottom-color: transparent !important;
 }
 
 .polemica-lobby-expand__player:hover {
-  background: transparent !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  background: rgba(22, 119, 255, 0.08) !important;
+  border-bottom-color: transparent !important;
   text-decoration: none !important;
   color: #69b1ff !important;
 }
@@ -394,17 +400,16 @@ export const LOBBY_UI_CSS = `
 .polemica-lobby-expand__player--quit {
   opacity: 0.4 !important;
   background: transparent !important;
-  border-color: rgba(255, 255, 255, 0.04) !important;
 }
 
 .polemica-lobby-expand__player--live {
   background: transparent !important;
-  border-bottom-color: rgba(145, 70, 255, 0.22) !important;
+  border-bottom-color: rgba(255, 255, 255, 0.06) !important;
 }
 
 .polemica-lobby-expand__player--live:hover {
-  background: transparent !important;
-  border-bottom-color: rgba(145, 70, 255, 0.35) !important;
+  background: rgba(145, 70, 255, 0.1) !important;
+  border-bottom-color: transparent !important;
   color: #c4a0ff !important;
 }
 
@@ -422,9 +427,9 @@ export const LOBBY_UI_CSS = `
 }
 
 .polemica-lobby-expand__avatar {
-  width: 26px !important;
-  height: 26px !important;
-  flex: 0 0 26px !important;
+  width: 28px !important;
+  height: 28px !important;
+  flex: 0 0 28px !important;
   border-radius: 50% !important;
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
   object-fit: cover !important;
@@ -552,22 +557,20 @@ export const LOBBY_UI_CSS = `
 }
 
 .polemica-lobby-expand__section {
-  grid-column: 1 / -1 !important;
-  margin: 8px 0 0 !important;
-  padding: 8px 2px 4px !important;
+  margin: 10px 0 0 !important;
+  padding: 10px 4px 6px !important;
   color: rgba(255, 255, 255, 0.4) !important;
-  font-size: 11px !important;
+  font-size: 12px !important;
   font-weight: 500 !important;
-  letter-spacing: 0.02em !important;
+  letter-spacing: 0 !important;
   text-transform: none !important;
   border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
 }
 
 .polemica-lobby-expand__empty {
-  grid-column: 1 / -1 !important;
-  padding: 12px 4px !important;
-  color: rgba(232, 238, 246, 0.42) !important;
-  font-size: 12.5px !important;
+  padding: 16px 4px !important;
+  color: rgba(255, 255, 255, 0.42) !important;
+  font-size: 13px !important;
   text-align: center !important;
 }
 

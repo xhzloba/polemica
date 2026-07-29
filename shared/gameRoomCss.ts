@@ -167,8 +167,6 @@ body:has(.common-room-modal.default-modal) .full-page {
   margin: 0 !important;
   padding: 0 16px !important;
   border-radius: 12px !important;
-  border: 0 !important;
-  border-color: transparent !important;
   outline: none !important;
   box-shadow: none !important;
   font-family:
@@ -189,11 +187,10 @@ body:has(.common-room-modal.default-modal) .full-page {
     transform 0.12s ease !important;
 }
 
-.common-room-modal.default-modal .button-comp.outline,
-.common-room-modal.default-modal button.button-comp.outline,
-.common-room-modal.default-modal .button-comp.outline[class],
+/* Force fill only on AV permission gate — leave wait/start modals to site styles */
 .polemica-av-gate .button-comp,
-.polemica-av-gate button.button-comp {
+.polemica-av-gate button.button-comp,
+button.polemica-av-btn {
   background: #1677ff !important;
   background-color: #1677ff !important;
   background-image: none !important;
@@ -209,12 +206,12 @@ body:has(.common-room-modal.default-modal) .full-page {
   --is-transparent: false !important;
 }
 
-.common-room-modal.default-modal .button-comp.outline:hover,
-.common-room-modal.default-modal .button-comp.outline:focus,
-.common-room-modal.default-modal button.button-comp.outline:hover,
-.common-room-modal.default-modal button.button-comp.outline:focus,
 .polemica-av-gate .button-comp:hover,
-.polemica-av-gate .button-comp:focus {
+.polemica-av-gate .button-comp:focus,
+.polemica-av-gate button.button-comp:hover,
+.polemica-av-gate button.button-comp:focus,
+button.polemica-av-btn:hover,
+button.polemica-av-btn:focus {
   background: #4096ff !important;
   background-color: #4096ff !important;
   background-image: none !important;
@@ -234,8 +231,8 @@ body:has(.common-room-modal.default-modal) .full-page {
   width: 100% !important;
 }
 
-.common-room-modal.default-modal .button-comp:active,
-.polemica-av-gate .button-comp:active {
+.polemica-av-gate .button-comp:active,
+button.polemica-av-btn:active {
   transform: scale(0.985) !important;
   opacity: 1 !important;
 }

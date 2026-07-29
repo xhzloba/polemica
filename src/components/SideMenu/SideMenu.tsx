@@ -6,19 +6,21 @@ import {
   MenuOutlined,
   PlayCircleOutlined,
   SettingOutlined,
+  TeamOutlined,
   ThunderboltOutlined
 } from '@ant-design/icons'
 import { GAME_ORIGIN } from '@shared/config'
 import type { LiveStats, SearchStatus } from '@shared/ipc'
 import './SideMenu.css'
 
-type MenuKey = 'play' | 'streams' | 'rules' | 'settings'
+type MenuKey = 'play' | 'streams' | 'online' | 'rules' | 'settings'
 
 interface Props {
   currentUrl: string
   open: boolean
   onOpenChange: (open: boolean) => void
   onOpenSettings: () => void
+  onOpenOnline: () => void
   live: LiveStats
   search: SearchStatus
 }
@@ -76,6 +78,7 @@ export function SideMenuPanel({
   open,
   onOpenChange,
   onOpenSettings,
+  onOpenOnline,
   live,
   search
 }: Props) {
@@ -156,6 +159,7 @@ export function SideMenuPanel({
           const k = key as MenuKey
           if (k === 'play') switchLobbyTab('play')
           else if (k === 'streams') switchLobbyTab('watch')
+          else if (k === 'online') onOpenOnline()
           else if (k === 'settings') onOpenSettings()
           else if (k === 'rules') void window.polemica.goto(`${GAME_ORIGIN}/rules`)
         }}
@@ -184,6 +188,11 @@ export function SideMenuPanel({
               ),
             label: 'Трансляции',
             title: live.streams > 0 ? `${live.streams} трансляц.` : undefined
+          },
+          {
+            key: 'online',
+            icon: <TeamOutlined />,
+            label: 'Онлайн'
           },
           {
             key: 'rules',

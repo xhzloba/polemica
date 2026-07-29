@@ -14,6 +14,7 @@ import { LiveOnline } from '../LiveOnline/LiveOnline'
 import { TitleBarProfile } from '../TitleBarProfile/TitleBarProfile'
 import { SideMenuPanel, SideMenuToggle } from '../SideMenu/SideMenu'
 import { SettingsPanel } from '../SettingsPanel/SettingsPanel'
+import { OnlinePanel } from '../OnlinePanel/OnlinePanel'
 import { BanBanner } from '../BanBanner/BanBanner'
 import { SearchBanner } from '../SearchBanner/SearchBanner'
 import { LobbyFiltersBar } from '../LobbyFiltersBar/LobbyFiltersBar'
@@ -24,7 +25,7 @@ import './ChromeBar.css'
 
 const INSET_DEADZONE = 12
 
-type OverlayMode = 'menu' | 'settings' | null
+type OverlayMode = 'menu' | 'settings' | 'online' | null
 
 function stabilizeLobbyInset(next: number, prev: number): number {
   const n = Math.max(12, Math.round(next) || 24)
@@ -116,12 +117,20 @@ export function ChromeBar({ nav, profile, onLogout }: Props) {
           onBack={() => applyOverlay('menu')}
           onClose={() => applyOverlay(null)}
         />
+      ) : overlay === 'online' ? (
+        <OnlinePanel
+          open
+          stats={live}
+          onBack={() => applyOverlay('menu')}
+          onClose={() => applyOverlay(null)}
+        />
       ) : (
         <SideMenuPanel
           currentUrl={nav.url}
           open={overlay === 'menu'}
           onOpenChange={(open) => applyOverlay(open ? 'menu' : null)}
           onOpenSettings={() => applyOverlay('settings')}
+          onOpenOnline={() => applyOverlay('online')}
           live={live}
           search={search}
         />
@@ -138,7 +147,7 @@ export function ChromeBar({ nav, profile, onLogout }: Props) {
           </div>
           <UrlPill url={nav.url} isLoading={nav.isLoading} />
           <div className="chrome__right">
-            <LiveOnline stats={live} />
+            <LiveOnline stats={live} onOpenOnline={() => applyOverlay('online')} />
             {profile ? <TitleBarProfile profile={profile} onLogout={onLogout} /> : null}
             <WindowControls />
           </div>

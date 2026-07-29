@@ -196,7 +196,6 @@ const SCRAPE_SEARCH_JS = `
 
   // Already inside the room UI — remember session, hide continue/quit strip.
   if (onGameRoom) return inGamePayload({ inRoom: true });
-  if (storeInGame) return inGamePayload();
 
   const app = document.querySelector('#app') && document.querySelector('#app').__vue__;
   let panel = null;
@@ -242,11 +241,11 @@ const SCRAPE_SEARCH_JS = `
       return false;
     });
   }
-  if (vmInGame || storeInGame) return inGamePayload();
 
   // Panel missing (other routes / watch / cold load).
   // Main process keeps sticky searching/accept UI when panelMissing.
   if (!panel) {
+    if (vmInGame || storeInGame) return inGamePayload();
     return wrap({
       phase: 'idle',
       active: false,
@@ -274,16 +273,12 @@ const SCRAPE_SEARCH_JS = `
     );
   const group = panel && panel.searchState && panel.searchState.group;
   const accepted = Boolean(panel && panel.isGameAccepted);
-  const inGame = Boolean(panel && panel.userInGame) || Boolean(decideEl) || vmInGame || storeInGame;
   const searching =
     Boolean(panel && panel.isActiveSearch) ||
     Boolean(searchEl && !searchEl.classList.contains('p-play__profile-game-loader'));
 
-  // Site render order: ban → userInGame(decide) → processing → group(accept) → search → idle
-  if (inGame) {
-    return inGamePayload();
-  }
-
+  // Match found / launching must beat stale store/vm userInGame — otherwise chrome
+  // thrashs Accept ↔ Continue and accept clicks navigate nowhere useful.
   if (launching) {
     return wrap({
       phase: 'launching',
@@ -337,6 +332,11 @@ const SCRAPE_SEARCH_JS = `
       modes: [],
       insetLeft
     });
+  }
+
+  const inGame = Boolean(panel && panel.userInGame) || Boolean(decideEl) || vmInGame || storeInGame;
+  if (inGame) {
+    return inGamePayload();
   }
 
   if (searching || searchEl) {
@@ -1277,19 +1277,21 @@ export async function cancelGameSearch(): Promise<boolean> {
   }
 }
 
-async function ensurePlaySearchReady(wc: WebContents): Promise<boolean> {
+async function ensurePlaySearchReady(wc: WebContents, opts?: { allowNavigate?: boolean }): Promise<boolean> {
+  const allowNavigate = opts?.allowNavigate !== false
   const needNav =
-    !wc.getURL().includes('/game-search') ||
-    Boolean(
-      await wc.executeJavaScript(
-        `(() => {
+    allowNavigate &&
+    (!wc.getURL().includes('/game-search') ||
+      Boolean(
+        await wc.executeJavaScript(
+          `(() => {
           const tabs = Array.from(document.querySelectorAll('.p-play__tab'));
           const watch = tabs.find((el) => (el.textContent || '').includes('Смотреть'));
           return Boolean(watch && watch.classList.contains('p-play__tab--active'));
         })()`,
-        true
-      )
-    )
+          true
+        )
+      ))
   if (needNav) {
     await gameSetLobbyTab('play')
   }
@@ -1380,7 +1382,8 @@ export async function acceptGameSearch(): Promise<boolean> {
   const wc = getGameView()?.webContents
   if (!wc || wc.isDestroyed()) return false
   try {
-    await ensurePlaySearchReady(wc)
+    // Never navigate away during accept — tab switch kills the match UI.
+    await ensurePlaySearchReady(wc, { allowNavigate: false })
     const ok = Boolean(await wc.executeJavaScript(ACCEPT_GAME_JS, true))
     setTimeout(() => refreshSearchStatus(), 200)
     setTimeout(() => refreshSearchStatus(), 800)
@@ -1430,7 +1433,7 @@ export async function returnToGame(): Promise<boolean> {
   const wc = getGameView()?.webContents
   if (!wc || wc.isDestroyed()) return false
   try {
-    await ensurePlaySearchReady(wc)
+    // Don't force /game-search — returnToGame must run against current Vue state.
     const ok = Boolean(await wc.executeJavaScript(RETURN_TO_GAME_JS, true))
     refreshSearchStatus()
     return ok
@@ -1444,7 +1447,6 @@ export async function quitActiveGame(): Promise<boolean> {
   const wc = getGameView()?.webContents
   if (!wc || wc.isDestroyed()) return false
   try {
-    await ensurePlaySearchReady(wc)
     const ok = Boolean(await wc.executeJavaScript(QUIT_GAME_JS, true))
     if (ok) stickyActive = null
     setTimeout(() => refreshSearchStatus(), 300)

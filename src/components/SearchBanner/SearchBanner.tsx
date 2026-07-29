@@ -29,13 +29,18 @@ export function SearchBanner({ search }: Props) {
     })
   }, [])
 
+  // Auto-accept: allow one retry if the first click races the DOM.
   useEffect(() => {
     if (!autoAccept) return
     if (search.phase !== 'accept' || search.acceptAccepted || search.loading) return
     const matchKey = `${search.title}|${search.acceptMode}|${search.delay}`
     if (autoFiredKey.current === matchKey) return
     autoFiredKey.current = matchKey
-    void window.polemica.acceptGameSearch()
+    void window.polemica.acceptGameSearch().then((ok) => {
+      if (!ok && autoFiredKey.current === matchKey) {
+        autoFiredKey.current = ''
+      }
+    })
   }, [
     autoAccept,
     search.phase,
