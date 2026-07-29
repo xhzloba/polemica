@@ -1,4 +1,4 @@
-import { BrowserWindow } from 'electron'
+import { BrowserWindow, session } from 'electron'
 import type { LivePlayer } from '@shared/ipc'
 import { GAME_ORIGIN } from '@shared/config'
 import { getLiveStats, refreshLiveStats } from '../live/liveStatsService'
@@ -9,9 +9,64 @@ import { PRIME_ICON, SUBSCRIPTION_ICON } from '@shared/siteMarks'
 const POPUP_WIDTH = 320
 const POPUP_MAX_HEIGHT = 420
 const FALLBACK_AVATAR = `${GAME_ORIGIN}/image/user-avatar?size=100x`
+const GAME_PARTITION = 'persist:polemica-game'
+
+/** data: popup often fails HTTPS imgs — cache remote avatars as data URLs via game session. */
+const avatarDataCache = new Map<string, string>()
+const avatarInflight = new Map<string, Promise<string>>()
 
 let popup: BrowserWindow | null = null
 let shellReady: Promise<void> | null = null
+
+async function avatarToDataUrl(url: string): Promise<string> {
+  const src = String(url || '').trim()
+  if (!src) return FALLBACK_AVATAR
+  if (src.startsWith('data:')) return src
+  const hit = avatarDataCache.get(src)
+  if (hit) return hit
+  let pending = avatarInflight.get(src)
+  if (!pending) {
+    pending = (async () => {
+      try {
+        const ses = session.fromPartition(GAME_PARTITION)
+        const res = await ses.fetch(src)
+        if (!res.ok) return src
+        const buf = Buffer.from(await res.arrayBuffer())
+        const contentType = res.headers.get('content-type') || 'image/webp'
+        const dataUrl = `data:${contentType};base64,${buf.toString('base64')}`
+        avatarDataCache.set(src, dataUrl)
+        return dataUrl
+      } catch (err) {
+        console.warn('[live-players] avatar fetch failed', src, err)
+        return src
+      } finally {
+        avatarInflight.delete(src)
+      }
+    })()
+    avatarInflight.set(src, pending)
+  }
+  return pending
+}
+
+async function withInlineAvatars(players: LivePlayer[]): Promise<{
+  players: LivePlayer[]
+  fallback: string
+}> {
+  const urls = new Set<string>()
+  urls.add(FALLBACK_AVATAR)
+  for (const p of players) {
+    if (p.avatarUrl) urls.add(p.avatarUrl)
+  }
+  await Promise.all([...urls].map((u) => avatarToDataUrl(u)))
+  const fallback = avatarDataCache.get(FALLBACK_AVATAR) || FALLBACK_AVATAR
+  return {
+    fallback,
+    players: players.map((p) => ({
+      ...p,
+      avatarUrl: avatarDataCache.get(p.avatarUrl) || p.avatarUrl || fallback
+    }))
+  }
+}
 
 const SHELL_HTML = `<!doctype html>
 <html lang="ru">
@@ -294,7 +349,7 @@ const SHELL_HTML = `<!doctype html>
     <div class="list" id="list"><div class="empty">Никого в лобби</div></div>
   </div>
   <script>
-    const FALLBACK = ${JSON.stringify(FALLBACK_AVATAR)};
+    let FALLBACK = ${JSON.stringify(FALLBACK_AVATAR)};
     const PRIME_ICON = ${JSON.stringify(PRIME_ICON)};
     const SUB_ICON = ${JSON.stringify(SUBSCRIPTION_ICON)};
     const MMR_TIERS = ${JSON.stringify(MMR_TIERS)};
@@ -431,9 +486,10 @@ const SHELL_HTML = `<!doctype html>
       const menu = document.getElementById('menu');
       if (menu) menu.focus({ preventScroll: true });
     };
-    window.__setRoster = (players, nextFallback) => {
+    window.__setRoster = (players, nextFallback, fallbackAvatar) => {
       roster = Array.isArray(players) ? players : [];
       fallbackCount = Number(nextFallback) || 0;
+      if (fallbackAvatar) FALLBACK = String(fallbackAvatar);
       paint();
     };
   </script>
@@ -507,6 +563,7 @@ async function ensurePopup(parent: BrowserWindow): Promise<BrowserWindow> {
     width: POPUP_WIDTH,
     height: 240,
     webPreferences: {
+      partition: GAME_PARTITION,
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
@@ -529,8 +586,10 @@ async function paintRoster(win: BrowserWindow, players: LivePlayer[], fallbackCo
   if (win.isDestroyed()) return
   if (shellReady) await shellReady
   if (win.isDestroyed()) return
+  const { players: inlinePlayers, fallback } = await withInlineAvatars(players)
+  if (win.isDestroyed()) return
   await win.webContents.executeJavaScript(
-    `window.__setRoster(${JSON.stringify(players)}, ${JSON.stringify(fallbackCount)}); true`,
+    `window.__setRoster(${JSON.stringify(inlinePlayers)}, ${JSON.stringify(fallbackCount)}, ${JSON.stringify(fallback)}); true`,
     true
   )
 }
