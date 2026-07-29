@@ -92,6 +92,19 @@
   background: transparent;
 }
 
+.chrome-root--menu .chrome__left,
+.chrome-root--menu .chrome__right,
+.chrome-root--menu .url-pill {
+  transform: translateY(-6px);
+}
+
+.chrome-root--menu .url-pill {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+}
+
 .chrome-root--ban .chrome {
   border-bottom-color: transparent;
 }
