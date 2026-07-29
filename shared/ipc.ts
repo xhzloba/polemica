@@ -195,7 +195,7 @@ export interface PolemicaApi {
     width?: number
     height?: number
   }) => Promise<'profile' | 'settings' | 'logout' | null>
-  setChromeOverlay: (open: boolean) => Promise<{ viewX: number }>
+  setChromeOverlay: (open: boolean) => { viewX: number }
   openLivePlayersMenu: (anchor: {
     x: number
     y: number

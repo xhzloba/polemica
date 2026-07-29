@@ -54,7 +54,8 @@ const api: PolemicaApi = {
   dismissSearchNotice: () => ipcRenderer.invoke(IpcChannels.SEARCH_DISMISS_NOTICE),
   openProfileMenu: (anchor?: { x: number; y: number; width?: number; height?: number }) =>
     ipcRenderer.invoke(IpcChannels.PROFILE_MENU, anchor),
-  setChromeOverlay: (open: boolean) => ipcRenderer.invoke(IpcChannels.CHROME_OVERLAY, open),
+  setChromeOverlay: (open: boolean) =>
+    ipcRenderer.sendSync(IpcChannels.CHROME_OVERLAY, open) as { viewX: number },
   openLivePlayersMenu: (anchor) => ipcRenderer.invoke(IpcChannels.LIVE_PLAYERS_MENU, anchor)
 }
 

@@ -5,6 +5,8 @@ import { getGameView, gameSetLobbyTab } from '../views/GameBrowserView'
 
 /** Timer / queue counts update often. */
 const POLL_MS = 1_000
+/** Ignore sub-pixel / mid-reflow lobby left noise — table CSS doesn't move that much. */
+const INSET_DEADZONE_PX = 12
 const SEARCH_QUEUE_URL = 'https://game.polemicagame.com/api/search'
 const SEARCH_QUEUE_TIMEOUT_MS = 1_500
 
@@ -92,7 +94,6 @@ const SCRAPE_SEARCH_JS = `
 
   const measureInset = () => {
     const el =
-      document.querySelector('.p-play__lobby-table-row') ||
       document.querySelector('.p-play__lobby-table') ||
       document.querySelector('.p-play__lobby') ||
       document.querySelector('.p-play__center') ||
@@ -760,6 +761,14 @@ function emit(): void {
   hostWindow.webContents.send(IpcChannels.SEARCH_STATUS, last)
 }
 
+function stabilizeInset(next: number, prev: number, deadzone = INSET_DEADZONE_PX): number {
+  const n = Math.max(0, Math.round(next))
+  if (!Number.isFinite(n)) return prev
+  // First real measure / reset from default — always take it.
+  if (prev <= 24 && n > 24) return n
+  return Math.abs(n - prev) < deadzone ? prev : n
+}
+
 function layoutFlag(s: SearchStatus): boolean {
   return s.visible || s.playVisible || Boolean(s.noticeTitle || s.noticeText)
 }
@@ -910,7 +919,7 @@ async function tick(generation: number): Promise<void> {
 
     rememberNotice(String(raw.noticeTitle || ''), String(raw.noticeText || ''))
     const notice = activeNotice()
-    const insetLeft = Math.max(0, Math.round(Number(raw.insetLeft) || 24))
+    const insetLeft = stabilizeInset(Number(raw.insetLeft) || 24, last.insetLeft)
     const shouldRefreshQueues =
       raw.phase === 'searching' ||
       Boolean(raw.panelMissing && stickyActive?.phase === 'searching')

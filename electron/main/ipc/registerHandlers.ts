@@ -77,9 +77,9 @@ export function registerIpcHandlers(getWindow: WindowGetter): void {
   ipcMain.handle(IpcChannels.SEARCH_DISMISS_NOTICE, async () => {
     dismissSearchNotice()
   })
-  ipcMain.handle(IpcChannels.CHROME_OVERLAY, async (_e, open: boolean) =>
-    setChromeOverlay(Boolean(open))
-  )
+  ipcMain.on(IpcChannels.CHROME_OVERLAY, (e, open: boolean) => {
+    e.returnValue = setChromeOverlay(Boolean(open))
+  })
   ipcMain.handle(
     IpcChannels.LIVE_PLAYERS_MENU,
     async (

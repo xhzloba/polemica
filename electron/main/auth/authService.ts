@@ -152,11 +152,9 @@ export function setChromeOverlay(open: boolean): { viewX: number } {
 
   const viewX = Math.max(0, Math.round(getGameView()?.getBounds().x ?? 0))
 
-  // Lobby inset reflows with the new game width — burst-refresh so chrome doesn't lag a full poll.
+  // One deferred scrape after lobby reflows to the new width — avoid burst inset jumps.
   refreshSearchStatus()
-  for (const ms of [32, 80, 160, 280]) {
-    setTimeout(() => refreshSearchStatus(), ms)
-  }
+  setTimeout(() => refreshSearchStatus(), 220)
 
   return { viewX }
 }

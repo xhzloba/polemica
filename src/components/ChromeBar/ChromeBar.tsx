@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { flushSync } from 'react-dom'
 import type { NavState, UserProfile } from '@shared/ipc'
 import { BAN_BANNER_HEIGHT, CHROME_HEIGHT, SEARCH_PLAY_BANNER_HEIGHT } from '@shared/config'
 import { NavControls } from '../NavControls/NavControls'
@@ -25,27 +26,27 @@ export function ChromeBar({ nav, profile, onLogout }: Props) {
   const ban = useBanStatus()
   const search = useSearchStatus()
   const [menuOpen, setMenuOpen] = useState(false)
-  /** Game view X — updated in the same tick as menuOpen so search align doesn't jump. */
-  const [viewX, setViewX] = useState(0)
   const [menuBusy, setMenuBusy] = useState(false)
 
-  const setMenu = useCallback(async (open: boolean) => {
-    if (!window.polemica || menuBusy) return
-    if (open === menuOpen) return
-    setMenuBusy(true)
-    try {
-      // Layout game view first, then flip chrome grid in the same React update as viewX.
-      const res = await window.polemica.setChromeOverlay(open)
-      setViewX(Math.max(0, Math.round(res?.viewX ?? 0)))
-      setMenuOpen(open)
-    } finally {
-      setMenuBusy(false)
-    }
-  }, [menuBusy, menuOpen])
+  const setMenu = useCallback(
+    (open: boolean) => {
+      if (!window.polemica || menuBusy) return
+      if (open === menuOpen) return
+      setMenuBusy(true)
+      try {
+        // Sync IPC + flushSync: game bounds and chrome grid commit before the next paint.
+        window.polemica.setChromeOverlay(open)
+        flushSync(() => setMenuOpen(open))
+      } finally {
+        setMenuBusy(false)
+      }
+    },
+    [menuBusy, menuOpen]
+  )
 
   useEffect(() => {
     return () => {
-      void window.polemica?.setChromeOverlay(false)
+      window.polemica?.setChromeOverlay(false)
     }
   }, [])
 
@@ -74,7 +75,7 @@ export function ChromeBar({ nav, profile, onLogout }: Props) {
       <SideMenuPanel
         currentUrl={nav.url}
         open={menuOpen}
-        onOpenChange={(open) => void setMenu(open)}
+        onOpenChange={(open) => setMenu(open)}
         live={live}
         search={search}
       />
@@ -82,7 +83,7 @@ export function ChromeBar({ nav, profile, onLogout }: Props) {
         <header className="chrome" data-platform={window.polemica ? 'electron' : 'web'}>
           <div className="chrome__drag" />
           <div className="chrome__left">
-            <SideMenuToggle open={menuOpen} onToggle={() => void setMenu(!menuOpen)} />
+            <SideMenuToggle open={menuOpen} onToggle={() => setMenu(!menuOpen)} />
             <NavControls isLoading={nav.isLoading} />
           </div>
           <UrlPill url={nav.url} isLoading={nav.isLoading} />
@@ -92,11 +93,7 @@ export function ChromeBar({ nav, profile, onLogout }: Props) {
             <WindowControls />
           </div>
         </header>
-        {ban.visible ? (
-          <BanBanner ban={ban} />
-        ) : (
-          <SearchBanner search={search} viewX={viewX} menuOpen={menuOpen} />
-        )}
+        {ban.visible ? <BanBanner ban={ban} /> : <SearchBanner search={search} />}
       </div>
     </div>
   )

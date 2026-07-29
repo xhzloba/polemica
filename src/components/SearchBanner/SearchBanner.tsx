@@ -5,6 +5,8 @@ import type { SearchStatus } from '@shared/ipc'
 import './SearchBanner.css'
 
 const AUTO_ACCEPT_KEY = 'polemica.autoAccept'
+/** Ignore lobby inset noise; chrome-stack already tracks game view X via CSS grid. */
+const INSET_DEADZONE_PX = 12
 
 function readAutoAccept(): boolean {
   try {
@@ -22,33 +24,32 @@ function writeAutoAccept(on: boolean): void {
   }
 }
 
-interface Props {
-  search: SearchStatus
-  /** Game WebContentsView X in window coords — keep in sync with menuOpen. */
-  viewX?: number
-  menuOpen?: boolean
+function stabilizeInset(next: number, prev: number): number {
+  const n = Math.max(0, Math.round(next) || 24)
+  if (prev <= 24 && n > 24) return n
+  return Math.abs(n - prev) < INSET_DEADZONE_PX ? prev : n
 }
 
-export function SearchBanner({ search, viewX = 0, menuOpen = false }: Props) {
+interface Props {
+  search: SearchStatus
+}
+
+export function SearchBanner({ search }: Props) {
   const hasNotice = Boolean(search.noticeTitle || search.noticeText)
-  const rootRef = useRef<HTMLDivElement>(null)
   const splitRef = useRef<HTMLDivElement>(null)
   const autoFiredKey = useRef<string>('')
-  const [padLeft, setPadLeft] = useState(Math.max(0, search.insetLeft || 24))
+  // Only lobby inset inside the game page — NOT viewX. Menu open moves chrome-stack
+  // with the same offset as the game WebContentsView, same as the table (no pad recalc).
+  const [padLeft, setPadLeft] = useState(() => Math.max(0, search.insetLeft || 24))
   const [autoAccept, setAutoAccept] = useState(readAutoAccept)
   const [menuOpenLocal, setMenuOpenLocal] = useState(false)
   const [menuPos, setMenuPos] = useState<{ left: number; bottom: number; minWidth: number } | null>(
     null
   )
 
-  // Align banner content to lobby: windowX(lobby) = viewX + insetLeft.
   useLayoutEffect(() => {
-    const el = rootRef.current
-    if (!el) return
-    const target = Math.max(0, viewX) + Math.max(0, search.insetLeft || 0)
-    const left = el.getBoundingClientRect().left
-    setPadLeft(Math.max(0, Math.round(target - left)))
-  }, [viewX, search.insetLeft, menuOpen, search.phase, search.visible, search.playVisible, hasNotice])
+    setPadLeft((prev) => stabilizeInset(search.insetLeft || 24, prev))
+  }, [search.insetLeft])
 
   useLayoutEffect(() => {
     if (!menuOpenLocal) {
@@ -156,7 +157,7 @@ export function SearchBanner({ search, viewX = 0, menuOpen = false }: Props) {
           setMenuOpenLocal((v) => !v)
         }}
       >
-        <ChevronDown size={18} strokeWidth={2.4} aria-hidden />
+        <ChevronDown size={20} strokeWidth={2.4} aria-hidden />
       </button>
       {menuOpenLocal && menuPos
         ? createPortal(
@@ -193,7 +194,6 @@ export function SearchBanner({ search, viewX = 0, menuOpen = false }: Props) {
 
   return (
     <div
-      ref={rootRef}
       className="search-banner search-banner--play"
       role={search.visible || hasNotice ? 'status' : 'region'}
       aria-label="Поиск игры"
@@ -234,7 +234,7 @@ export function SearchBanner({ search, viewX = 0, menuOpen = false }: Props) {
         {phase === 'launching' || (phase === 'searching' && search.loading) ? (
           <div className="search-banner__status search-banner__status--loading">
             <LoaderCircle
-              size={20}
+              size={24}
               strokeWidth={2.2}
               className="search-banner__spinner"
               aria-label="Загрузка"
@@ -260,7 +260,7 @@ export function SearchBanner({ search, viewX = 0, menuOpen = false }: Props) {
           ) : autoAccept ? (
             <div className="search-banner__status search-banner__status--loading">
               <LoaderCircle
-                size={20}
+                size={24}
                 strokeWidth={2.2}
                 className="search-banner__spinner"
                 aria-label="Автопринятие"

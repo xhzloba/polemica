@@ -3,12 +3,12 @@ import type { LivePlayer } from '@shared/ipc'
 import { GAME_ORIGIN } from '@shared/config'
 import { getLiveStats, refreshLiveStats } from '../live/liveStatsService'
 import { gameGoto } from '../views/GameBrowserView'
+import { MMR_TIERS } from './mmrTiers'
+import { PRIME_ICON, SUBSCRIPTION_ICON } from './siteMarks'
 
 const POPUP_WIDTH = 320
 const POPUP_MAX_HEIGHT = 420
 const FALLBACK_AVATAR = `${GAME_ORIGIN}/image/user-avatar?size=100x`
-const PRIME_ICON = `${GAME_ORIGIN}/images/prime-black.svg`
-const SUBSCRIPTION_ICON = `${GAME_ORIGIN}/images/subscription-star.svg`
 
 let popup: BrowserWindow | null = null
 let shellReady: Promise<void> | null = null
@@ -207,10 +207,53 @@ const SHELL_HTML = `<!doctype html>
     border-radius: 3px;
   }
   .mmr {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     flex: 0 0 auto;
-    color: rgba(232,238,246,0.45);
-    font-size: 12px;
+  }
+  .mmr__icon {
+    width: 18px;
+    height: 18px;
+    display: block;
+    object-fit: contain;
+  }
+  .mmr__text {
+    font-size: 12.5px;
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .mmr__text--white {
+    background: linear-gradient(175.73deg, #ebebeb 58.04%, #d8d8d8 104.57%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .mmr__text--green {
+    background: linear-gradient(175.73deg, #faffe3 58.04%, #d7fe39 104.57%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .mmr__text--yellow {
+    background: linear-gradient(175.73deg, #fff8d7 58.04%, #ffd71b 104.57%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .mmr__text--orange {
+    background: linear-gradient(175.73deg, #ffddcf 58.04%, #fb8b5a 104.57%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .mmr__text--red,
+  .mmr__text--purple {
+    background: linear-gradient(175.73deg, #ffd8d9 58.04%, #fb5a5f 104.57%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
   }
   .section {
     padding: 8px 8px 4px;
@@ -254,6 +297,7 @@ const SHELL_HTML = `<!doctype html>
     const FALLBACK = ${JSON.stringify(FALLBACK_AVATAR)};
     const PRIME_ICON = ${JSON.stringify(PRIME_ICON)};
     const SUB_ICON = ${JSON.stringify(SUBSCRIPTION_ICON)};
+    const MMR_TIERS = ${JSON.stringify(MMR_TIERS)};
     let roster = [];
     let fallbackCount = 0;
     let filterMode = 'alpha';
@@ -262,6 +306,24 @@ const SHELL_HTML = `<!doctype html>
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;');
+    const mmrTier = (value) => {
+      const n = Number(value);
+      if (!Number.isFinite(n)) return null;
+      let tier = null;
+      for (const item of MMR_TIERS) {
+        if (n >= item.min) tier = item;
+      }
+      return tier;
+    };
+    const mmrHtml = (value) => {
+      const tier = mmrTier(value);
+      if (!tier) return '';
+      const text = Number(Number(value).toFixed(0)).toLocaleString('en-US');
+      return '<span class="mmr">' +
+        '<img class="mmr__icon" src="' + esc(tier.image) + '" alt="" draggable="false" />' +
+        '<span class="mmr__text mmr__text--' + esc(tier.type) + '">' + esc(text) + '</span>' +
+        '</span>';
+    };
     const byName = (a, b) => String(a.username || '').localeCompare(String(b.username || ''), 'ru', { sensitivity: 'base' });
     const byRating = (a, b) => {
       const am = a.mmr == null ? -Infinity : Number(a.mmr);
@@ -301,7 +363,7 @@ const SHELL_HTML = `<!doctype html>
         ? '<img class="mark mark--prime" src="' + esc(PRIME_ICON) +
           '" alt="" title="Prime" draggable="false" />'
         : '';
-      const mmr = p.mmr != null ? '<span class="mmr">' + esc(String(p.mmr)) + '</span>' : '';
+      const mmr = p.mmr != null ? mmrHtml(p.mmr) : '';
       return '<a class="item' + (p.quit ? ' item--quit' : '') +
         '" href="polemica-profile:' + encodeURIComponent(p.profileUrl || '') +
         '" tabindex="-1">' +
