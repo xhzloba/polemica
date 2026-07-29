@@ -41,6 +41,7 @@ import {
   unbindSearchStatusWindow
 } from '../search/searchStatusService'
 import { closeLivePlayersMenu, destroyLivePlayersMenu, prewarmLivePlayersMenu } from '../chrome/livePlayersPopup'
+import { closePlayActionMenu, destroyPlayActionMenu } from '../chrome/playActionMenuPopup'
 
 let phase: AuthPhase = 'splash'
 let profile: UserProfile | null = null
@@ -106,6 +107,8 @@ export function disposeAuthWindow(win: BrowserWindow): void {
   stopSearchStatusPolling()
   closeLivePlayersMenu()
   destroyLivePlayersMenu()
+  closePlayActionMenu()
+  destroyPlayActionMenu()
   unbindLiveStatsWindow(win)
   unbindBanStatusWindow(win)
   unbindSearchStatusWindow(win)
@@ -114,11 +117,12 @@ export function disposeAuthWindow(win: BrowserWindow): void {
 
 function chromeHeightForApp(): number {
   const search = getSearchStatus()
-  if (getBanStatus().visible) return CHROME_HEIGHT + BAN_BANNER_HEIGHT
-  if (search.visible || search.playVisible || search.noticeTitle || search.noticeText) {
-    return CHROME_HEIGHT + SEARCH_PLAY_BANNER_HEIGHT
+  let h = CHROME_HEIGHT
+  if (getBanStatus().visible) h += BAN_BANNER_HEIGHT
+  else if (search.visible || search.playVisible || search.noticeTitle || search.noticeText) {
+    h += SEARCH_PLAY_BANNER_HEIGHT
   }
-  return CHROME_HEIGHT
+  return h
 }
 
 function layoutForPhase(win: BrowserWindow): void {

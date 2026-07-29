@@ -35,7 +35,7 @@ export const LOBBY_UI_CSS = `
 }
 
 .p-play__lobby {
-  padding: 4px 4px 12px !important;
+  padding: 18px 4px 12px !important;
 }
 
 .p-play__lobby-table {
@@ -62,7 +62,7 @@ export const LOBBY_UI_CSS = `
   gap: 0 !important;
   width: 100% !important;
   min-height: 32px !important;
-  margin: 0 0 4px !important;
+  margin: 0 !important;
   padding: 0 16px !important;
   background: transparent !important;
   border: 0 !important;
@@ -103,7 +103,7 @@ export const LOBBY_UI_CSS = `
   gap: 0 !important;
   width: 100% !important;
   min-height: 72px !important;
-  margin: 0 0 8px !important;
+  margin: 0 !important;
   padding: 0 16px !important;
   box-sizing: border-box !important;
   background: #101418 !important;

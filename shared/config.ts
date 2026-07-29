@@ -16,10 +16,10 @@ export const GAME_START_URL = `${GAME_ORIGIN}/game-search`
 export const CHROME_HEIGHT = 64
 
 /** Action strip under titlebar: ban / modes+play / search status (same slot). */
-export const BAN_BANNER_HEIGHT = 64
+export const BAN_BANNER_HEIGHT = 56
 
 /** Same slot as ban — compact play/search action bar. */
-export const SEARCH_PLAY_BANNER_HEIGHT = 64
+export const SEARCH_PLAY_BANNER_HEIGHT = 56
 
 /** Apple-settings-style side menu geometry */
 export const SIDE_MENU_INSET = 12

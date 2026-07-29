@@ -35,6 +35,7 @@ export const IpcChannels = {
   PROFILE_MENU: 'chrome:profile-menu',
   CHROME_OVERLAY: 'chrome:overlay',
   LIVE_PLAYERS_MENU: 'chrome:live-players-menu',
+  PLAY_ACTION_MENU: 'chrome:play-action-menu',
 
   // main → renderer
   NAV_STATE: 'nav:state',
@@ -202,4 +203,13 @@ export interface PolemicaApi {
     right: number
     bottom: number
   }) => Promise<void>
+  openPlayActionMenu: (
+    anchor: {
+      x: number
+      y: number
+      right: number
+      bottom: number
+    },
+    opts: { autoAccept: boolean }
+  ) => Promise<{ autoAccept: boolean } | null>
 }

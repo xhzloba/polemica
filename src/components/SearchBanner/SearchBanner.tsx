@@ -1,6 +1,5 @@
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
-import { createPortal } from 'react-dom'
-import { Check, ChevronDown, LoaderCircle, X } from 'lucide-react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { ChevronDown, LoaderCircle, X } from 'lucide-react'
 import type { SearchStatus } from '@shared/ipc'
 import './SearchBanner.css'
 
@@ -32,48 +31,6 @@ export function SearchBanner({ search }: Props) {
   const autoFiredKey = useRef<string>('')
   const [autoAccept, setAutoAccept] = useState(readAutoAccept)
   const [menuOpenLocal, setMenuOpenLocal] = useState(false)
-  const [menuPos, setMenuPos] = useState<{ left: number; bottom: number; minWidth: number } | null>(
-    null
-  )
-
-  useLayoutEffect(() => {
-    if (!menuOpenLocal) {
-      setMenuPos(null)
-      return
-    }
-    const el = splitRef.current
-    if (!el) return
-    const place = (): void => {
-      const r = el.getBoundingClientRect()
-      setMenuPos({
-        left: Math.round(r.left),
-        bottom: Math.round(window.innerHeight - r.top + 6),
-        minWidth: Math.round(Math.max(r.width, 168))
-      })
-    }
-    place()
-    window.addEventListener('resize', place)
-    return () => window.removeEventListener('resize', place)
-  }, [menuOpenLocal])
-
-  useEffect(() => {
-    if (!menuOpenLocal) return
-    const onDoc = (e: MouseEvent): void => {
-      const t = e.target as Node
-      if (splitRef.current?.contains(t)) return
-      if ((t as Element).closest?.('.search-banner__play-menu')) return
-      setMenuOpenLocal(false)
-    }
-    const onKey = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') setMenuOpenLocal(false)
-    }
-    document.addEventListener('mousedown', onDoc)
-    document.addEventListener('keydown', onKey)
-    return () => {
-      document.removeEventListener('mousedown', onDoc)
-      document.removeEventListener('keydown', onKey)
-    }
-  }, [menuOpenLocal])
 
   useEffect(() => {
     if (!autoAccept) return
@@ -103,13 +60,27 @@ export function SearchBanner({ search }: Props) {
   const canPlay = search.modes.some((m) => m.selected && m.available)
   const showIdleControls = phase === 'idle'
 
-  const toggleAutoAccept = (): void => {
-    setAutoAccept((prev) => {
-      const next = !prev
-      writeAutoAccept(next)
-      return next
-    })
-    setMenuOpenLocal(false)
+  const openActionMenu = (): void => {
+    if (!window.polemica) return
+    const rect = splitRef.current?.getBoundingClientRect()
+    if (!rect) return
+    setMenuOpenLocal(true)
+    void window.polemica
+      .openPlayActionMenu(
+        {
+          x: rect.x,
+          y: rect.y,
+          right: rect.right,
+          bottom: rect.bottom
+        },
+        { autoAccept }
+      )
+      .then((result) => {
+        if (!result) return
+        writeAutoAccept(result.autoAccept)
+        setAutoAccept(result.autoAccept)
+      })
+      .finally(() => setMenuOpenLocal(false))
   }
 
   const playSplit = (opts: { disabled?: boolean; onPlay: () => void }): ReactNode => (
@@ -137,41 +108,11 @@ export function SearchBanner({ search }: Props) {
         aria-expanded={menuOpenLocal}
         onClick={(e) => {
           e.stopPropagation()
-          setMenuOpenLocal((v) => !v)
+          openActionMenu()
         }}
       >
         <ChevronDown size={16} strokeWidth={2.4} aria-hidden />
       </button>
-      {menuOpenLocal && menuPos
-        ? createPortal(
-            <div
-              className="search-banner__play-menu"
-              role="menu"
-              style={{
-                left: menuPos.left,
-                bottom: menuPos.bottom,
-                minWidth: menuPos.minWidth
-              }}
-            >
-              <button
-                type="button"
-                role="menuitemcheckbox"
-                aria-checked={autoAccept}
-                className={`search-banner__play-menu-item${autoAccept ? ' search-banner__play-menu-item--on' : ''}`}
-                onClick={toggleAutoAccept}
-              >
-                <span className="search-banner__play-menu-check" aria-hidden>
-                  {autoAccept ? <Check size={12} strokeWidth={2.8} /> : null}
-                </span>
-                <span className="search-banner__play-menu-text">
-                  <span className="search-banner__play-menu-title">Автопринятие</span>
-                  <span className="search-banner__play-menu-hint">Принимать матч сразу</span>
-                </span>
-              </button>
-            </div>,
-            document.body
-          )
-        : null}
     </div>
   )
 

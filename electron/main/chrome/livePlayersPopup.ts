@@ -574,6 +574,13 @@ export async function openLivePlayersMenu(
     return
   }
 
+  try {
+    const { closePlayActionMenu } = await import('./playActionMenuPopup')
+    closePlayActionMenu()
+  } catch {
+    /* ignore */
+  }
+
   const stats = getLiveStats()
   const content = parent.getContentBounds()
   const height = Math.min(

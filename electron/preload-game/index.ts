@@ -264,6 +264,39 @@ body,
   padding: 0 !important;
   overflow: hidden !important;
 }
+
+header.p-header,
+.p-header,
+.p-header__container,
+.p-header__wrapper {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  height: 0 !important;
+  max-height: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border: 0 !important;
+}
+
+.p-play,
+.p-play.p-play--cultural {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+.p-play__lobby {
+  padding-top: 18px !important;
+  margin-top: 0 !important;
+}
+
+.p-play__lobby-search {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+}
 ` + LOBBY_UI_CSS + GAME_ROOM_CSS
 
 const HIDE_SELECTORS = [

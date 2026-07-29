@@ -56,7 +56,9 @@ const api: PolemicaApi = {
     ipcRenderer.invoke(IpcChannels.PROFILE_MENU, anchor),
   setChromeOverlay: (open: boolean) =>
     ipcRenderer.sendSync(IpcChannels.CHROME_OVERLAY, open) as { viewX: number },
-  openLivePlayersMenu: (anchor) => ipcRenderer.invoke(IpcChannels.LIVE_PLAYERS_MENU, anchor)
+  openLivePlayersMenu: (anchor) => ipcRenderer.invoke(IpcChannels.LIVE_PLAYERS_MENU, anchor),
+  openPlayActionMenu: (anchor, opts) =>
+    ipcRenderer.invoke(IpcChannels.PLAY_ACTION_MENU, anchor, opts)
 }
 
 contextBridge.exposeInMainWorld('polemica', api)

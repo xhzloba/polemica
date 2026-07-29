@@ -35,6 +35,7 @@ import {
 } from '../search/searchStatusService'
 import { popupProfileMenu } from '../chrome/profileMenu'
 import { openLivePlayersMenu } from '../chrome/livePlayersPopup'
+import { openPlayActionMenu } from '../chrome/playActionMenuPopup'
 
 type WindowGetter = () => BW | null
 
@@ -94,6 +95,27 @@ export function registerIpcHandlers(getWindow: WindowGetter): void {
         right: Number(anchor?.right) || 0,
         bottom: Number(anchor?.bottom) || 0
       })
+    }
+  )
+  ipcMain.handle(
+    IpcChannels.PLAY_ACTION_MENU,
+    async (
+      event,
+      anchor: { x: number; y: number; right: number; bottom: number },
+      opts: { autoAccept?: boolean }
+    ) => {
+      const win = BrowserWindow.fromWebContents(event.sender) ?? getWindow()
+      if (!win) return null
+      return openPlayActionMenu(
+        win,
+        {
+          x: Number(anchor?.x) || 0,
+          y: Number(anchor?.y) || 0,
+          right: Number(anchor?.right) || 0,
+          bottom: Number(anchor?.bottom) || 0
+        },
+        { autoAccept: Boolean(opts?.autoAccept) }
+      )
     }
   )
   ipcMain.handle(
