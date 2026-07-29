@@ -7,6 +7,51 @@ import { GAME_ROOM_CSS } from '@shared/gameRoomCss'
 import { LOBBY_UI_CSS } from '@shared/lobbyUiCss'
 import { LOBBY_ACCORDION_JS } from '@shared/lobbyAccordionJs'
 
+const BOOT_LOADER_STYLE_ID = 'polemica-boot-loader-style'
+const BOOT_LOADER_ID = 'polemica-boot-loader'
+
+function ensureBootLoader(): void {
+  const root = document.documentElement
+  if (!root) return
+
+  if (!document.getElementById(BOOT_LOADER_STYLE_ID)) {
+    const style = document.createElement('style')
+    style.id = BOOT_LOADER_STYLE_ID
+    style.textContent = `
+      #${BOOT_LOADER_ID} {
+        position: fixed !important;
+        inset: 0 !important;
+        z-index: 2147483647 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: #0b0f14 !important;
+        pointer-events: all !important;
+      }
+      #${BOOT_LOADER_ID}::before {
+        content: '' !important;
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 50% !important;
+        border: 2.5px solid rgba(255, 255, 255, 0.12) !important;
+        border-top-color: #c8f531 !important;
+        animation: polemica-boot-spin 0.7s linear infinite !important;
+      }
+      @keyframes polemica-boot-spin {
+        to { transform: rotate(360deg); }
+      }
+    `
+    root.appendChild(style)
+  }
+
+  if (!document.getElementById(BOOT_LOADER_ID)) {
+    const el = document.createElement('div')
+    el.id = BOOT_LOADER_ID
+    el.setAttribute('aria-busy', 'true')
+    ;(document.body || root).appendChild(el)
+  }
+}
+
 const CLIENT_CSS = `
 :root {
   --polemica-client-bg: #0b0f14;
@@ -282,6 +327,7 @@ function injectLobbyAccordion(): void {
 }
 
 function start(): void {
+  ensureBootLoader()
   hideChromeNoise()
   injectLobbyAccordion()
 
@@ -302,7 +348,15 @@ function start(): void {
 }
 
 if (document.documentElement) {
+  ensureBootLoader()
   start()
 } else {
-  window.addEventListener('DOMContentLoaded', start, { once: true })
+  window.addEventListener(
+    'DOMContentLoaded',
+    () => {
+      ensureBootLoader()
+      start()
+    },
+    { once: true }
+  )
 }

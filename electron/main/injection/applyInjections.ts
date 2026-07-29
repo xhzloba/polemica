@@ -16,6 +16,88 @@ function log(msg: string): void {
   console.log(line.trimEnd())
 }
 
+async function hideBootLoaderWhenReady(wc: WebContents): Promise<void> {
+  let stableLobbyTicks = 0
+  let prevLobbyState = ''
+
+  for (let i = 0; i < 70; i++) {
+    try {
+      const probe = (await wc.executeJavaScript(
+        `(() => {
+          const styleReady = Boolean(document.getElementById('polemica-client-css'));
+          const path = (location.pathname || '').replace(/\\/$/, '') || '/';
+          const onGameSearch = path === '/game-search' || path === '/';
+
+          const rows = document.querySelectorAll('.p-play__lobby-table-row').length;
+          const emptyText = (document.body?.innerText || '').includes('Сейчас нет открытых лобби');
+          const lobbyRoot = Boolean(document.querySelector('.p-play__lobby') || document.querySelector('.p-play__lobby-table'));
+
+          let lobbyState = 'unknown';
+          if (rows > 0) {
+            lobbyState = 'rows';
+          } else if (emptyText) {
+            lobbyState = 'empty';
+          } else if (lobbyRoot) {
+            lobbyState = 'loading';
+          }
+
+          return {
+            styleReady,
+            onGameSearch,
+            lobbyState,
+            // Base readiness for non-lobby pages.
+            baseReady: styleReady && Boolean(document.querySelector('#app') || document.querySelector('#__nuxt'))
+          };
+        })()`,
+        true
+      )) as {
+        styleReady: boolean
+        onGameSearch: boolean
+        lobbyState: string
+        baseReady: boolean
+      }
+
+      if (!probe.styleReady) {
+        stableLobbyTicks = 0
+        prevLobbyState = ''
+        await new Promise((r) => setTimeout(r, 80))
+        continue
+      }
+
+      if (!probe.onGameSearch) {
+        if (probe.baseReady) break
+        await new Promise((r) => setTimeout(r, 80))
+        continue
+      }
+
+      if (probe.lobbyState === prevLobbyState && (probe.lobbyState === 'rows' || probe.lobbyState === 'empty')) {
+        stableLobbyTicks += 1
+      } else {
+        stableLobbyTicks = 0
+      }
+      prevLobbyState = probe.lobbyState
+
+      // Need a couple of stable polls to avoid "rows <-> empty" flicker on refresh.
+      if (stableLobbyTicks >= 2) break
+    } catch {
+      /* page may still be navigating */
+    }
+    await new Promise((r) => setTimeout(r, 80))
+  }
+
+  try {
+    await wc.executeJavaScript(
+      `(() => {
+        document.getElementById('polemica-boot-loader')?.remove();
+        document.getElementById('polemica-boot-loader-style')?.remove();
+      })()`,
+      true
+    )
+  } catch {
+    /* ignore */
+  }
+}
+
 /**
  * Applies registered CSS/JS patches to the game WebContents.
  */
@@ -62,6 +144,8 @@ export async function applyInjections(wc: WebContents, reason: string): Promise<
   } catch (err) {
     log(`stats failed ${String(err)}`)
   }
+
+  await hideBootLoaderWhenReady(wc)
 }
 
 export function bindInjections(wc: WebContents): void {

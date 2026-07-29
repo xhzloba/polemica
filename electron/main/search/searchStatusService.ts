@@ -629,6 +629,8 @@ type StickyActiveSearch = {
   clockValue: string
   /** Wall time when clockValue was observed. */
   clockAt: number
+  /** Wall time when this phase snapshot was observed. */
+  phaseAt: number
   /** searching counts up; accept counts down. */
   clockDir: 'up' | 'down' | 'freeze'
 }
@@ -683,27 +685,42 @@ function rememberStickyActive(status: SearchStatus): void {
     clockValue: status.time,
     // Keep wall anchor if site re-emits the same clock string every poll
     clockAt: sameClock && prev ? prev.clockAt : Date.now(),
+    phaseAt: prev && prev.phase === status.phase ? prev.phaseAt : Date.now(),
     clockDir
   }
 }
 
 function statusFromStickyActive(insetLeft: number, notice: { title: string; text: string }): SearchStatus {
   const row = stickyActive!
+  let phase = row.phase
+  let title = row.title
+  let active = row.phase !== 'inGame'
+  let loading = row.loading
+
+  // Off-page the site often stops exposing the launch->inGame transition.
+  // After a short launching window, switch sticky chrome to in-game actions.
+  if (row.phase === 'launching' && Date.now() - row.phaseAt >= 6_000) {
+    phase = 'inGame'
+    title = 'Вы в игре'
+    active = false
+    loading = false
+  }
+
   return {
-    phase: row.phase,
-    active: row.phase !== 'inGame',
+    phase,
+    active,
     visible: true,
     playVisible: false,
-    loading: row.loading,
-    title: row.title,
-    time: liveStickyTime(row),
+    loading,
+    title,
+    time: phase === 'inGame' ? '' : liveStickyTime(row),
     delay: row.delay,
     canCancel: row.canCancel,
     acceptAccepted: row.acceptAccepted,
     acceptMode: row.acceptMode,
     noticeTitle: notice.title,
     noticeText: notice.text,
-    modes: row.phase === 'searching' ? stickyModes : [],
+    modes: phase === 'searching' ? stickyModes : [],
     insetLeft,
     updatedAt: Date.now()
   }
@@ -1070,6 +1087,7 @@ export async function returnToGame(): Promise<boolean> {
   const wc = getGameView()?.webContents
   if (!wc || wc.isDestroyed()) return false
   try {
+    await ensurePlaySearchReady(wc)
     const ok = Boolean(await wc.executeJavaScript(RETURN_TO_GAME_JS, true))
     refreshSearchStatus()
     return ok
@@ -1083,6 +1101,7 @@ export async function quitActiveGame(): Promise<boolean> {
   const wc = getGameView()?.webContents
   if (!wc || wc.isDestroyed()) return false
   try {
+    await ensurePlaySearchReady(wc)
     const ok = Boolean(await wc.executeJavaScript(QUIT_GAME_JS, true))
     setTimeout(() => refreshSearchStatus(), 300)
     setTimeout(() => refreshSearchStatus(), 1200)
