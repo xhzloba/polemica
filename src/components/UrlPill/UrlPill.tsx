@@ -19,14 +19,14 @@ export function UrlPill({ url, isLoading }: Props) {
       </span>
       <span className="url-pill__name">{connection.label}</span>
       {isLoading && (
-        <LoaderCircle size={14} strokeWidth={2.2} className="url-pill__spinner" aria-label="Загрузка" />
+        <LoaderCircle size={18} strokeWidth={2} className="url-pill__spinner" aria-label="Загрузка" />
       )}
     </div>
   )
 }
 
 function SecurityIcon({ security }: { security: ConnectionSecurity }) {
-  const props = { size: 13, strokeWidth: 2.3, 'aria-hidden': true as const }
+  const props = { size: 18, strokeWidth: 2, 'aria-hidden': true as const }
 
   switch (security) {
     case 'secure':

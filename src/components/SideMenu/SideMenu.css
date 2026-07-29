@@ -16,10 +16,15 @@
   transition: background 0.15s ease, color 0.15s ease;
 }
 
-.side-menu__toggle:hover,
-.side-menu__toggle--open {
+.side-menu__toggle:hover {
   background: rgba(255, 255, 255, 0.08);
   color: #f5f7f2;
+}
+
+.side-menu__toggle--open,
+.side-menu__toggle--open:hover {
+  background: transparent;
+  color: rgba(232, 238, 246, 0.88);
 }
 
 .side-menu__panel {

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { BookOpen, Crown, LoaderCircle, Menu, Plus, Radio, Search, Swords, Trophy, X } from 'lucide-react'
+import { BookOpen, ChevronLeft, Crown, LoaderCircle, Menu, Plus, Radio, Search, Swords, Trophy } from 'lucide-react'
 import { GAME_ORIGIN } from '@shared/config'
 import type { LiveStats, SearchStatus } from '@shared/ipc'
 import './SideMenu.css'
@@ -73,7 +73,11 @@ export function SideMenuToggle({
       aria-expanded={open}
       onClick={onToggle}
     >
-      {open ? <X size={20} strokeWidth={2.2} aria-hidden /> : <Menu size={20} strokeWidth={2.2} aria-hidden />}
+      {open ? (
+        <ChevronLeft size={22} strokeWidth={2.2} aria-hidden />
+      ) : (
+        <Menu size={20} strokeWidth={2.2} aria-hidden />
+      )}
     </button>
   )
 }
