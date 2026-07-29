@@ -13,13 +13,13 @@ export const GAME_ORIGIN = 'https://polemicagame.com'
 export const GAME_START_URL = `${GAME_ORIGIN}/game-search`
 
 /** Height of the React chrome above the BrowserView (px). */
-export const CHROME_HEIGHT = 68
+export const CHROME_HEIGHT = 64
 
-/** Extra chrome height when search-ban / searching banner is visible. */
-export const BAN_BANNER_HEIGHT = 70
+/** Action strip under titlebar: ban / modes+play / search status (same slot). */
+export const BAN_BANNER_HEIGHT = 64
 
-/** Extra chrome height for play/search row (modes + Играть / статус в одну линию). */
-export const SEARCH_PLAY_BANNER_HEIGHT = 176
+/** Same slot as ban — compact play/search action bar. */
+export const SEARCH_PLAY_BANNER_HEIGHT = 64
 
 /** Apple-settings-style side menu geometry */
 export const SIDE_MENU_INSET = 12
@@ -30,7 +30,7 @@ export const SIDE_MENU_WIDTH = 268
 export const SIDE_MENU_OFFSET = SIDE_MENU_INSET + SIDE_MENU_WIDTH + SIDE_MENU_GAP
 
 export const TRAFFIC_LIGHTS = {
-  default: { x: 18, y: 22 },
+  default: { x: 18, y: 20 },
   /** Inside the inset menu card (matches SIDE_MENU_INSET + inner pad) */
   menu: { x: SIDE_MENU_INSET + 14, y: SIDE_MENU_INSET + 14 }
 } as const

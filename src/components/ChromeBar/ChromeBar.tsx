@@ -15,6 +15,14 @@ import { useBanStatus } from '../../hooks/useBanStatus'
 import { useSearchStatus } from '../../hooks/useSearchStatus'
 import './ChromeBar.css'
 
+const INSET_DEADZONE = 12
+
+function stabilizeLobbyInset(next: number, prev: number): number {
+  const n = Math.max(12, Math.round(next) || 24)
+  if (prev <= 24 && n > 24) return n
+  return Math.abs(n - prev) < INSET_DEADZONE ? prev : n
+}
+
 interface Props {
   nav: NavState
   profile: UserProfile | null
@@ -27,6 +35,11 @@ export function ChromeBar({ nav, profile, onLogout }: Props) {
   const search = useSearchStatus()
   const [menuOpen, setMenuOpen] = useState(false)
   const [menuBusy, setMenuBusy] = useState(false)
+  const [lobbyInset, setLobbyInset] = useState(24)
+
+  useEffect(() => {
+    setLobbyInset((prev) => stabilizeLobbyInset(search.insetLeft || 24, prev))
+  }, [search.insetLeft])
 
   const setMenu = useCallback(
     (open: boolean) => {
@@ -65,7 +78,10 @@ export function ChromeBar({ nav, profile, onLogout }: Props) {
   return (
     <div
       className={rootClass}
-      style={menuOpen ? undefined : { height: chromeH }}
+      style={{
+        ...(menuOpen ? undefined : { height: chromeH }),
+        ['--lobby-inset' as string]: `${lobbyInset}px`
+      }}
     >
       <div
         className={`window-load-bar${nav.progress > 0 ? ' window-load-bar--on' : ''}`}

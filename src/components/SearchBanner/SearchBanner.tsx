@@ -5,8 +5,6 @@ import type { SearchStatus } from '@shared/ipc'
 import './SearchBanner.css'
 
 const AUTO_ACCEPT_KEY = 'polemica.autoAccept'
-/** Ignore lobby inset noise; chrome-stack already tracks game view X via CSS grid. */
-const INSET_DEADZONE_PX = 12
 
 function readAutoAccept(): boolean {
   try {
@@ -24,12 +22,6 @@ function writeAutoAccept(on: boolean): void {
   }
 }
 
-function stabilizeInset(next: number, prev: number): number {
-  const n = Math.max(0, Math.round(next) || 24)
-  if (prev <= 24 && n > 24) return n
-  return Math.abs(n - prev) < INSET_DEADZONE_PX ? prev : n
-}
-
 interface Props {
   search: SearchStatus
 }
@@ -38,18 +30,11 @@ export function SearchBanner({ search }: Props) {
   const hasNotice = Boolean(search.noticeTitle || search.noticeText)
   const splitRef = useRef<HTMLDivElement>(null)
   const autoFiredKey = useRef<string>('')
-  // Only lobby inset inside the game page — NOT viewX. Menu open moves chrome-stack
-  // with the same offset as the game WebContentsView, same as the table (no pad recalc).
-  const [padLeft, setPadLeft] = useState(() => Math.max(0, search.insetLeft || 24))
   const [autoAccept, setAutoAccept] = useState(readAutoAccept)
   const [menuOpenLocal, setMenuOpenLocal] = useState(false)
   const [menuPos, setMenuPos] = useState<{ left: number; bottom: number; minWidth: number } | null>(
     null
   )
-
-  useLayoutEffect(() => {
-    setPadLeft((prev) => stabilizeInset(search.insetLeft || 24, prev))
-  }, [search.insetLeft])
 
   useLayoutEffect(() => {
     if (!menuOpenLocal) {
@@ -90,7 +75,6 @@ export function SearchBanner({ search }: Props) {
     }
   }, [menuOpenLocal])
 
-  // Auto-accept when match appears
   useEffect(() => {
     if (!autoAccept) return
     if (search.phase !== 'accept' || search.acceptAccepted || search.loading) return
@@ -118,7 +102,6 @@ export function SearchBanner({ search }: Props) {
   const showModes = (phase === 'idle' || phase === 'searching') && search.modes.length > 0
   const canPlay = search.modes.some((m) => m.selected && m.available)
   const showIdleControls = phase === 'idle'
-  const showChooseModeTitle = showModes
 
   const toggleAutoAccept = (): void => {
     setAutoAccept((prev) => {
@@ -157,7 +140,7 @@ export function SearchBanner({ search }: Props) {
           setMenuOpenLocal((v) => !v)
         }}
       >
-        <ChevronDown size={20} strokeWidth={2.4} aria-hidden />
+        <ChevronDown size={16} strokeWidth={2.4} aria-hidden />
       </button>
       {menuOpenLocal && menuPos
         ? createPortal(
@@ -198,12 +181,10 @@ export function SearchBanner({ search }: Props) {
       role={search.visible || hasNotice ? 'status' : 'region'}
       aria-label="Поиск игры"
       aria-live={search.visible || hasNotice ? 'polite' : undefined}
-      style={{ paddingLeft: padLeft }}
     >
       <div className="search-banner__card search-banner__card--play">
         {showModes ? (
           <div className="search-banner__modes-block">
-            {showChooseModeTitle ? <div className="search-banner__modes-title">Выберите режим</div> : null}
             <div className="search-banner__modes" role="group" aria-label="Режимы поиска">
               {search.modes.map((mode) => (
                 <button
@@ -234,7 +215,7 @@ export function SearchBanner({ search }: Props) {
         {phase === 'launching' || (phase === 'searching' && search.loading) ? (
           <div className="search-banner__status search-banner__status--loading">
             <LoaderCircle
-              size={24}
+              size={18}
               strokeWidth={2.2}
               className="search-banner__spinner"
               aria-label="Загрузка"
@@ -260,7 +241,7 @@ export function SearchBanner({ search }: Props) {
           ) : autoAccept ? (
             <div className="search-banner__status search-banner__status--loading">
               <LoaderCircle
-                size={24}
+                size={18}
                 strokeWidth={2.2}
                 className="search-banner__spinner"
                 aria-label="Автопринятие"
